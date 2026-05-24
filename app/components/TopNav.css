@@ -1,0 +1,91 @@
+.top-nav {
+  background: var(--surface-1);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  padding: 0 32px;
+  height: 60px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.top-nav__logo {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-right: 40px;
+  cursor: pointer;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.top-nav__logo-icon {
+  color: var(--color-green);
+}
+
+.top-nav__logo-sub {
+  color: var(--fg-tertiary);
+  font-weight: 500;
+}
+
+.top-nav__nav {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+}
+
+.top-nav__btn {
+  padding: 8px 20px;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--fg-secondary);
+  border: none;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 200ms var(--ease-default);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.top-nav__btn--active {
+  background: var(--color-green);
+  color: #000;
+}
+
+.top-nav__profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  transition: all 200ms var(--ease-default);
+  text-decoration: none;
+}
+
+.top-nav__profile--active {
+  background: rgba(2, 185, 6, 0.08);
+  border-color: rgba(2, 185, 6, 0.2);
+}
+
+.top-nav__profile-name {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg-primary);
+}
+
+.top-nav__profile-name--active {
+  color: var(--color-green);
+}

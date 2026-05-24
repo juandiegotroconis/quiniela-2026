@@ -1,0 +1,80 @@
+.group-match-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.group-match-row:last-child {
+  border-bottom: none;
+}
+
+.group-match-row__teams {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+}
+
+.group-match-row__side {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  width: 58px;
+}
+
+.group-match-row__side--left {
+  justify-content: flex-end;
+}
+
+.group-match-row__team-name {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.group-match-row__score {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  width: 48px;
+  text-align: center;
+}
+
+.group-match-row__time {
+  font-size: 12px;
+  font-family: var(--font-body);
+  font-weight: 500;
+  color: var(--fg-tertiary);
+}
+
+.group-match-row__pick {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-body);
+  font-size: 11px;
+}
+
+.group-match-row__pick-label {
+  color: var(--fg-tertiary);
+}
+
+.group-match-row__pick-score {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.group-match-row__result {
+  width: 60px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.group-match-row__date {
+  font-family: var(--font-body);
+  font-size: 10px;
+  color: var(--fg-tertiary);
+}

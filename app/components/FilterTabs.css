@@ -1,0 +1,26 @@
+.filter-tabs {
+  display: flex;
+  background: var(--surface-2);
+  border-radius: 10px;
+  padding: 3px;
+  gap: 2px;
+}
+
+.filter-tabs__btn {
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--fg-tertiary);
+  border: none;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 200ms var(--ease-default);
+  white-space: nowrap;
+}
+
+.filter-tabs__btn--active {
+  background: var(--color-green);
+  color: #000;
+}

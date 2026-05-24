@@ -1,0 +1,85 @@
+.group-table {
+  background: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.group-table__header {
+  display: grid;
+  grid-template-columns: 24px 1fr repeat(7, 36px);
+  padding: 10px 14px;
+  gap: 2px;
+  align-items: center;
+  border-bottom: 1px solid var(--border-default);
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--fg-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.group-table__header-pts {
+  font-weight: 700;
+  color: var(--fg-secondary);
+}
+
+.group-table__col-center {
+  text-align: center;
+}
+
+.group-table__row {
+  display: grid;
+  grid-template-columns: 24px 1fr repeat(7, 36px);
+  padding: 9px 14px;
+  gap: 2px;
+  align-items: center;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.group-table__row:last-child {
+  border-bottom: none;
+}
+
+.group-table__row--qualify {
+  background: rgba(2, 185, 6, 0.04);
+}
+
+.group-table__pos {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--fg-tertiary);
+}
+
+.group-table__pos--qualify {
+  color: var(--color-green);
+}
+
+.group-table__team {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.group-table__team-name {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.group-table__stat {
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--fg-secondary);
+}
+
+.group-table__pts {
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--fg-primary);
+}

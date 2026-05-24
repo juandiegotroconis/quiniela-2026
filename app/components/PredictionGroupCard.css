@@ -1,0 +1,78 @@
+.pred-group-card {
+  background: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 14px;
+  flex: 1 1 calc(50% - 6px);
+  min-width: 160px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+}
+
+.pred-group-card--me {
+  background: rgba(2, 185, 6, 0.04);
+}
+
+.pred-group-card__your-pick {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  font-family: var(--font-body);
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--color-green);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.pred-group-card__score {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 700;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.pred-group-card__score-sep {
+  font-size: 14px;
+  color: var(--fg-tertiary);
+}
+
+.pred-group-card__badge {
+  display: flex;
+  justify-content: center;
+}
+
+.pred-group-card__players {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+}
+
+.pred-group-card__player {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.pred-group-card__player-name {
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 500;
+  max-width: 52px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--fg-secondary);
+}
+
+.pred-group-card__player-name--me {
+  color: var(--color-green);
+}

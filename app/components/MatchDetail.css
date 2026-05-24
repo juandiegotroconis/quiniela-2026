@@ -1,0 +1,134 @@
+.match-detail__back {
+  background: none;
+  border: none;
+  color: var(--fg-secondary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 20px;
+  padding: 0;
+  transition: color 200ms;
+}
+
+.match-detail__back:hover {
+  color: var(--fg-primary);
+}
+
+.match-detail__score-card {
+  background: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  padding: 28px 24px 20px;
+  margin-bottom: 24px;
+}
+
+.match-detail__score-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+}
+
+.match-detail__team {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.match-detail__team-code {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.match-detail__team-full {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--fg-tertiary);
+}
+
+.match-detail__scoreline {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 48px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.match-detail__scoreline-sep {
+  font-size: 20px;
+  color: var(--fg-tertiary);
+}
+
+.match-detail__status {
+  text-align: center;
+  margin-top: 14px;
+}
+
+.match-detail__status-time {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--fg-tertiary);
+}
+
+.match-detail__my-pick {
+  background: rgba(2, 185, 6, 0.04);
+  border: 1px solid rgba(2, 185, 6, 0.15);
+  border-radius: var(--radius-lg);
+  padding: 14px 20px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.match-detail__my-pick-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.match-detail__my-pick-label {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-green);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.match-detail__my-pick-score {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.match-detail__preds-heading {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fg-tertiary);
+  margin-bottom: 12px;
+}
+
+.match-detail__preds-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.match-detail__empty {
+  text-align: center;
+  padding: 32px 20px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--fg-tertiary);
+}

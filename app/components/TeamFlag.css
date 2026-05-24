@@ -1,0 +1,16 @@
+.team-flag {
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-body);
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.03em;
+  flex-shrink: 0;
+  font-size: 10px;
+}
+
+.team-flag--sm {
+  font-size: 8px;
+}

@@ -1,0 +1,29 @@
+{
+  "name": "quiniela-2026",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "react-router dev",
+    "build": "react-router build",
+    "start": "react-router-serve ./build/server/index.js",
+    "typecheck": "react-router typegen && tsc"
+  },
+  "dependencies": {
+    "@react-router/node": "latest",
+    "@react-router/serve": "latest",
+    "isbot": "^4",
+    "react": "^19",
+    "react-dom": "^19",
+    "react-router": "latest"
+  },
+  "devDependencies": {
+    "@react-router/dev": "latest",
+    "@types/node": "^22",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "typescript": "^5",
+    "vite": "^6",
+    "vite-tsconfig-paths": "^5"
+  }
+}

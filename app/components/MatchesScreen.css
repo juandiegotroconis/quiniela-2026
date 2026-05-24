@@ -1,0 +1,22 @@
+.matches-screen__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.matches-screen__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.matches-screen__empty {
+  text-align: center;
+  padding: 48px 20px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--fg-tertiary);
+}

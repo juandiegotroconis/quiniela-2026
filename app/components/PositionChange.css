@@ -1,0 +1,28 @@
+.position-change {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 700;
+  width: 36px;
+  text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.position-change--neutral {
+  color: var(--fg-tertiary);
+}
+
+.position-change--up {
+  color: var(--color-green);
+}
+
+.position-change--down {
+  color: var(--color-error);
+}
+
+.position-change__arrow {
+  font-size: 8px;
+}

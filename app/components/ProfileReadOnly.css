@@ -1,0 +1,225 @@
+.profile-ro__header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.profile-ro__header-info {
+  flex: 1;
+}
+
+.profile-ro__name {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.profile-ro__rank-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.profile-ro__rank-label {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--fg-secondary);
+}
+
+.profile-ro__rank-num {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--fg-primary);
+}
+
+.profile-ro__pts {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-green);
+}
+
+.profile-ro__logout {
+  background: none;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: 8px 16px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg-tertiary);
+  cursor: pointer;
+  transition: border-color 200ms, color 200ms;
+}
+
+.profile-ro__logout:hover {
+  border-color: var(--border-strong);
+  color: var(--fg-primary);
+}
+
+.profile-ro__stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.profile-ro__stat-card {
+  background: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  text-align: center;
+}
+
+.profile-ro__stat-value {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.profile-ro__stat-label {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--fg-tertiary);
+  margin-top: 4px;
+}
+
+.profile-ro__scorer {
+  background: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  margin-bottom: 28px;
+}
+
+.profile-ro__scorer-heading {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-gold);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.profile-ro__scorer-note {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--fg-tertiary);
+  margin-top: 8px;
+  font-style: italic;
+}
+
+.profile-ro__preds-heading {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.profile-ro__matchday {
+  margin-bottom: 20px;
+}
+
+.profile-ro__matchday-label {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 8px;
+}
+
+.profile-ro__match-list {
+  background: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.profile-ro__match-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.profile-ro__match-row:last-child {
+  border-bottom: none;
+}
+
+.profile-ro__match-teams {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100px;
+  flex-shrink: 0;
+}
+
+.profile-ro__match-vs {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg-secondary);
+}
+
+.profile-ro__match-result {
+  width: 50px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.profile-ro__match-score-actual {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.profile-ro__match-date {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--fg-tertiary);
+}
+
+.profile-ro__match-pick-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: center;
+}
+
+.profile-ro__match-pick-label {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--fg-tertiary);
+}
+
+.profile-ro__match-pick-score {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.profile-ro__match-badge {
+  width: 70px;
+  text-align: right;
+  flex-shrink: 0;
+}

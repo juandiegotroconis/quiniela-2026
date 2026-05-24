@@ -1,0 +1,127 @@
+.ts-picker {
+  position: relative;
+}
+
+.ts-picker__trigger {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface-3);
+  border: 1px solid var(--border-default);
+  border-radius: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: border-color 200ms var(--ease-default);
+  width: 100%;
+}
+
+.ts-picker__trigger--disabled {
+  background: var(--surface-2);
+  cursor: default;
+  opacity: 0.8;
+}
+
+.ts-picker__trigger-value {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ts-picker__trigger-name {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.ts-picker__placeholder {
+  flex: 1;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--fg-tertiary);
+}
+
+.ts-picker__chevron {
+  transition: transform 200ms var(--ease-default);
+  flex-shrink: 0;
+}
+
+.ts-picker__chevron--open {
+  transform: rotate(180deg);
+}
+
+.ts-picker__dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--surface-3);
+  border: 1px solid var(--border-default);
+  border-radius: 10px;
+  z-index: 50;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  max-height: 280px;
+  display: flex;
+  flex-direction: column;
+}
+
+.ts-picker__search-wrap {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.ts-picker__search {
+  width: 100%;
+  padding: 8px 10px;
+  background: var(--surface-4);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  color: var(--fg-primary);
+  font-family: var(--font-body);
+  font-size: 13px;
+  outline: none;
+}
+
+.ts-picker__list {
+  overflow-y: auto;
+  flex: 1;
+}
+
+.ts-picker__option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: background 150ms;
+}
+
+.ts-picker__option:hover {
+  background: var(--surface-4);
+}
+
+.ts-picker__option--selected {
+  background: rgba(2, 185, 6, 0.08);
+}
+
+.ts-picker__option-name {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  flex: 1;
+}
+
+.ts-picker__option-team {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--fg-tertiary);
+}
+
+.ts-picker__empty {
+  padding: 16px;
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--fg-tertiary);
+}

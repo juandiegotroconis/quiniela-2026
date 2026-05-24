@@ -1,0 +1,90 @@
+.match-card {
+  background: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 14px 18px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color 200ms var(--ease-default), box-shadow 200ms var(--ease-default);
+}
+
+.match-card:hover {
+  border-color: var(--border-default);
+  box-shadow: var(--shadow-md);
+}
+
+.match-card--live {
+  border-color: rgba(230, 29, 37, 0.3);
+}
+
+.match-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.match-card__meta {
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg-tertiary);
+}
+
+.match-card__time {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--fg-tertiary);
+}
+
+.match-card__score-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.match-card__team {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 56px;
+}
+
+.match-card__team-name {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.match-card__score {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 26px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.match-card__score-sep {
+  font-size: 13px;
+  color: var(--fg-tertiary);
+}
+
+.match-card__pick {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  align-items: center;
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--color-green);
+}
+
+.match-card__pick-label {
+  font-weight: 600;
+}

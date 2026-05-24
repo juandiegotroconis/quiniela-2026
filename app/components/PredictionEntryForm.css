@@ -1,0 +1,374 @@
+.pred-form__heading {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.pred-form__title {
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.pred-form__subtitle {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--fg-tertiary);
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.pred-form__progress {
+  background: var(--surface-2);
+  border-radius: 10px;
+  padding: 14px 20px;
+  margin-bottom: 28px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.pred-form__progress-inner {
+  flex: 1;
+}
+
+.pred-form__progress-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.pred-form__progress-label {
+  color: var(--fg-secondary);
+}
+
+.pred-form__progress-count {
+  color: var(--fg-tertiary);
+}
+
+.pred-form__progress-count--done {
+  color: var(--color-green);
+}
+
+.pred-form__progress-track {
+  background: var(--surface-4);
+  border-radius: 4px;
+  height: 6px;
+  overflow: hidden;
+}
+
+.pred-form__progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: var(--color-gold);
+  transition: width 300ms var(--ease-default);
+}
+
+.pred-form__progress-fill--done {
+  background: var(--color-green);
+}
+
+.pred-form__groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
+  gap: 24px;
+  margin-bottom: 28px;
+}
+
+.pred-form__group {
+  background: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.pred-form__group-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pred-form__group-count {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--fg-tertiary);
+  text-transform: none;
+}
+
+/* Mini standings */
+.pred-form__mini-standings {
+  padding: 10px 16px 6px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.pred-form__mini-header {
+  display: grid;
+  grid-template-columns: 20px 1fr 32px 32px 40px;
+  gap: 2px;
+  align-items: center;
+  margin-bottom: 4px;
+  font-family: var(--font-body);
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--fg-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.pred-form__mini-col-center {
+  text-align: center;
+}
+
+.pred-form__mini-col-pts {
+  text-align: center;
+  color: var(--fg-secondary);
+}
+
+.pred-form__mini-row {
+  display: grid;
+  grid-template-columns: 20px 1fr 32px 32px 40px;
+  gap: 2px;
+  align-items: center;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--border-subtle);
+  transition: all 300ms var(--ease-default);
+}
+
+.pred-form__mini-row:last-child {
+  border-bottom: none;
+}
+
+.pred-form__mini-pos {
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--fg-tertiary);
+}
+
+.pred-form__mini-pos--qualify {
+  color: var(--color-green);
+}
+
+.pred-form__mini-team {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pred-form__mini-team-name {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg-secondary);
+}
+
+.pred-form__mini-team-name--qualify {
+  color: var(--fg-primary);
+}
+
+.pred-form__mini-gd {
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg-tertiary);
+}
+
+.pred-form__mini-gd--pos {
+  color: var(--color-green);
+}
+
+.pred-form__mini-gd--neg {
+  color: var(--color-error);
+}
+
+.pred-form__mini-gf {
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--fg-secondary);
+}
+
+.pred-form__mini-pts {
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--fg-primary);
+}
+
+/* Match inputs */
+.pred-form__matches {
+  padding: 8px 16px 10px;
+}
+
+.pred-form__match-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.pred-form__match-row:last-child {
+  border-bottom: none;
+}
+
+.pred-form__match-date {
+  font-family: var(--font-body);
+  font-size: 10px;
+  color: var(--fg-tertiary);
+  width: 44px;
+  flex-shrink: 0;
+}
+
+.pred-form__match-teams {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  justify-content: center;
+}
+
+.pred-form__match-side {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 60px;
+  justify-content: flex-end;
+}
+
+.pred-form__match-side--right {
+  justify-content: flex-start;
+}
+
+.pred-form__match-team-name {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.pred-form__match-input {
+  width: 42px;
+  height: 36px;
+  text-align: center;
+  background: var(--surface-3);
+  border: 1px solid var(--border-default);
+  border-radius: 6px;
+  color: var(--fg-primary);
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  outline: none;
+  transition: border-color 200ms var(--ease-default);
+}
+
+.pred-form__match-input:focus {
+  border-color: var(--color-green);
+}
+
+.pred-form__match-input--error {
+  border-color: var(--color-error);
+}
+
+.pred-form__match-sep {
+  font-size: 11px;
+  color: var(--fg-tertiary);
+  font-weight: 600;
+}
+
+.pred-form__match-icon {
+  width: 14px;
+  flex-shrink: 0;
+}
+
+/* Top scorer section */
+.pred-form__scorer {
+  background: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  margin-bottom: 32px;
+}
+
+.pred-form__scorer--error {
+  border-color: var(--color-error);
+}
+
+.pred-form__scorer-heading {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-gold);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pred-form__scorer-bonus {
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--fg-tertiary);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* Submit */
+.pred-form__error-msg {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--color-error);
+  background: var(--color-error-bg);
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.pred-form__submit-row {
+  display: flex;
+  justify-content: center;
+}
+
+.pred-form__submit {
+  padding: 16px 48px;
+  border-radius: var(--radius-lg);
+  border: none;
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  transition: all 200ms var(--ease-default);
+}
+
+.pred-form__submit--ready {
+  background: var(--color-green);
+  color: #000;
+  cursor: pointer;
+}
+
+.pred-form__submit--ready:hover {
+  opacity: 0.85;
+}
+
+.pred-form__submit--disabled {
+  background: var(--surface-4);
+  color: var(--fg-tertiary);
+  cursor: default;
+}
