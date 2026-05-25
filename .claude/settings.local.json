@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(cd c:\\\\Users\\\\juant\\\\Documents\\\\Projects\\\\quiniela-2026; $oldScaffold = @\\(\"src\\\\App.tsx\",\"src\\\\App.css\",\"src\\\\main.tsx\",\"src\\\\index.css\",\"src\\\\assets\\\\react.svg\",\"src\\\\assets\\\\vite.svg\"\\); foreach \\($f in $oldScaffold\\) { if \\(Test-Path $f\\) { Remove-Item $f -Force; Write-Output \"Deleted $f\" } else { Write-Output \"Not found: $f\" } }; Remove-Item react-router.config.ts -Force -ErrorAction SilentlyContinue; Remove-Item react-router.config.js -Force -ErrorAction SilentlyContinue; Remove-Item vite.config.js -Force -ErrorAction SilentlyContinue)",
+      "PowerShell(Remove-Item c:\\\\Users\\\\juant\\\\Documents\\\\Projects\\\\quiniela-2026\\\\src\\\\routes\\\\player.$id.tsx -Force)",
+      "Bash(rm \"c:/Users/juant/Documents/Projects/quiniela-2026/src/routes/player.\\\\$id.tsx\")",
+      "Bash(mkdir -p .claude/skills/new-component .claude/skills/mock-to-api)",
+      "PowerShell(Get-ChildItem \"c:\\\\Users\\\\juant\\\\Documents\\\\Projects\\\\quiniela-2026\" -Depth 2 | Where-Object { $_.Extension -in '.ts','.tsx','.js' -and $_.FullName -notmatch 'node_modules' } | Select-Object FullName)",
+      "PowerShell(Get-ChildItem \"c:\\\\Users\\\\juant\\\\Documents\\\\Projects\\\\quiniela-2026\\\\src\" -Recurse | Where-Object { -not $_.PSIsContainer -and $_.Extension -in '.ts','.tsx' } | Select-Object FullName)",
+      "PowerShell(cmd /c \"dir /S /B \"\"c:\\\\Users\\\\juant\\\\Documents\\\\Projects\\\\quiniela-2026\\\\src\"\"\")"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\juant\\Documents\\Projects\\quiniela-2026\\src\\routes",
+      "C:\\Users\\juant\\Documents\\Projects\\quiniela-2026\\.claude\\skills"
+    ]
+  }
+}

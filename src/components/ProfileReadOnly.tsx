@@ -9,7 +9,6 @@ import { getPickResult, getResultVariant, getResultPoints } from '~/lib/helpers'
 import { PLAYERS, MATCHES, ME_ID } from '~/lib/mock-data';
 import type { TopScorerSuggestion } from '~/lib/mock-data';
 import type { UserPickEntry } from '~/lib/auth-context';
-import { useAuth } from '~/lib/auth-context';
 
 interface Props {
   userPicks: Record<number, UserPickEntry>;

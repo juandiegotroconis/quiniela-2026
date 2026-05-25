@@ -1,10 +1,34 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.tsx'
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import { createBrowserRouter, RouterProvider, redirect } from "react-router";
+import App from "./App";
+import LoginRoute from "./routes/login";
+import RankingsRoute from "./routes/rankings";
+import MatchesRoute from "./routes/matches";
+import GroupsRoute from "./routes/groups";
+import ProfileRoute from "./routes/profile";
+import PlayerRoute from "./routes/player";
+import "./styles/variables.css";
+import "./styles/global.css";
 
-createRoot(document.getElementById('root')!).render(
+const router = createBrowserRouter([
+  {
+    path: "/",
+    Component: App,
+    children: [
+      { index: true, loader: () => redirect("/rankings") },
+      { path: "login", Component: LoginRoute },
+      { path: "rankings", Component: RankingsRoute },
+      { path: "matches", Component: MatchesRoute },
+      { path: "groups", Component: GroupsRoute },
+      { path: "profile", Component: ProfileRoute },
+      { path: "player/:id", Component: PlayerRoute },
+    ],
+  },
+]);
+
+createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <App />
-  </StrictMode>,
-)
+    <RouterProvider router={router} />
+  </StrictMode>
+);

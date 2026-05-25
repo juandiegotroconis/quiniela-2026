@@ -1,5 +1,5 @@
 import "./TopNav.css";
-import { NavLink, useNavigate } from "react-router";
+import { NavLink } from "react-router";
 import Avatar from "./Avatar";
 import { useAuth } from "~/lib/auth-context";
 import { ME_ID } from "~/lib/mock-data";

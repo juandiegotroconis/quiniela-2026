@@ -2,19 +2,21 @@
 
 import type { GetInfo, GetAnnotations } from "react-router/internal";
 
-type Module = typeof import("../root.js")
+type Module = typeof import("../../src/root.js");
 
 type Info = GetInfo<{
-  file: "root.tsx",
-  module: Module
-}>
+  file: "root.tsx";
+  module: Module;
+}>;
 
-type Matches = [{
-  id: "root";
-  module: typeof import("../root.js");
-}];
+type Matches = [
+  {
+    id: "root";
+    module: typeof import("../../src/root.js");
+  },
+];
 
-type Annotations = GetAnnotations<Info & { module: Module, matches: Matches }>;
+type Annotations = GetAnnotations<Info & { module: Module; matches: Matches }>;
 
 export namespace Route {
   // links
@@ -34,7 +36,8 @@ export namespace Route {
   export type MiddlewareFunction = Annotations["MiddlewareFunction"];
 
   // clientMiddleware
-  export type ClientMiddlewareFunction = Annotations["ClientMiddlewareFunction"];
+  export type ClientMiddlewareFunction =
+    Annotations["ClientMiddlewareFunction"];
 
   // loader
   export type LoaderArgs = Annotations["LoaderArgs"];
@@ -52,7 +55,8 @@ export namespace Route {
   export type HydrateFallbackProps = Annotations["HydrateFallbackProps"];
 
   // ServerHydrateFallback
-  export type ServerHydrateFallbackProps = Annotations["ServerHydrateFallbackProps"];
+  export type ServerHydrateFallbackProps =
+    Annotations["ServerHydrateFallbackProps"];
 
   // Component
   export type ComponentProps = Annotations["ComponentProps"];
@@ -64,5 +68,6 @@ export namespace Route {
   export type ErrorBoundaryProps = Annotations["ErrorBoundaryProps"];
 
   // ServerErrorBoundary
-  export type ServerErrorBoundaryProps = Annotations["ServerErrorBoundaryProps"];
+  export type ServerErrorBoundaryProps =
+    Annotations["ServerErrorBoundaryProps"];
 }
