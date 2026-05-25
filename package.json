@@ -18,6 +18,7 @@
     "react-router": "latest"
   },
   "devDependencies": {
+    "@iconify/react": "^6.0.2",
     "@react-router/dev": "latest",
     "@types/node": "^22",
     "@types/react": "^19",

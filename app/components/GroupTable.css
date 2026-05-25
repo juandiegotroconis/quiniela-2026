@@ -83,3 +83,24 @@
   font-weight: 700;
   color: var(--fg-primary);
 }
+
+@media (max-width: 480px) {
+  .group-table__col--hide-sm {
+    display: none;
+  }
+
+  .group-table__header,
+  .group-table__row {
+    grid-template-columns: 20px 1fr repeat(5, 28px);
+    padding: 8px 10px;
+  }
+
+  .group-table__team-name {
+    font-size: 12px;
+  }
+
+  .group-table__stat,
+  .group-table__pts {
+    font-size: 12px;
+  }
+}

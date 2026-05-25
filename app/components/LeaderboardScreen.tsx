@@ -1,4 +1,5 @@
 import './LeaderboardScreen.css';
+import { Link } from 'react-router';
 import PageContainer from './PageContainer';
 import SectionHeader from './SectionHeader';
 import PodiumCard from './PodiumCard';
@@ -17,9 +18,15 @@ export default function LeaderboardScreen() {
       <SectionHeader title="Rankings" subtitle="Friends League · 15 players" />
 
       <div className="leaderboard__podium">
-        <PodiumCard player={sorted[1]} rankColor={RANK_COLORS[1]} />
-        <PodiumCard player={sorted[0]} rankColor={RANK_COLORS[0]} isFirst />
-        <PodiumCard player={sorted[2]} rankColor={RANK_COLORS[2]} />
+        <Link to={`/player/${sorted[1].id}`} className="leaderboard__podium-link">
+          <PodiumCard player={sorted[1]} rankColor={RANK_COLORS[1]} />
+        </Link>
+        <Link to={`/player/${sorted[0].id}`} className="leaderboard__podium-link">
+          <PodiumCard player={sorted[0]} rankColor={RANK_COLORS[0]} isFirst />
+        </Link>
+        <Link to={`/player/${sorted[2].id}`} className="leaderboard__podium-link">
+          <PodiumCard player={sorted[2]} rankColor={RANK_COLORS[2]} />
+        </Link>
       </div>
 
       <div className="leaderboard__table">
@@ -34,8 +41,9 @@ export default function LeaderboardScreen() {
         {sorted.slice(3).map(p => {
           const isMe = p.id === ME_ID;
           return (
-            <div
+            <Link
               key={p.id}
+              to={`/player/${p.id}`}
               className={`leaderboard__row${isMe ? ' leaderboard__row--me' : ''}`}
             >
               <span className="leaderboard__row-rank">{p.rank}</span>
@@ -50,7 +58,7 @@ export default function LeaderboardScreen() {
                 <Sparkline history={p.history} />
               </div>
               <span className="leaderboard__row-pts">{p.pts}</span>
-            </div>
+            </Link>
           );
         })}
       </div>

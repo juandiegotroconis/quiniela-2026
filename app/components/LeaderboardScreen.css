@@ -6,6 +6,17 @@
   padding: 8px 0 28px;
 }
 
+.leaderboard__podium-link {
+  text-decoration: none;
+  color: inherit;
+  border-radius: var(--radius-lg);
+  transition: opacity 150ms;
+}
+
+.leaderboard__podium-link:hover {
+  opacity: 0.8;
+}
+
 .leaderboard__table {
   background: var(--surface-2);
   border: 1px solid var(--border-subtle);
@@ -43,7 +54,14 @@
   padding: 10px 16px;
   gap: 8px;
   border-bottom: 1px solid var(--border-subtle);
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
   transition: background 200ms var(--ease-default);
+}
+
+.leaderboard__row:hover {
+  background: var(--surface-3, rgba(255,255,255,0.04));
 }
 
 .leaderboard__row:last-child {
@@ -52,6 +70,10 @@
 
 .leaderboard__row--me {
   background: rgba(2, 185, 6, 0.06);
+}
+
+.leaderboard__row--me:hover {
+  background: rgba(2, 185, 6, 0.10);
 }
 
 .leaderboard__row-rank {

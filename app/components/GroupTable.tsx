@@ -8,6 +8,8 @@ interface Props {
 
 const QUALIFY = 2;
 const STATS: (keyof TeamStanding)[] = ['mp', 'w', 'd', 'l', 'gf', 'ga'];
+const HEADERS = ['MP', 'W', 'D', 'L', 'GF', 'GA'];
+const HIDE_SM = new Set(['GF', 'GA', 'gf', 'ga']);
 
 export default function GroupTable({ standings }: Props) {
   return (
@@ -15,8 +17,13 @@ export default function GroupTable({ standings }: Props) {
       <div className="group-table__header">
         <span>#</span>
         <span>Team</span>
-        {['MP', 'W', 'D', 'L', 'GF', 'GA'].map(h => (
-          <span key={h} className="group-table__col-center">{h}</span>
+        {HEADERS.map(h => (
+          <span
+            key={h}
+            className={`group-table__col-center${HIDE_SM.has(h) ? ' group-table__col--hide-sm' : ''}`}
+          >
+            {h}
+          </span>
         ))}
         <span className="group-table__col-center group-table__header-pts">Pts</span>
       </div>
@@ -36,7 +43,10 @@ export default function GroupTable({ standings }: Props) {
               <span className="group-table__team-name">{t.team}</span>
             </div>
             {STATS.map(k => (
-              <span key={String(k)} className="group-table__stat">
+              <span
+                key={String(k)}
+                className={`group-table__stat${HIDE_SM.has(String(k)) ? ' group-table__col--hide-sm' : ''}`}
+              >
                 {t[k] as number}
               </span>
             ))}

@@ -1,3 +1,9 @@
+.team-flag-icon {
+  flex-shrink: 0;
+  display: block;
+}
+
+/* Fallback colored box */
 .team-flag {
   border-radius: 3px;
   display: flex;

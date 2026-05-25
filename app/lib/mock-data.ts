@@ -86,21 +86,22 @@ export interface Player {
 }
 
 export const PLAYERS: Player[] = [
-  { id: 1,  name: 'Juan Rodríguez',   pts: 87, rank: 1,  prevRank: 3,  history: [8,6,5,3,3,1] },
-  { id: 2,  name: 'Sarah Mitchell',   pts: 82, rank: 2,  prevRank: 1,  history: [1,1,1,1,1,2] },
-  { id: 3,  name: 'Ahmed Khan',       pts: 78, rank: 3,  prevRank: 4,  history: [5,4,4,4,4,3] },
-  { id: 4,  name: 'Yuki Tanaka',      pts: 74, rank: 4,  prevRank: 7,  history: [12,10,9,7,7,4] },
-  { id: 5,  name: 'You',              pts: 71, rank: 5,  prevRank: 2,  history: [3,3,2,2,2,5] },
-  { id: 6,  name: "Liam O'Brien",     pts: 68, rank: 6,  prevRank: 6,  history: [6,7,6,6,6,6] },
-  { id: 7,  name: 'Priya Sharma',     pts: 64, rank: 7,  prevRank: 8,  history: [9,8,8,8,8,7] },
-  { id: 8,  name: 'Carlos Ruiz',      pts: 60, rank: 8,  prevRank: 5,  history: [2,2,3,5,5,8] },
-  { id: 9,  name: 'Emma Chen',        pts: 56, rank: 9,  prevRank: 11, history: [14,13,12,11,11,9] },
-  { id: 10, name: 'Diego Morales',    pts: 52, rank: 10, prevRank: 9,  history: [7,5,7,9,9,10] },
-  { id: 11, name: 'Fatima Al-Hassan', pts: 48, rank: 11, prevRank: 15, history: [15,15,15,15,15,11] },
-  { id: 12, name: 'Lucas Silva',      pts: 44, rank: 12, prevRank: 10, history: [10,9,10,10,10,12] },
-  { id: 13, name: 'Maria González',   pts: 40, rank: 13, prevRank: 13, history: [11,11,11,13,13,13] },
-  { id: 14, name: 'Tomás Andersson',  pts: 36, rank: 14, prevRank: 12, history: [4,12,13,12,12,14] },
-  { id: 15, name: 'Aisha Okafor',     pts: 32, rank: 15, prevRank: 14, history: [13,14,14,14,14,15] },
+  // pts/ranks derived from PREDICTIONS data against 6 finished matches
+  { id: 1,  name: 'Juan Rodríguez',   pts: 35, rank: 2,  prevRank: 2,  history: [10,15,25,25,30,35] },
+  { id: 2,  name: 'Sarah Mitchell',   pts: 30, rank: 6,  prevRank: 5,  history: [5,5,10,20,25,30] },
+  { id: 3,  name: 'Ahmed Khan',       pts: 45, rank: 1,  prevRank: 1,  history: [5,10,15,25,35,45] },
+  { id: 4,  name: 'Yuki Tanaka',      pts: 35, rank: 3,  prevRank: 3,  history: [5,15,25,25,30,35] },
+  { id: 5,  name: 'You',              pts: 35, rank: 4,  prevRank: 6,  history: [5,5,10,20,25,35] },
+  { id: 6,  name: "Liam O'Brien",     pts: 35, rank: 5,  prevRank: 4,  history: [5,15,20,25,30,35] },
+  { id: 7,  name: 'Priya Sharma',     pts: 25, rank: 7,  prevRank: 7,  history: [10,20,20,25,25,25] },
+  { id: 8,  name: 'Carlos Ruiz',      pts: 15, rank: 9,  prevRank: 12, history: [0,0,0,5,5,15] },
+  { id: 9,  name: 'Emma Chen',        pts: 5,  rank: 13, prevRank: 13, history: [5,5,5,5,5,5] },
+  { id: 10, name: 'Diego Morales',    pts: 5,  rank: 14, prevRank: 14, history: [0,0,0,5,5,5] },
+  { id: 11, name: 'Fatima Al-Hassan', pts: 20, rank: 8,  prevRank: 8,  history: [0,0,0,10,20,20] },
+  { id: 12, name: 'Lucas Silva',      pts: 5,  rank: 15, prevRank: 15, history: [0,0,0,5,5,5] },
+  { id: 13, name: 'Maria González',   pts: 15, rank: 10, prevRank: 9,  history: [5,5,5,15,15,15] },
+  { id: 14, name: 'Tomás Andersson',  pts: 10, rank: 12, prevRank: 11, history: [0,0,0,10,10,10] },
+  { id: 15, name: 'Aisha Okafor',     pts: 15, rank: 11, prevRank: 10, history: [5,5,5,15,15,15] },
 ];
 
 export type MatchStatus = 'finished' | 'live' | 'upcoming';
