@@ -7,7 +7,7 @@ import { useEffect } from "react";
 import "./root.css";
 
 function AppContent() {
-  const { user, loading, submitted, needsQuiniela } = useAuth();
+  const { user, loading, submitted, isUpdatable, needsQuiniela } = useAuth();
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
@@ -19,29 +19,35 @@ function AppContent() {
   if (!user) return null;
   if (needsQuiniela) return <JoinQuinielaScreen />;
 
-  const showBanner = !submitted && pathname !== "/profile";
+  const onProfile = pathname === "/profile";
+  const bannerType: "unsent" | "updatable" | null =
+    !submitted && !onProfile ? "unsent"
+    : submitted && isUpdatable && !onProfile ? "updatable"
+    : null;
 
   return (
     <>
       <TopNav />
-      {showBanner && <PredictionsBanner />}
+      {bannerType && <PredictionsBanner type={bannerType} />}
       <Outlet />
     </>
   );
 }
 
-function PredictionsBanner() {
+function PredictionsBanner({ type }: { type: "unsent" | "updatable" }) {
   const navigate = useNavigate();
   return (
     <div className="predictions-banner">
       <span className="predictions-banner__text">
-        You haven't submitted your predictions yet!
+        {type === "unsent"
+          ? "You haven't submitted your predictions yet!"
+          : "Predictions are still open — you can update yours!"}
       </span>
       <button
         className="predictions-banner__btn"
         onClick={() => navigate("/profile")}
       >
-        Enter Predictions →
+        {type === "unsent" ? "Enter Predictions →" : "Update Predictions →"}
       </button>
     </div>
   );

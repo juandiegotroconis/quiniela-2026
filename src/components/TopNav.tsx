@@ -37,12 +37,13 @@ export default function TopNav() {
       </nav>
 
       <NavLink
-        to={`/player/${user?.id}`}
+        // to={`/player/${user?.id}`}
+        to='/profile'
         className={({ isActive }) =>
           `top-nav__profile${isActive ? " top-nav__profile--active" : ""}`
         }
       >
-        <Avatar name={displayName} size={32} />
+        <Avatar name={displayName} size={32} color={user?.avatarColor ?? undefined} />
         <span className='top-nav__profile-name'>{displayName}</span>
       </NavLink>
     </header>

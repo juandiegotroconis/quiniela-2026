@@ -1,5 +1,5 @@
 import { getClient } from "./client";
-import type { Tables } from "./supabase";
+import type { Database, Tables } from "./supabase";
 import type { Match, MatchStatus, Member } from "./types";
 import type { UserPickEntry } from "./auth-context";
 import type { TopScorerSuggestion } from "./mock-data";
@@ -14,12 +14,19 @@ function dbStatusToUi(s: string): MatchStatus {
 
 function formatLocalDate(utcDate: string | null): string {
   if (!utcDate) return "";
-  return new Date(utcDate).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+  return new Date(utcDate).toLocaleDateString(undefined, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  });
 }
 
 function formatLocalTime(utcDate: string | null): string {
   if (!utcDate) return "";
-  return new Date(utcDate).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+  return new Date(utcDate).toLocaleTimeString(undefined, {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 function rowToMatch(row: Tables<"matches">): Match {
@@ -154,7 +161,23 @@ export async function fetchMatchPredictions(
   }));
 }
 
-export async function fetchUserQuinielId(userId: string): Promise<string | null> {
+export async function fetchUserAvatarColor(
+  userId: string,
+  quinielaId: string,
+): Promise<string | null> {
+  const client = getClient();
+  const { data } = await client
+    .from("quiniela_members")
+    .select("avatar_color")
+    .eq("user_id", userId)
+    .eq("quiniela_id", quinielaId)
+    .maybeSingle();
+  return data?.avatar_color ?? null;
+}
+
+export async function fetchUserQuinielId(
+  userId: string,
+): Promise<string | null> {
   const client = getClient();
   const { data } = await client
     .from("quiniela_members")
@@ -169,11 +192,12 @@ export async function lookupQuinielByCode(
   code: string,
 ): Promise<{ id: string; name: string } | null> {
   const client = getClient();
-  const { data } = await client
+  const { data, error } = await client
     .from("quinielas")
     .select("id, name")
     .eq("join_code", code.trim())
     .maybeSingle();
+  if (error) throw error;
   return data ?? null;
 }
 
@@ -199,6 +223,95 @@ export async function ensureMembership(
     });
     if (error) throw error;
   }
+}
+
+export async function fetchQuinielaIsUpdatable(
+  quinielaId: string,
+): Promise<boolean> {
+  const client = getClient();
+  const { data } = await client
+    .from("quinielas")
+    .select("is_updatable")
+    .eq("id", quinielaId)
+    .maybeSingle();
+  return data?.is_updatable ?? true;
+}
+
+export async function savePredictions(
+  userId: string,
+  quinielaId: string,
+  picks: Record<number, UserPickEntry>,
+  topScorer: TopScorerSuggestion | null,
+): Promise<void> {
+  const client = getClient();
+  const filledRows = Object.entries(picks)
+    .filter(([, pick]) => pick.pickA !== "" && pick.pickB !== "")
+    .map(([matchId, pick]) => ({
+      quiniela_id: quinielaId,
+      user_id: userId,
+      match_id: Number(matchId),
+      pick_home: Number(pick.pickA),
+      pick_away: Number(pick.pickB),
+    }));
+
+  if (filledRows.length > 0) {
+    const { error } = await client.from("predictions").upsert(filledRows, {
+      onConflict: "user_id,quiniela_id,match_id",
+    });
+    if (error) throw error;
+  }
+
+  if (topScorer) {
+    const { error } = await client.from("top_scorer_predictions").upsert(
+      {
+        quiniela_id: quinielaId,
+        user_id: userId,
+        player_name: topScorer.name,
+        player_team: topScorer.team,
+      },
+      { onConflict: "user_id,quiniela_id" },
+    );
+    if (error) throw error;
+  }
+}
+
+export async function updateAvatarColor(
+  userId: string,
+  quinielaId: string,
+  color: string,
+): Promise<void> {
+  const client = getClient();
+  const [profileRes, memberRes] = await Promise.all([
+    client.from("profiles").update({ avatar_color: color }).eq("id", userId),
+    client
+      .from("quiniela_members")
+      .update({ avatar_color: color })
+      .eq("user_id", userId)
+      .eq("quiniela_id", quinielaId),
+  ]);
+  if (profileRes.error) throw profileRes.error;
+  if (memberRes.error) throw memberRes.error;
+}
+
+export interface PlayerResult {
+  id: number;
+  name: string;
+  team_code: string;
+  position: string | null;
+}
+
+type PlayerResults =
+  Database["public"]["Functions"]["search_players_detailed"]["Returns"];
+
+export async function searchPlayers(query: string): Promise<PlayerResults> {
+  if (!query.trim()) return [];
+  const { data, error } = await getClient()
+    .rpc("search_players_detailed", {
+      q: query,
+    })
+    .select("*");
+  if (error) throw error;
+  return data ?? [];
 }
 
 export async function submitAllPredictions(
@@ -229,10 +342,12 @@ export async function submitAllPredictions(
       },
       { onConflict: "user_id,quiniela_id" },
     ),
-    client.from("prediction_submissions").upsert(
-      { quiniela_id: quinielaId, user_id: userId },
-      { onConflict: "user_id,quiniela_id" },
-    ),
+    client
+      .from("prediction_submissions")
+      .upsert(
+        { quiniela_id: quinielaId, user_id: userId },
+        { onConflict: "user_id,quiniela_id" },
+      ),
   ]);
   if (predRes.error) throw predRes.error;
   if (tsRes.error) throw tsRes.error;

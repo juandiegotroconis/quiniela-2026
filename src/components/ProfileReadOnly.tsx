@@ -1,20 +1,16 @@
 import './ProfileReadOnly.css';
 import PageContainer from './PageContainer';
-import Avatar from './Avatar';
 import Badge from './Badge';
-import PositionChange from './PositionChange';
 import TeamFlag from './TeamFlag';
 import TopScorerPicker from './TopScorerPicker';
 import { getPickResult, getResultVariant, getResultPoints } from '~/lib/helpers';
 import type { TopScorerSuggestion } from '~/lib/mock-data';
 import type { UserPickEntry } from '~/lib/auth-context';
-import { useAuth } from '~/lib/auth-context';
 import { useData } from '~/lib/data-context';
 
 interface Props {
   userPicks: Record<number, UserPickEntry>;
   topScorer: TopScorerSuggestion | null;
-  onLogout: () => void;
 }
 
 const RESULT_COLORS: Record<string, string> = {
@@ -23,10 +19,8 @@ const RESULT_COLORS: Record<string, string> = {
   miss: 'var(--color-error)',
 };
 
-export default function ProfileReadOnly({ userPicks, topScorer, onLogout }: Props) {
-  const { user } = useAuth();
-  const { matches, getMember } = useData();
-  const me = user ? getMember(user.id) : undefined;
+export default function ProfileReadOnly({ userPicks, topScorer }: Props) {
+  const { matches } = useData();
 
   const matchdays = [1, 2, 3].map(day => ({
     day,
@@ -64,23 +58,6 @@ export default function ProfileReadOnly({ userPicks, topScorer, onLogout }: Prop
 
   return (
     <PageContainer>
-      <div className="profile-ro__header">
-        <Avatar name={user?.name ?? 'You'} color={me?.avatarColor} size={64} />
-        <div className="profile-ro__header-info">
-          <div className="profile-ro__name">Your Profile</div>
-          <div className="profile-ro__rank-row">
-            <span className="profile-ro__rank-label">
-              Rank <span className="profile-ro__rank-num">#{me?.rank ?? '—'}</span>
-            </span>
-            {me && <PositionChange current={me.rank} previous={me.prevRank ?? me.rank} />}
-            <span className="profile-ro__pts">{me?.pts ?? 0} pts</span>
-          </div>
-        </div>
-        <button className="profile-ro__logout" onClick={onLogout}>
-          Log Out
-        </button>
-      </div>
-
       <div className="profile-ro__stats">
         {stats.map((s, i) => (
           <div key={i} className="profile-ro__stat-card">

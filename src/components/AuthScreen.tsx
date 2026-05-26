@@ -33,11 +33,18 @@ export default function AuthScreen() {
     setLoading(false);
 
     if (err) {
+      if (mode === "login" && err.toLowerCase().includes("not confirmed")) {
+        navigate("/verify-email", { state: { email } });
+        return;
+      }
       setError(err);
       return;
     }
-    // Login: navigate to app. Signup: auth state change drives to JoinQuinielaScreen.
-    if (mode === "login") navigate("/rankings");
+    if (mode === "login") {
+      navigate("/rankings");
+    } else {
+      navigate("/verify-email", { state: { email } });
+    }
   };
 
   return (

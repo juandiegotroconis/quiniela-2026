@@ -1,7 +1,8 @@
 import './TopScorerPicker.css';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import TeamFlag from './TeamFlag';
-import { TOP_SCORER_SUGGESTIONS } from '~/lib/mock-data';
+import { searchPlayers } from '~/lib/queries';
+import type { PlayerResult } from '~/lib/queries';
 import type { TopScorerSuggestion } from '~/lib/mock-data';
 
 interface Props {
@@ -13,7 +14,10 @@ interface Props {
 export default function TopScorerPicker({ value, onChange, disabled }: Props) {
   const [search, setSearch] = useState('');
   const [open, setOpen] = useState(false);
+  const [results, setResults] = useState<PlayerResult[]>([]);
+  const [loading, setLoading] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -25,18 +29,34 @@ export default function TopScorerPicker({ value, onChange, disabled }: Props) {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const filtered = search
-    ? TOP_SCORER_SUGGESTIONS.filter(
-        p =>
-          p.name.toLowerCase().includes(search.toLowerCase()) ||
-          p.team.toLowerCase().includes(search.toLowerCase())
-      )
-    : TOP_SCORER_SUGGESTIONS;
+  const doSearch = useCallback(async (q: string) => {
+    if (!q.trim()) {
+      setResults([]);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    try {
+      const data = await searchPlayers(q);
+      setResults(data);
+    } catch {
+      setResults([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  const handleSelect = (p: TopScorerSuggestion) => {
-    onChange?.(p);
+  const handleSearchChange = (q: string) => {
+    setSearch(q);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => doSearch(q), 300);
+  };
+
+  const handleSelect = (p: PlayerResult) => {
+    onChange?.({ name: p.name, team: p.team_code });
     setOpen(false);
     setSearch('');
+    setResults([]);
   };
 
   return (
@@ -73,24 +93,28 @@ export default function TopScorerPicker({ value, onChange, disabled }: Props) {
               type="text"
               className="ts-picker__search"
               value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Search player or team..."
+              onChange={e => handleSearchChange(e.target.value)}
+              placeholder="Search player name..."
               autoFocus
             />
           </div>
           <div className="ts-picker__list">
-            {filtered.length === 0 ? (
+            {loading ? (
+              <div className="ts-picker__empty">Searching…</div>
+            ) : !search.trim() ? (
+              <div className="ts-picker__empty">Type to search players</div>
+            ) : results.length === 0 ? (
               <div className="ts-picker__empty">No players found</div>
             ) : (
-              filtered.map(p => (
+              results.map(p => (
                 <div
-                  key={p.name}
+                  key={p.id}
                   className={`ts-picker__option${value?.name === p.name ? ' ts-picker__option--selected' : ''}`}
                   onClick={() => handleSelect(p)}
                 >
-                  <TeamFlag code={p.team} size={22} />
+                  <TeamFlag code={p.team_code} size={22} />
                   <span className="ts-picker__option-name">{p.name}</span>
-                  <span className="ts-picker__option-team">{p.team}</span>
+                  <span className="ts-picker__option-team">{p.team_code}</span>
                 </div>
               ))
             )}

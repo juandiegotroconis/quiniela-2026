@@ -10,10 +10,14 @@ import {
   ensureMembership,
   fetchUserPicks,
   fetchUserTopScorer,
+  fetchUserAvatarColor,
   checkSubmitted,
   submitAllPredictions,
+  savePredictions as querySavePredictions,
   fetchUserQuinielId,
   lookupQuinielByCode,
+  fetchQuinielaIsUpdatable,
+  updateAvatarColor as queryUpdateAvatarColor,
 } from "./queries";
 import { AVATAR_COLORS } from "./mock-data";
 import type { TopScorerSuggestion } from "./mock-data";
@@ -22,6 +26,7 @@ export interface AuthUser {
   id: string;
   email: string;
   name: string;
+  avatarColor: string | null;
 }
 
 export interface UserPickEntry {
@@ -35,16 +40,26 @@ interface AuthContextValue {
   quinielaId: string | null;
   needsQuiniela: boolean;
   submitted: boolean;
+  isUpdatable: boolean;
   userPicks: Record<number, UserPickEntry>;
   topScorer: TopScorerSuggestion | null;
   login: (email: string, password: string) => Promise<string | null>;
-  signup: (email: string, password: string, name: string) => Promise<string | null>;
+  signup: (
+    email: string,
+    password: string,
+    name: string,
+  ) => Promise<string | null>;
   logout: () => Promise<void>;
   joinWithCode: (code: string) => Promise<string | null>;
+  savePredictions: (
+    picks: Record<number, UserPickEntry>,
+    scorer: TopScorerSuggestion | null,
+  ) => Promise<string | null>;
   submitPredictions: (
     picks: Record<number, UserPickEntry>,
     scorer: TopScorerSuggestion,
   ) => Promise<string | null>;
+  updateAvatarColor: (color: string) => Promise<string | null>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -63,6 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [quinielaId, setQuinielId] = useState<string | null>(null);
   const [needsQuiniela, setNeedsQuiniela] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [isUpdatable, setIsUpdatable] = useState(true);
   const [userPicks, setUserPicks] = useState<Record<number, UserPickEntry>>({});
   const [topScorer, setTopScorer] = useState<TopScorerSuggestion | null>(null);
   const client = getClient();
@@ -71,15 +87,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let mounted = true;
 
     const loadUserData = async (userId: string, qId: string) => {
-      const [sub, picks, scorer] = await Promise.all([
+      const [sub, picks, scorer, updatable, avatarColor] = await Promise.all([
         checkSubmitted(userId, qId),
         fetchUserPicks(userId, qId),
         fetchUserTopScorer(userId, qId),
+        fetchQuinielaIsUpdatable(qId),
+        fetchUserAvatarColor(userId, qId),
       ]);
       if (mounted) {
         setSubmitted(sub);
         setUserPicks(picks);
         setTopScorer(scorer);
+        setIsUpdatable(updatable);
+        setUser((prev) => (prev ? { ...prev, avatarColor } : prev));
       }
     };
 
@@ -92,9 +112,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const u = session.user;
         const name: string =
           u.user_metadata?.name ?? u.email?.split("@")[0] ?? "Player";
-        setUser(prev => {
-          if (prev?.id === u.id && prev?.email === (u.email ?? '') && prev?.name === name) return prev;
-          return { id: u.id, email: u.email ?? '', name };
+        setUser((prev) => {
+          if (
+            prev?.id === u.id &&
+            prev?.email === (u.email ?? "") &&
+            prev?.name === name
+          )
+            return prev;
+          return {
+            id: u.id,
+            email: u.email ?? "",
+            name,
+            avatarColor: prev?.avatarColor ?? null,
+          };
         });
 
         if (event === "SIGNED_IN" || event === "INITIAL_SESSION") {
@@ -118,6 +148,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setQuinielId(null);
         setNeedsQuiniela(false);
         setSubmitted(false);
+        setIsUpdatable(true);
         setUserPicks({});
         setTopScorer(null);
       }
@@ -171,19 +202,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user.name,
         avatarColorForUser(user.id),
       );
-      const [sub, picks, scorer] = await Promise.all([
+      const [sub, picks, scorer, updatable] = await Promise.all([
         checkSubmitted(user.id, quiniela.id),
         fetchUserPicks(user.id, quiniela.id),
         fetchUserTopScorer(user.id, quiniela.id),
+        fetchQuinielaIsUpdatable(quiniela.id),
       ]);
       setQuinielId(quiniela.id);
       setNeedsQuiniela(false);
       setSubmitted(sub);
       setUserPicks(picks);
       setTopScorer(scorer);
+      setIsUpdatable(updatable);
       return null;
     } catch (e: unknown) {
       return e instanceof Error ? e.message : "Failed to join quiniela";
+    }
+  };
+
+  const savePredictions = async (
+    picks: Record<number, UserPickEntry>,
+    scorer: TopScorerSuggestion | null,
+  ): Promise<string | null> => {
+    if (!user || !quinielaId) return "Not authenticated";
+    try {
+      await querySavePredictions(user.id, quinielaId, picks, scorer);
+      setUserPicks(picks);
+      if (scorer) setTopScorer(scorer);
+      return null;
+    } catch (e: unknown) {
+      return e instanceof Error ? e.message : "Failed to save predictions";
     }
   };
 
@@ -203,6 +251,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const updateAvatarColor = async (color: string): Promise<string | null> => {
+    if (!user || !quinielaId) return "Not authenticated";
+    try {
+      await queryUpdateAvatarColor(user.id, quinielaId, color);
+      setUser((prev) => (prev ? { ...prev, avatarColor: color } : prev));
+      return null;
+    } catch (e: unknown) {
+      return e instanceof Error ? e.message : "Failed to update color";
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -211,13 +270,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         quinielaId,
         needsQuiniela,
         submitted,
+        isUpdatable,
         userPicks,
         topScorer,
         login,
         signup,
         logout,
         joinWithCode,
+        savePredictions,
         submitPredictions,
+        updateAvatarColor,
       }}
     >
       {children}

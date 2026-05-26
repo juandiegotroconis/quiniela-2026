@@ -24,7 +24,16 @@
       "WebFetch(domain:fwcumc.com)",
       "WebFetch(domain:1000logos.net)",
       "WebFetch(domain:www.eideticmarketing.com)",
-      "WebFetch(domain:www.schemecolor.com)"
+      "WebFetch(domain:www.schemecolor.com)",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\juant\\\\Documents\\\\Projects\\\\quiniela-2026\" -Force)",
+      "Bash(Select-Object Name, FullName)",
+      "Bash(xargs grep -l \"migration\\\\|migration\")",
+      "mcp__claude_ai_Supabase__execute_sql",
+      "Bash(supabase --version)",
+      "Bash(mkdir -p \"c:/Users/juant/Documents/Projects/quiniela-2026/supabase/migrations\")",
+      "Bash(mkdir -p \"c:/Users/juant/Documents/Projects/quiniela-2026/scripts\")",
+      "Bash(echo \"Exit: $?\")",
+      "Bash(curl -s \"https://api.football-data.org/v4/competitions/WC/teams?season=2026\" -H \"X-Auth-Token: 3cb9af8b9b324b75b4af34f93e428184\")"
     ],
     "additionalDirectories": [
       "c:\\Users\\juant\\Documents\\Projects\\quiniela-2026\\src\\routes",

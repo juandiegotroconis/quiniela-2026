@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       leaderboard_snapshots: {
@@ -131,6 +156,44 @@ export type Database = {
           {
             foreignKeyName: "matches_home_team_code_fkey"
             columns: ["home_team_code"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+      players: {
+        Row: {
+          fd_id: number | null
+          id: number
+          name: string
+          position: string | null
+          search_tsv: unknown
+          shirt_number: number | null
+          team_code: string
+        }
+        Insert: {
+          fd_id?: number | null
+          id?: number
+          name: string
+          position?: string | null
+          search_tsv?: unknown
+          shirt_number?: number | null
+          team_code: string
+        }
+        Update: {
+          fd_id?: number | null
+          id?: number
+          name?: string
+          position?: string | null
+          search_tsv?: unknown
+          shirt_number?: number | null
+          team_code?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "players_team_code_fkey"
+            columns: ["team_code"]
             isOneToOne: false
             referencedRelation: "teams"
             referencedColumns: ["code"]
@@ -300,6 +363,7 @@ export type Database = {
           created_by: string | null
           id: string
           is_active: boolean | null
+          is_updatable: boolean
           join_code: string
           name: string
           slug: string
@@ -309,6 +373,7 @@ export type Database = {
           created_by?: string | null
           id?: string
           is_active?: boolean | null
+          is_updatable?: boolean
           join_code: string
           name: string
           slug: string
@@ -318,9 +383,31 @@ export type Database = {
           created_by?: string | null
           id?: string
           is_active?: boolean | null
+          is_updatable?: boolean
           join_code?: string
           name?: string
           slug?: string
+        }
+        Relationships: []
+      }
+      search_config: {
+        Row: {
+          columns: string[]
+          configured_at: string
+          table_name: string
+          updated_at: string
+        }
+        Insert: {
+          columns: string[]
+          configured_at?: string
+          table_name: string
+          updated_at?: string
+        }
+        Update: {
+          columns?: string[]
+          configured_at?: string
+          table_name?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -395,7 +482,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      _build_search: {
+        Args: { search_columns: string[]; target_table: string }
+        Returns: undefined
+      }
       get_my_quiniela_ids: { Args: never; Returns: string[] }
+      immutable_unaccent: { Args: { "": string }; Returns: string }
       prediction_points: {
         Args: {
           p_away_team_code: string
@@ -412,6 +504,27 @@ export type Database = {
       }
       refresh_quiniela_leaderboard: {
         Args: { p_match_id?: number; p_quiniela_id: string }
+        Returns: undefined
+      }
+      search_players: {
+        Args: { q: string; result_limit?: number }
+        Returns: {
+          id: number
+          rank: number
+        }[]
+      }
+      search_players_detailed: {
+        Args: { q: string }
+        Returns: {
+          id: number
+          iso2: string
+          name: string
+          position: string
+          team_code: string
+        }[]
+      }
+      setup_search: {
+        Args: { search_columns: string[]; target_table: string }
         Returns: undefined
       }
     }
@@ -542,6 +655,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },

@@ -1,5 +1,5 @@
-import './Avatar.css';
-import { AVATAR_COLORS } from '~/lib/mock-data';
+import "./Avatar.css";
+import { AVATAR_COLORS } from "~/lib/mock-data";
 
 interface Props {
   name: string;
@@ -10,15 +10,15 @@ interface Props {
 
 export default function Avatar({ name, index = 0, color, size = 36 }: Props) {
   const initials = name
-    .split(' ')
-    .map(n => n[0])
-    .join('')
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
     .slice(0, 2)
     .toUpperCase();
   const bg = color ?? AVATAR_COLORS[index % AVATAR_COLORS.length];
   return (
     <div
-      className="avatar"
+      className='avatar'
       style={{
         width: size,
         height: size,

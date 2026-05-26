@@ -344,6 +344,39 @@
 .pred-form__submit-row {
   display: flex;
   justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.pred-form__save {
+  padding: 16px 32px;
+  border-radius: var(--radius-lg);
+  border: 2px solid transparent;
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  transition: all 200ms var(--ease-default);
+}
+
+.pred-form__save--ready {
+  background: transparent;
+  border-color: var(--color-brand);
+  color: var(--color-brand);
+  cursor: pointer;
+}
+
+.pred-form__save--ready:hover {
+  background: var(--color-brand);
+  color: #fff;
+}
+
+.pred-form__save--disabled {
+  background: transparent;
+  border-color: var(--surface-4);
+  color: var(--fg-tertiary);
+  cursor: default;
 }
 
 .pred-form__submit {

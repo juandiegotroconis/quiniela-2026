@@ -7,12 +7,14 @@ import MatchesRoute from "./routes/matches";
 import GroupsRoute from "./routes/groups";
 import ProfileRoute from "./routes/profile";
 import PlayerRoute from "./routes/player";
+import VerifyEmailRoute from "./routes/verify-email";
 import { AuthProvider } from "./lib/auth-context";
 import "./styles/variables.css";
 import "./styles/global.css";
 
 const router = createBrowserRouter([
   { path: "/login", Component: LoginRoute },
+  { path: "/verify-email", Component: VerifyEmailRoute },
   {
     path: "/",
     Component: App,

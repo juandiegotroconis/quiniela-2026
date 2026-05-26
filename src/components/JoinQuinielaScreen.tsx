@@ -57,8 +57,6 @@ export default function JoinQuinielaScreen() {
     setLoading(false);
     if (err) {
       setError(err);
-      setDigits(Array(CODE_LENGTH).fill(""));
-      focus(0);
       return;
     }
     navigate("/rankings");
