@@ -55,8 +55,8 @@
 }
 
 .auth-screen__toggle-btn--active {
-  background: var(--color-green);
-  color: #000;
+  background: var(--color-brand);
+  color: #fff;
 }
 
 .auth-screen__form {
@@ -92,7 +92,7 @@
 }
 
 .auth-screen__input:focus {
-  border-color: var(--color-green);
+  border-color: var(--color-brand);
 }
 
 .auth-screen__error {
@@ -108,8 +108,8 @@
   padding: 14px;
   border-radius: 10px;
   border: none;
-  background: var(--color-green);
-  color: #000;
+  background: var(--color-brand);
+  color: #fff;
   font-family: var(--font-display);
   font-size: 16px;
   font-weight: 700;

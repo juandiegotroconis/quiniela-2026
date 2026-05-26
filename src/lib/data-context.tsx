@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { fetchMatches, fetchMembers } from './queries';
 import { useAuth } from './auth-context';
 import type { Match, Member } from './types';
@@ -28,24 +28,36 @@ export function DataProvider({ children }: { children: ReactNode }) {
       .finally(() => setMatchesLoading(false));
   }, []);
 
-  const loadMembers = useCallback(async () => {
-    if (!user || !quinielaId) return;
+  const loadMembers = async (qId: string) => {
     setMembersLoading(true);
     try {
-      setMembers(await fetchMembers(quinielaId));
+      setMembers(await fetchMembers(qId));
     } catch (e) {
       console.error(e);
     } finally {
       setMembersLoading(false);
     }
-  }, [user, quinielaId]);
+  };
 
-  useEffect(() => { loadMembers(); }, [loadMembers]);
+  useEffect(() => {
+    if (!user?.id || !quinielaId) return;
+    let cancelled = false;
+    setMembersLoading(true);
+    fetchMembers(quinielaId)
+      .then(data => { if (!cancelled) setMembers(data); })
+      .catch(console.error)
+      .finally(() => { if (!cancelled) setMembersLoading(false); });
+    return () => { cancelled = true; };
+  }, [user?.id, quinielaId]);
 
   const getMember = (userId: string) => members.find(m => m.userId === userId);
 
+  const refreshMembers = async () => {
+    if (quinielaId) await loadMembers(quinielaId);
+  };
+
   return (
-    <DataContext.Provider value={{ matches, matchesLoading, members, membersLoading, refreshMembers: loadMembers, getMember }}>
+    <DataContext.Provider value={{ matches, matchesLoading, members, membersLoading, refreshMembers, getMember }}>
       {children}
     </DataContext.Provider>
   );

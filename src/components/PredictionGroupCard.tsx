@@ -11,12 +11,12 @@ interface Props {
 
 export default function PredictionGroupCard({ group, match }: Props) {
   const resultColors = {
-    exact: 'rgba(2,185,6,0.25)',
+    exact: 'var(--color-green-25)',
     winner: 'rgba(200,169,78,0.25)',
     miss: 'rgba(255,255,255,0.06)',
   };
   const borderColor = group.hasMe
-    ? 'rgba(2,185,6,0.25)'
+    ? 'var(--color-green-25)'
     : group.result
     ? resultColors[group.result]
     : 'var(--border-subtle)';

@@ -12,12 +12,12 @@ import "./styles/variables.css";
 import "./styles/global.css";
 
 const router = createBrowserRouter([
+  { path: "/login", Component: LoginRoute },
   {
     path: "/",
     Component: App,
     children: [
       { index: true, loader: () => redirect("/rankings") },
-      { path: "login", Component: LoginRoute },
       { path: "rankings", Component: RankingsRoute },
       { path: "matches", Component: MatchesRoute },
       { path: "groups", Component: GroupsRoute },

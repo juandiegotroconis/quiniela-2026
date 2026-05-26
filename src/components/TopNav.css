@@ -1,6 +1,6 @@
 .top-nav {
-  background: var(--surface-1);
-  border-bottom: 1px solid var(--border-subtle);
+  background: var(--surface-0);
+  border-bottom: 2px solid var(--color-brand);
   display: flex;
   align-items: center;
   padding: 0 32px;
@@ -58,8 +58,8 @@
 }
 
 .top-nav__btn--active {
-  background: var(--color-green);
-  color: #000;
+  background: var(--color-brand);
+  color: #fff;
 }
 
 .top-nav__profile {
@@ -76,8 +76,8 @@
 }
 
 .top-nav__profile--active {
-  background: rgba(2, 185, 6, 0.08);
-  border-color: rgba(2, 185, 6, 0.2);
+  background: var(--color-brand-08);
+  border-color: var(--color-brand-25);
 }
 
 .top-nav__profile-name {
@@ -88,5 +88,5 @@
 }
 
 .top-nav__profile-name--active {
-  color: var(--color-green);
+  color: var(--color-brand);
 }

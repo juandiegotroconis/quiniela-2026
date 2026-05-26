@@ -12,7 +12,7 @@
 }
 
 .pred-group-card--me {
-  background: rgba(2, 185, 6, 0.04);
+  background: var(--color-green-04);
 }
 
 .pred-group-card__your-pick {

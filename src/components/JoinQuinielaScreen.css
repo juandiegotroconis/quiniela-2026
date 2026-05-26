@@ -88,7 +88,7 @@
 }
 
 .join-screen__otp-input:focus {
-  border-color: var(--color-green);
+  border-color: var(--color-brand);
 }
 
 .join-screen__otp-input--error {
@@ -110,8 +110,8 @@
   padding: 14px;
   border-radius: 10px;
   border: none;
-  background: var(--color-green);
-  color: #000;
+  background: var(--color-brand);
+  color: #fff;
   font-family: var(--font-display);
   font-size: 16px;
   font-weight: 700;

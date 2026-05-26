@@ -92,10 +92,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const u = session.user;
         const name: string =
           u.user_metadata?.name ?? u.email?.split("@")[0] ?? "Player";
-        const authUser: AuthUser = { id: u.id, email: u.email ?? "", name };
-        // Set user immediately so DataProvider can start fetchMatches while
-        // we resolve the quiniela in the background.
-        setUser(authUser);
+        setUser(prev => {
+          if (prev?.id === u.id && prev?.email === (u.email ?? '') && prev?.name === name) return prev;
+          return { id: u.id, email: u.email ?? '', name };
+        });
 
         if (event === "SIGNED_IN" || event === "INITIAL_SESSION") {
           try {

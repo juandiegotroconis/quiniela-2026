@@ -64,7 +64,7 @@
 .pred-form__progress-fill {
   height: 100%;
   border-radius: 4px;
-  background: var(--color-gold);
+  background: var(--color-brand);
   transition: width 300ms var(--ease-default);
 }
 
@@ -275,7 +275,7 @@
 }
 
 .pred-form__match-input:focus {
-  border-color: var(--color-green);
+  border-color: var(--color-brand);
 }
 
 .pred-form__match-input--error {
@@ -358,8 +358,8 @@
 }
 
 .pred-form__submit--ready {
-  background: var(--color-green);
-  color: #000;
+  background: var(--color-brand);
+  color: #fff;
   cursor: pointer;
 }
 

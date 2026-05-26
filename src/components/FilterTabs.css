@@ -21,6 +21,6 @@
 }
 
 .filter-tabs__btn--active {
-  background: var(--color-green);
-  color: #000;
+  background: var(--color-brand);
+  color: #fff;
 }

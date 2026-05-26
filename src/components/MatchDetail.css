@@ -78,8 +78,8 @@
 }
 
 .match-detail__my-pick {
-  background: rgba(2, 185, 6, 0.04);
-  border: 1px solid rgba(2, 185, 6, 0.15);
+  background: var(--color-green-04);
+  border: 1px solid var(--color-green-15);
   border-radius: var(--radius-lg);
   padding: 14px 20px;
   margin-bottom: 24px;

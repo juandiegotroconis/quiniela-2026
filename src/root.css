@@ -1,7 +1,6 @@
 .predictions-banner {
-  background: linear-gradient(90deg, rgba(2, 185, 6, 0.12), rgba(200, 169, 78, 0.12));
-  border-bottom: 1px solid rgba(2, 185, 6, 0.2);
-  padding: 12px 32px;
+  background: var(--color-brand);
+  padding: 11px 32px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -9,25 +8,29 @@
 }
 
 .predictions-banner__text {
-  font-family: var(--font-body);
+  font-family: var(--font-display);
   font-size: 14px;
   font-weight: 600;
-  color: var(--fg-primary);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #fff;
 }
 
 .predictions-banner__btn {
-  padding: 8px 20px;
+  padding: 7px 20px;
   border-radius: var(--radius-md);
   border: none;
-  background: var(--color-green);
-  color: #000;
-  font-family: var(--font-body);
+  background: #fff;
+  color: var(--color-brand);
+  font-family: var(--font-display);
   font-size: 13px;
   font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   cursor: pointer;
   transition: opacity 200ms var(--ease-default);
 }
 
 .predictions-banner__btn:hover {
-  opacity: 0.85;
+  opacity: 0.88;
 }
