@@ -1,5 +1,10 @@
 import "./JoinQuinielaScreen.css";
-import { useState, useRef, type KeyboardEvent, type ClipboardEvent } from "react";
+import {
+  useState,
+  useRef,
+  type KeyboardEvent,
+  type ClipboardEvent,
+} from "react";
 import { useAuth } from "~/lib/auth-context";
 import { useNavigate } from "react-router";
 
@@ -29,7 +34,10 @@ export default function JoinQuinielaScreen() {
 
   const handlePaste = (e: ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault();
-    const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, CODE_LENGTH);
+    const pasted = e.clipboardData
+      .getData("text")
+      .replace(/\D/g, "")
+      .slice(0, CODE_LENGTH);
     if (!pasted) return;
     const next = [...digits];
     for (let j = 0; j < pasted.length; j++) next[j] = pasted[j];
@@ -62,42 +70,49 @@ export default function JoinQuinielaScreen() {
   };
 
   return (
-    <div className="join-screen">
-      <div className="join-screen__inner">
-        <div className="join-screen__logo">
-          <img src="/logo-white.png" alt="FIFA World Cup 2026" className="join-screen__logo-img" />
-          <p className="join-screen__tagline">Predict. Compete. Win.</p>
+    <div className='join-screen'>
+      <div className='join-screen__inner'>
+        <div className='join-screen__logo'>
+          <img
+            src='/logo.png'
+            alt='FIFA World Cup 2026'
+            className='join-screen__logo-img'
+          />
+          <p className='join-screen__tagline'>Predict. Compete. Win.</p>
         </div>
 
-        <div className="join-screen__card">
-          <h2 className="join-screen__title">Join a Quiniela</h2>
-          <p className="join-screen__subtitle">
-            Enter the 6-digit code from your group organizer to access the tournament.
+        <div className='join-screen__card'>
+          <h2 className='join-screen__title'>Join a Quiniela</h2>
+          <p className='join-screen__subtitle'>
+            Enter the 6-digit code from your group organizer to access the
+            tournament.
           </p>
 
-          <div className="join-screen__otp">
+          <div className='join-screen__otp'>
             {digits.map((d, i) => (
               <input
                 key={i}
-                ref={el => { inputs.current[i] = el; }}
-                type="text"
-                inputMode="numeric"
+                ref={(el) => {
+                  inputs.current[i] = el;
+                }}
+                type='text'
+                inputMode='numeric'
                 maxLength={1}
                 className={`join-screen__otp-input${error ? " join-screen__otp-input--error" : ""}`}
                 value={d}
-                onChange={e => handleChange(i, e.target.value)}
-                onKeyDown={e => handleKeyDown(i, e)}
+                onChange={(e) => handleChange(i, e.target.value)}
+                onKeyDown={(e) => handleKeyDown(i, e)}
                 onPaste={handlePaste}
-                onFocus={e => e.target.select()}
+                onFocus={(e) => e.target.select()}
                 autoFocus={i === 0}
               />
             ))}
           </div>
 
-          {error && <div className="join-screen__error">{error}</div>}
+          {error && <div className='join-screen__error'>{error}</div>}
 
           <button
-            className="join-screen__submit"
+            className='join-screen__submit'
             onClick={handleSubmit}
             disabled={loading}
           >
@@ -105,7 +120,7 @@ export default function JoinQuinielaScreen() {
           </button>
         </div>
 
-        <button className="join-screen__logout" onClick={handleLogout}>
+        <button className='join-screen__logout' onClick={handleLogout}>
           Sign out
         </button>
       </div>

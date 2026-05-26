@@ -1,5 +1,5 @@
 import { Outlet, useNavigate, useLocation } from "react-router";
-import { AuthProvider, useAuth } from "~/lib/auth-context";
+import { useAuth } from "~/lib/auth-context";
 import { DataProvider } from "~/lib/data-context";
 import TopNav from "~/components/TopNav";
 import JoinQuinielaScreen from "~/components/JoinQuinielaScreen";
@@ -49,10 +49,8 @@ function PredictionsBanner() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <DataProvider>
-        <AppContent />
-      </DataProvider>
-    </AuthProvider>
+    <DataProvider>
+      <AppContent />
+    </DataProvider>
   );
 }

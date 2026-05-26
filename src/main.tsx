@@ -1,4 +1,3 @@
-import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider, redirect } from "react-router";
 import App from "./App";
@@ -8,6 +7,7 @@ import MatchesRoute from "./routes/matches";
 import GroupsRoute from "./routes/groups";
 import ProfileRoute from "./routes/profile";
 import PlayerRoute from "./routes/player";
+import { AuthProvider } from "./lib/auth-context";
 import "./styles/variables.css";
 import "./styles/global.css";
 
@@ -28,7 +28,7 @@ const router = createBrowserRouter([
 ]);
 
 createRoot(document.getElementById("root")!).render(
-  <StrictMode>
+  <AuthProvider>
     <RouterProvider router={router} />
-  </StrictMode>
+  </AuthProvider>,
 );

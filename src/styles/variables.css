@@ -1,33 +1,33 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;500;600;700;800&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;500;600;700;800&display=swap");
 
 /* ── Fonts ── */
 @font-face {
-  font-family: 'Oswald';
-  src: url('/fonts/Oswald-Light.ttf') format('truetype');
+  font-family: "Oswald";
+  src: url("/fonts/Oswald-Light.ttf") format("truetype");
   font-weight: 300;
   font-display: swap;
 }
 @font-face {
-  font-family: 'Oswald';
-  src: url('/fonts/Oswald-Regular.ttf') format('truetype');
+  font-family: "Oswald";
+  src: url("/fonts/Oswald-Regular.ttf") format("truetype");
   font-weight: 400;
   font-display: swap;
 }
 @font-face {
-  font-family: 'Oswald';
-  src: url('/fonts/Oswald-Medium.ttf') format('truetype');
+  font-family: "Oswald";
+  src: url("/fonts/Oswald-Medium.ttf") format("truetype");
   font-weight: 500;
   font-display: swap;
 }
 @font-face {
-  font-family: 'Oswald';
-  src: url('/fonts/Oswald-SemiBold.ttf') format('truetype');
+  font-family: "Oswald";
+  src: url("/fonts/Oswald-SemiBold.ttf") format("truetype");
   font-weight: 600;
   font-display: swap;
 }
 @font-face {
-  font-family: 'Oswald';
-  src: url('/fonts/Oswald-Bold.ttf') format('truetype');
+  font-family: "Oswald";
+  src: url("/fonts/Oswald-Bold.ttf") format("truetype");
   font-weight: 700;
   font-display: swap;
 }
@@ -41,97 +41,97 @@
   /* ── FIFA World Cup 2026 Brand Palette ── */
 
   /* Primary brand — FIFA Crimson */
-  --color-brand:       #E8192C;
-  --color-brand-bg:    rgba(232, 25, 44, 0.10);
+  --color-brand: #2550ff;
+  --color-brand-bg: rgba(232, 25, 44, 0.1);
 
   /* Success / correct picks — WC26 Lime */
-  --color-green:       #39D353;
-  --color-green-light: #6EE58A;
-  --color-green-dark:  #22A83A;
+  --color-green: #39d353;
+  --color-green-light: #6ee58a;
+  --color-green-dark: #22a83a;
 
   /* Rankings / podium — Gold */
-  --color-gold:        #C8A94E;
-  --color-gold-light:  #E2D08A;
-  --color-gold-dark:   #9A7B2F;
+  --color-gold: #c8a94e;
+  --color-gold-light: #e2d08a;
+  --color-gold-dark: #9a7b2f;
 
   /* WC26 extended palette */
-  --color-wc-purple:   #6B2F8A;   /* FIFA Royal Purple */
-  --color-wc-teal:     #005F61;   /* FIFA Dark Teal */
-  --color-wc-orange:   #FF4713;   /* FIFA Orange-Red */
-  --color-wc-cyan:     #00C4B4;   /* FIFA Cyan */
-  --color-wc-maroon:   #73182A;   /* FIFA Deep Maroon */
+  --color-wc-purple: #6b2f8a; /* FIFA Royal Purple */
+  --color-wc-teal: #005f61; /* FIFA Dark Teal */
+  --color-wc-orange: #ff4713; /* FIFA Orange-Red */
+  --color-wc-cyan: #00c4b4; /* FIFA Cyan */
+  --color-wc-maroon: #73182a; /* FIFA Deep Maroon */
 
   /* Host nation accents */
-  --color-usa-blue:    #2A398D;
-  --color-mexico-green: #3CAC3B;
-  --color-canada-red:  #E8192C;
+  --color-usa-blue: #2a398d;
+  --color-mexico-green: #3cac3b;
+  --color-canada-red: #e8192c;
 
   /* Semantic colors */
-  --color-vermilion:   #E84C30;
-  --color-purple:      #6B2F8A;
-  --color-bright-blue: #2979FF;
-  --color-cyan:        #00C4B4;
-  --color-teal:        #005F61;
-  --color-aqua:        #00BFA5;
-  --color-mint:        #00E676;
-  --color-magenta:     #C2185B;
-  --color-orange:      #FF4713;
-  --color-yellow:      #FFD600;
-  --color-coral:       #FF1744;
+  --color-vermilion: #e84c30;
+  --color-purple: #6b2f8a;
+  --color-bright-blue: #2979ff;
+  --color-cyan: #00c4b4;
+  --color-teal: #005f61;
+  --color-aqua: #00bfa5;
+  --color-mint: #00e676;
+  --color-magenta: #c2185b;
+  --color-orange: #ff4713;
+  --color-yellow: #ffd600;
+  --color-coral: #ff1744;
 
   /* Status */
-  --color-success:     #39D353;
-  --color-error:       #FF1744;
-  --color-warning:     #FFD600;
-  --color-info:        #00C4B4;
-  --color-success-bg:  rgba(57, 211, 83, 0.10);
-  --color-error-bg:    rgba(255, 23, 68, 0.10);
-  --color-warning-bg:  rgba(255, 214, 0, 0.10);
-  --color-info-bg:     rgba(0, 196, 180, 0.10);
+  --color-success: #39d353;
+  --color-error: #ff1744;
+  --color-warning: #ffd600;
+  --color-info: #00c4b4;
+  --color-success-bg: rgba(57, 211, 83, 0.1);
+  --color-error-bg: rgba(255, 23, 68, 0.1);
+  --color-warning-bg: rgba(255, 214, 0, 0.1);
+  --color-info-bg: rgba(0, 196, 180, 0.1);
 
   /* Pre-computed alpha variants used by multiple components */
-  --color-green-04:    rgba(57, 211, 83, 0.04);
-  --color-green-06:    rgba(57, 211, 83, 0.06);
-  --color-green-10:    rgba(57, 211, 83, 0.10);
-  --color-green-15:    rgba(57, 211, 83, 0.15);
-  --color-green-25:    rgba(57, 211, 83, 0.25);
-  --color-brand-06:    rgba(232, 25, 44, 0.06);
-  --color-brand-08:    rgba(232, 25, 44, 0.08);
-  --color-brand-15:    rgba(232, 25, 44, 0.15);
-  --color-brand-25:    rgba(232, 25, 44, 0.25);
+  --color-green-04: rgba(57, 211, 83, 0.04);
+  --color-green-06: rgba(57, 211, 83, 0.06);
+  --color-green-10: rgba(57, 211, 83, 0.1);
+  --color-green-15: rgba(57, 211, 83, 0.15);
+  --color-green-25: rgba(57, 211, 83, 0.25);
+  --color-brand-06: rgba(232, 25, 44, 0.06);
+  --color-brand-08: rgba(232, 25, 44, 0.08);
+  --color-brand-15: rgba(232, 25, 44, 0.15);
+  --color-brand-25: rgba(232, 25, 44, 0.25);
 
   /* Surfaces — pure-black family, aligned with WC26 black base */
   --surface-0: #000000;
-  --surface-1: #0C0C0C;
+  --surface-1: #0c0c0c;
   --surface-2: #161616;
-  --surface-3: #1E1E1E;
+  --surface-3: #1e1e1e;
   --surface-4: #272727;
 
   /* Borders */
-  --border-subtle:  rgba(255, 255, 255, 0.06);
-  --border-default: rgba(255, 255, 255, 0.10);
-  --border-strong:  rgba(255, 255, 255, 0.22);
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-default: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.22);
 
   /* Foreground */
-  --fg-primary:   #ffffff;
-  --fg-secondary: rgba(255, 255, 255, 0.70);
-  --fg-tertiary:  rgba(255, 255, 255, 0.45);
-  --fg-disabled:  rgba(255, 255, 255, 0.25);
+  --fg-primary: #ffffff;
+  --fg-secondary: rgba(255, 255, 255, 0.7);
+  --fg-tertiary: rgba(255, 255, 255, 0.45);
+  --fg-disabled: rgba(255, 255, 255, 0.25);
 
   /* Typography — Oswald mirrors FWC26 event typeface */
-  --font-display: 'Oswald', 'Arial Narrow', sans-serif;
-  --font-body:    'Noto Sans', 'Helvetica Neue', Arial, sans-serif;
+  --font-display: "Oswald", "Arial Narrow", sans-serif;
+  --font-body: "Noto Sans", "Helvetica Neue", Arial, sans-serif;
 
   /* Radii */
-  --radius-sm:   4px;
-  --radius-md:   8px;
-  --radius-lg:   12px;
-  --radius-xl:   16px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
   --radius-full: 9999px;
 
   /* Shadows — deeper on pure-black backgrounds */
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.50);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.60);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
 
   /* Motion */
   --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
@@ -139,6 +139,11 @@
 
 /* ── Animations ── */
 @keyframes livePulse {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.4; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
 }

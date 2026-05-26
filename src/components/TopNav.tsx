@@ -3,14 +3,14 @@ import { NavLink } from "react-router";
 import Avatar from "./Avatar";
 import { useAuth } from "~/lib/auth-context";
 export default function TopNav() {
-  const { user } = useAuth();
-  const displayName = user?.name ?? "You";
+  const { user } = useAuth(),
+    displayName = user?.name ?? "You";
 
   return (
     <header className='top-nav'>
       <NavLink to='/rankings' className='top-nav__logo'>
         <img
-          src='/logo-white.png'
+          src='/logo.png'
           alt='FWC26 Quiniela Logo'
           className='top-nav__logo-icon'
         />
@@ -37,7 +37,7 @@ export default function TopNav() {
       </nav>
 
       <NavLink
-        to='/profile'
+        to={`/player/${user?.id}`}
         className={({ isActive }) =>
           `top-nav__profile${isActive ? " top-nav__profile--active" : ""}`
         }
