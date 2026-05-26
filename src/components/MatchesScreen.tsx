@@ -5,8 +5,8 @@ import SectionHeader from './SectionHeader';
 import FilterTabs from './FilterTabs';
 import MatchCard from './MatchCard';
 import MatchDetail from './MatchDetail';
-import { MATCHES } from '~/lib/mock-data';
-import type { Match } from '~/lib/mock-data';
+import { useData } from '~/lib/data-context';
+import type { Match } from '~/lib/types';
 import { useAuth } from '~/lib/auth-context';
 
 const FILTER_TABS = [
@@ -20,8 +20,9 @@ export default function MatchesScreen() {
   const [tab, setTab] = useState('all');
   const [selected, setSelected] = useState<Match | null>(null);
   const { userPicks } = useAuth();
+  const { matches, matchesLoading } = useData();
 
-  const filtered = MATCHES.filter(m => {
+  const filtered = matches.filter(m => {
     if (tab === 'live') return m.status === 'live';
     if (tab === 'upcoming') return m.status === 'upcoming';
     if (tab === 'finished') return m.status === 'finished';
@@ -43,25 +44,19 @@ export default function MatchesScreen() {
   return (
     <PageContainer>
       <div className="matches-screen__header">
-        <SectionHeader
-          title="Matches"
-          subtitle="FIFA World Cup 2026 · Group Stage"
-        />
+        <SectionHeader title="Matches" subtitle="FIFA World Cup 2026 · Group Stage" />
         <FilterTabs tabs={FILTER_TABS} active={tab} onChange={setTab} />
       </div>
 
-      {filtered.length === 0 && (
+      {matchesLoading && <div className="matches-screen__empty">Loading…</div>}
+
+      {!matchesLoading && filtered.length === 0 && (
         <div className="matches-screen__empty">No matches in this category</div>
       )}
 
       <div className="matches-screen__grid">
         {filtered.map(m => (
-          <MatchCard
-            key={m.id}
-            match={m}
-            onTap={() => setSelected(m)}
-            userPick={userPicks[m.id]}
-          />
+          <MatchCard key={m.id} match={m} onTap={() => setSelected(m)} userPick={userPicks[m.id]} />
         ))}
       </div>
     </PageContainer>

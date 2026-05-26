@@ -1,7 +1,7 @@
 import './MatchCard.css';
 import TeamFlag from './TeamFlag';
 import Badge from './Badge';
-import type { Match } from '~/lib/mock-data';
+import type { Match } from '~/lib/types';
 import type { UserPickEntry } from '~/lib/auth-context';
 
 interface Props {

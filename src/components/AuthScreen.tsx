@@ -9,33 +9,32 @@ export default function AuthScreen() {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [error, setError] = useState('');
-  const { login } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const { login, signup } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (!email || !password) {
-      setError('Please fill in all fields');
-      return;
-    }
-    if (mode === 'signup' && !name) {
-      setError('Please enter your name');
-      return;
-    }
-    login({ email, name: name || email.split('@')[0] });
-    navigate('/rankings');
+    if (!email || !password) { setError('Please fill in all fields'); return; }
+    if (mode === 'signup' && !name) { setError('Please enter your name'); return; }
+
+    setLoading(true);
+    const err = mode === 'login'
+      ? await login(email, password)
+      : await signup(email, password, name);
+    setLoading(false);
+
+    if (err) { setError(err); return; }
+    // Login: navigate to app. Signup: auth state change drives to JoinQuinielaScreen.
+    if (mode === 'login') navigate('/rankings');
   };
 
   return (
     <div className="auth-screen">
       <div className="auth-screen__inner">
         <div className="auth-screen__logo">
-          <div className="auth-screen__logo-title">
-            <span className="auth-screen__logo-icon">⚽</span>{' '}
-            <span>FWC26</span>{' '}
-            <span className="auth-screen__logo-sub">Quiniela</span>
-          </div>
+          <img src="/logo-white.png" alt="FIFA World Cup 2026" className="auth-screen__logo-img" />
           <p className="auth-screen__tagline">Predict. Compete. Win.</p>
         </div>
 
@@ -87,8 +86,8 @@ export default function AuthScreen() {
 
           {error && <div className="auth-screen__error">{error}</div>}
 
-          <button type="submit" className="auth-screen__submit">
-            {mode === 'login' ? 'Log In' : 'Create Account'}
+          <button type="submit" className="auth-screen__submit" disabled={loading}>
+            {loading ? 'Please wait…' : mode === 'login' ? 'Log In' : 'Create Account'}
           </button>
         </form>
 

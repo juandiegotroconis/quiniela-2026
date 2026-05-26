@@ -2,7 +2,7 @@ import './GroupMatchRow.css';
 import TeamFlag from './TeamFlag';
 import Badge from './Badge';
 import { getPickResult, getResultVariant, getResultPoints } from '~/lib/helpers';
-import type { Match } from '~/lib/mock-data';
+import type { Match } from '~/lib/types';
 import type { UserPickEntry } from '~/lib/auth-context';
 
 interface Props {

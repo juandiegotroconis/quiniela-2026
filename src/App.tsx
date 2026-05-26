@@ -1,21 +1,30 @@
-import { Outlet, useNavigate } from "react-router";
+import { Outlet, useNavigate, useLocation } from "react-router";
 import { AuthProvider, useAuth } from "~/lib/auth-context";
+import { DataProvider } from "~/lib/data-context";
 import TopNav from "~/components/TopNav";
+import JoinQuinielaScreen from "~/components/JoinQuinielaScreen";
 import { useEffect } from "react";
 import "./root.css";
 
 function AppContent() {
-  const { user, submitted } = useAuth();
+  const { user, loading, submitted, needsQuiniela } = useAuth();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
 
   useEffect(() => {
-    if (!user) navigate("/login");
-  }, [user, navigate]);
+    if (!loading && !user) navigate("/login");
+  }, [user, loading, navigate]);
+
+  if (loading) return null;
+  if (!user) return null;
+  if (needsQuiniela) return <JoinQuinielaScreen />;
+
+  const showBanner = !submitted && pathname !== "/profile";
 
   return (
     <>
-      {user && <TopNav />}
-      {user && !submitted && <PredictionsBanner />}
+      <TopNav />
+      {showBanner && <PredictionsBanner />}
       <Outlet />
     </>
   );
@@ -41,7 +50,9 @@ function PredictionsBanner() {
 export default function App() {
   return (
     <AuthProvider>
-      <AppContent />
+      <DataProvider>
+        <AppContent />
+      </DataProvider>
     </AuthProvider>
   );
 }

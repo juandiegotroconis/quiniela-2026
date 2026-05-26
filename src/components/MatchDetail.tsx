@@ -1,11 +1,16 @@
 import './MatchDetail.css';
+import { useState, useEffect } from 'react';
 import TeamFlag from './TeamFlag';
 import Badge from './Badge';
 import PredictionGroupCard from './PredictionGroupCard';
 import { groupPredictions, getPickResult, getResultVariant, getResultPoints, getResultLabel } from '~/lib/helpers';
-import type { Match } from '~/lib/mock-data';
-import { TEAM_FULL, PREDICTIONS } from '~/lib/mock-data';
+import type { Match } from '~/lib/types';
+import { TEAM_FULL } from '~/lib/mock-data';
 import type { UserPickEntry } from '~/lib/auth-context';
+import { useAuth } from '~/lib/auth-context';
+import { useData } from '~/lib/data-context';
+import { fetchMatchPredictions } from '~/lib/queries';
+import type { MatchPrediction } from '~/lib/types';
 
 interface Props {
   match: Match;
@@ -22,16 +27,35 @@ function MatchStatusBadge({ match }: { match: Match }) {
     );
   }
   if (match.status === 'finished') return <Badge variant="default">FT</Badge>;
-  return (
-    <span className="match-detail__status-time">
-      {match.date} · {match.time}
-    </span>
-  );
+  return <span className="match-detail__status-time">{match.date} · {match.time}</span>;
 }
 
 export default function MatchDetail({ match, onBack, userPick }: Props) {
-  const groups = groupPredictions(match.id);
-  const hasPredictions = groups.length > 0;
+  const { user, quinielaId } = useAuth();
+  const { members } = useData();
+  const [preds, setPreds] = useState<MatchPrediction[]>([]);
+
+  useEffect(() => {
+    if (!quinielaId) return;
+    fetchMatchPredictions(match.id, quinielaId)
+      .then((raw) => {
+        const memberMap = new Map(members.map((m) => [m.userId, m]));
+        return raw.map((r) => {
+          const m = memberMap.get(r.userId);
+          return {
+            userId: r.userId,
+            displayName: m?.displayName ?? "Unknown",
+            avatarColor: m?.avatarColor ?? "#02B906",
+            pickA: r.pickA,
+            pickB: r.pickB,
+          };
+        });
+      })
+      .then(setPreds)
+      .catch(console.error);
+  }, [match.id, quinielaId, members]);
+
+  const groups = groupPredictions(preds, match, user?.id ?? null);
   const isFinished = match.status === 'finished';
   const hasPick = userPick && userPick.pickA !== '' && userPick.pickB !== '';
 
@@ -46,13 +70,9 @@ export default function MatchDetail({ match, onBack, userPick }: Props) {
     miss: 'var(--color-error)',
   };
 
-  const totalPreds = (PREDICTIONS[match.id] ?? []).length;
-
   return (
     <div>
-      <button className="match-detail__back" onClick={onBack}>
-        ← Back to matches
-      </button>
+      <button className="match-detail__back" onClick={onBack}>← Back to matches</button>
 
       <div className="match-detail__score-card">
         <div className="match-detail__score-row">
@@ -96,10 +116,10 @@ export default function MatchDetail({ match, onBack, userPick }: Props) {
         </div>
       )}
 
-      {hasPredictions && (
+      {groups.length > 0 && (
         <div>
           <div className="match-detail__preds-heading">
-            Predictions · {totalPreds} players
+            Predictions · {preds.length} players
           </div>
           <div className="match-detail__preds-grid">
             {groups.map(g => (
@@ -109,7 +129,7 @@ export default function MatchDetail({ match, onBack, userPick }: Props) {
         </div>
       )}
 
-      {!hasPredictions && (
+      {groups.length === 0 && (
         <div className="match-detail__empty">
           Predictions will be revealed once the match begins.
         </div>

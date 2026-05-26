@@ -4,18 +4,21 @@ import PageContainer from './PageContainer';
 import TeamFlag from './TeamFlag';
 import TopScorerPicker from './TopScorerPicker';
 import { calcGroupStandings } from '~/lib/helpers';
-import { GROUPS, MATCHES } from '~/lib/mock-data';
+import { GROUPS } from '~/lib/mock-data';
 import type { TopScorerSuggestion } from '~/lib/mock-data';
 import type { UserPickEntry } from '~/lib/auth-context';
+import { useData } from '~/lib/data-context';
 
 interface Props {
-  onSubmit: (picks: Record<number, UserPickEntry>, scorer: TopScorerSuggestion) => void;
+  onSubmit: (picks: Record<number, UserPickEntry>, scorer: TopScorerSuggestion) => Promise<void>;
 }
 
 export default function PredictionEntryForm({ onSubmit }: Props) {
+  const { matches } = useData();
   const [picks, setPicks] = useState<Record<number, UserPickEntry>>({});
   const [topScorer, setTopScorer] = useState<TopScorerSuggestion | null>(null);
   const [showErrors, setShowErrors] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const updatePick = (matchId: number, pickA: string, pickB: string) => {
     setPicks(prev => ({ ...prev, [matchId]: { pickA, pickB } }));
@@ -24,21 +27,28 @@ export default function PredictionEntryForm({ onSubmit }: Props) {
   const filledCount = Object.values(picks).filter(
     p => p.pickA !== '' && p.pickB !== ''
   ).length;
-  const totalMatches = MATCHES.length;
+  const totalMatches = matches.length;
   const allFilled = filledCount === totalMatches && topScorer !== null;
-  const progress = ((filledCount + (topScorer ? 1 : 0)) / (totalMatches + 1)) * 100;
+  const progress = totalMatches > 0
+    ? ((filledCount + (topScorer ? 1 : 0)) / (totalMatches + 1)) * 100
+    : 0;
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!allFilled) {
       setShowErrors(true);
       return;
     }
-    onSubmit(picks, topScorer!);
+    setSubmitting(true);
+    try {
+      await onSubmit(picks, topScorer!);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const groupEntries = Object.keys(GROUPS).map(gId => ({
     id: gId,
-    matches: MATCHES.filter(m => m.group === gId),
+    matches: matches.filter(m => m.group === gId),
   }));
 
   return (
@@ -70,7 +80,7 @@ export default function PredictionEntryForm({ onSubmit }: Props) {
 
       <div className="pred-form__groups">
         {groupEntries.map(g => {
-          const standings = calcGroupStandings(g.id, picks);
+          const standings = calcGroupStandings(g.id, matches, picks);
           const filledInGroup = g.matches.filter(
             m => picks[m.id]?.pickA !== '' && picks[m.id]?.pickB !== '' && picks[m.id]
           ).length;
@@ -196,8 +206,9 @@ export default function PredictionEntryForm({ onSubmit }: Props) {
         <button
           className={`pred-form__submit${allFilled ? ' pred-form__submit--ready' : ' pred-form__submit--disabled'}`}
           onClick={handleSubmit}
+          disabled={submitting}
         >
-          Submit Predictions
+          {submitting ? 'Submitting…' : 'Submit Predictions'}
         </button>
       </div>
     </PageContainer>

@@ -4,17 +4,18 @@ import { AVATAR_COLORS } from '~/lib/mock-data';
 interface Props {
   name: string;
   index?: number;
+  color?: string;
   size?: number;
 }
 
-export default function Avatar({ name, index = 0, size = 36 }: Props) {
+export default function Avatar({ name, index = 0, color, size = 36 }: Props) {
   const initials = name
     .split(' ')
     .map(n => n[0])
     .join('')
     .slice(0, 2)
     .toUpperCase();
-  const bg = AVATAR_COLORS[index % AVATAR_COLORS.length];
+  const bg = color ?? AVATAR_COLORS[index % AVATAR_COLORS.length];
   return (
     <div
       className="avatar"

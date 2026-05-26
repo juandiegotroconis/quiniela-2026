@@ -1,1 +1,0 @@
-import{o as e}from"./chunk-4N6VE7H7-C8mkwFVI.js";function c({title:a,subtitle:s,right:i}){return e.jsxs("div",{className:"section-header",children:[e.jsxs("div",{className:"section-header__left",children:[e.jsx("h2",{className:"section-header__title",children:a}),s&&e.jsx("p",{className:"section-header__subtitle",children:s})]}),i]})}export{c as S};

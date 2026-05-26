@@ -1,4 +1,5 @@
 import './PlayerProfile.css';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
 import PageContainer from './PageContainer';
 import Avatar from './Avatar';
@@ -7,11 +8,13 @@ import PositionChange from './PositionChange';
 import Sparkline from './Sparkline';
 import TeamFlag from './TeamFlag';
 import { getPickResult, getResultVariant, getResultPoints } from '~/lib/helpers';
-import { PLAYERS, MATCHES, PREDICTIONS, ME_ID } from '~/lib/mock-data';
+import { fetchUserPicks } from '~/lib/queries';
 import { useAuth } from '~/lib/auth-context';
+import { useData } from '~/lib/data-context';
+import type { UserPickEntry } from '~/lib/auth-context';
 
 interface Props {
-  playerId: number;
+  userId: string;
 }
 
 const RESULT_COLORS: Record<string, string> = {
@@ -20,12 +23,26 @@ const RESULT_COLORS: Record<string, string> = {
   miss: 'var(--color-error)',
 };
 
-export default function PlayerProfile({ playerId }: Props) {
-  const { user } = useAuth();
-  const player = PLAYERS.find(p => p.id === playerId);
-  const isMe = playerId === ME_ID;
+export default function PlayerProfile({ userId }: Props) {
+  const { user, quinielaId, userPicks: myPicks } = useAuth();
+  const { matches, getMember } = useData();
+  const isMe = userId === user?.id;
+  const [picks, setPicks] = useState<Record<number, UserPickEntry>>(isMe ? myPicks : {});
 
-  if (!player) {
+  const member = getMember(userId);
+
+  useEffect(() => {
+    if (isMe) {
+      setPicks(myPicks);
+      return;
+    }
+    if (!quinielaId) return;
+    fetchUserPicks(userId, quinielaId)
+      .then(setPicks)
+      .catch(console.error);
+  }, [userId, quinielaId, isMe, myPicks]);
+
+  if (!member) {
     return (
       <PageContainer>
         <Link to="/rankings" className="player-profile__back">← Rankings</Link>
@@ -34,28 +51,28 @@ export default function PlayerProfile({ playerId }: Props) {
     );
   }
 
-  const displayName = isMe ? (user?.name ?? 'You') : player.name;
+  const displayName = isMe ? (user?.name ?? 'You') : member.displayName;
 
   const matchdays = [1, 2, 3].map(day => ({
     day,
     label: `Matchday ${day}`,
-    matches: MATCHES.filter(m => m.day === day),
+    matches: matches.filter(m => m.day === day),
   }));
 
-  const finishedMatches = MATCHES.filter(m => {
+  const finishedMatches = matches.filter(m => {
     if (m.status !== 'finished') return false;
-    const preds = PREDICTIONS[m.id];
-    return preds?.some(p => p.playerId === playerId);
+    const p = picks[m.id];
+    return p && p.pickA !== '' && p.pickB !== '';
   });
 
   const exactCount = finishedMatches.filter(m => {
-    const pick = PREDICTIONS[m.id]?.find(p => p.playerId === playerId);
-    return pick && getPickResult(m, pick.pickA, pick.pickB) === 'exact';
+    const p = picks[m.id];
+    return getPickResult(m, parseInt(String(p.pickA)), parseInt(String(p.pickB))) === 'exact';
   }).length;
 
   const winnerCount = finishedMatches.filter(m => {
-    const pick = PREDICTIONS[m.id]?.find(p => p.playerId === playerId);
-    return pick && getPickResult(m, pick.pickA, pick.pickB) === 'winner';
+    const p = picks[m.id];
+    return getPickResult(m, parseInt(String(p.pickA)), parseInt(String(p.pickB))) === 'winner';
   }).length;
 
   const missed = finishedMatches.length - exactCount - winnerCount;
@@ -75,18 +92,18 @@ export default function PlayerProfile({ playerId }: Props) {
       <Link to="/rankings" className="player-profile__back">← Rankings</Link>
 
       <div className="player-profile__header">
-        <Avatar name={displayName} index={player.id - 1} size={64} />
+        <Avatar name={displayName} color={member.avatarColor} size={64} />
         <div className="player-profile__header-info">
           <div className="player-profile__name">{displayName}</div>
           <div className="player-profile__rank-row">
             <span className="player-profile__rank-label">
-              Rank <span className="player-profile__rank-num">#{player.rank}</span>
+              Rank <span className="player-profile__rank-num">#{member.rank}</span>
             </span>
-            <PositionChange current={player.rank} previous={player.prevRank} />
-            <span className="player-profile__pts">{player.pts} pts</span>
+            <PositionChange current={member.rank} previous={member.prevRank ?? member.rank} />
+            <span className="player-profile__pts">{member.pts} pts</span>
           </div>
           <div className="player-profile__sparkline">
-            <Sparkline history={player.history} />
+            <Sparkline history={member.history} />
           </div>
         </div>
       </div>
@@ -112,12 +129,12 @@ export default function PlayerProfile({ playerId }: Props) {
           <div className="player-profile__matchday-label">{md.label}</div>
           <div className="player-profile__match-list">
             {md.matches.map(m => {
-              const pick = PREDICTIONS[m.id]?.find(p => p.playerId === playerId);
-              const hasPick = !!pick;
+              const pick = picks[m.id];
+              const hasPick = pick && pick.pickA !== '' && pick.pickB !== '';
               const isFinished = m.status === 'finished';
               const isLive = m.status === 'live';
               const result = isFinished && hasPick
-                ? getPickResult(m, pick!.pickA, pick!.pickB)
+                ? getPickResult(m, parseInt(String(pick!.pickA)), parseInt(String(pick!.pickB)))
                 : null;
 
               return (

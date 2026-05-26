@@ -2,8 +2,6 @@ import "./TopNav.css";
 import { NavLink } from "react-router";
 import Avatar from "./Avatar";
 import { useAuth } from "~/lib/auth-context";
-import { ME_ID } from "~/lib/mock-data";
-
 export default function TopNav() {
   const { user } = useAuth();
   const displayName = user?.name ?? "You";
@@ -44,7 +42,7 @@ export default function TopNav() {
           `top-nav__profile${isActive ? " top-nav__profile--active" : ""}`
         }
       >
-        <Avatar name={displayName} index={ME_ID - 1} size={32} />
+        <Avatar name={displayName} size={32} />
         <span className='top-nav__profile-name'>{displayName}</span>
       </NavLink>
     </header>

@@ -1,1 +1,0 @@
-import{o as e}from"./chunk-4N6VE7H7-C8mkwFVI.js";import{A as a}from"./mock-data-Csg7Q-gR.js";function l({name:o,index:i=0,size:t=36}){const r=o.split(" ").map(n=>n[0]).join("").slice(0,2).toUpperCase(),s=a[i%a.length];return e.jsx("div",{className:"avatar",style:{width:t,height:t,background:s,fontSize:t*.38},children:r})}export{l as A};

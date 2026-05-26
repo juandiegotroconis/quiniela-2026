@@ -7,7 +7,16 @@
       "Bash(mkdir -p .claude/skills/new-component .claude/skills/mock-to-api)",
       "PowerShell(Get-ChildItem \"c:\\\\Users\\\\juant\\\\Documents\\\\Projects\\\\quiniela-2026\" -Depth 2 | Where-Object { $_.Extension -in '.ts','.tsx','.js' -and $_.FullName -notmatch 'node_modules' } | Select-Object FullName)",
       "PowerShell(Get-ChildItem \"c:\\\\Users\\\\juant\\\\Documents\\\\Projects\\\\quiniela-2026\\\\src\" -Recurse | Where-Object { -not $_.PSIsContainer -and $_.Extension -in '.ts','.tsx' } | Select-Object FullName)",
-      "PowerShell(cmd /c \"dir /S /B \"\"c:\\\\Users\\\\juant\\\\Documents\\\\Projects\\\\quiniela-2026\\\\src\"\"\")"
+      "PowerShell(cmd /c \"dir /S /B \"\"c:\\\\Users\\\\juant\\\\Documents\\\\Projects\\\\quiniela-2026\\\\src\"\"\")",
+      "mcp__plugin_supabase_supabase__execute_sql",
+      "Bash(pnpm typecheck *)",
+      "Bash(pnpm build *)",
+      "WebFetch(domain:supabase.com)",
+      "Bash(python *)",
+      "mcp__claude_ai_Context7__resolve-library-id",
+      "mcp__claude_ai_Context7__query-docs",
+      "WebFetch(domain:api.football-data.org)",
+      "Bash(curl -s \"https://api.football-data.org/v4/competitions/WC/matches?season=2026\" -H \"X-Auth-Token: 3cb9af8b9b324b75b4af34f93e428184\")"
     ],
     "additionalDirectories": [
       "c:\\Users\\juant\\Documents\\Projects\\quiniela-2026\\src\\routes",

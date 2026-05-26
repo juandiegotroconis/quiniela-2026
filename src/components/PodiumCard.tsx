@@ -1,16 +1,16 @@
 import './PodiumCard.css';
 import Avatar from './Avatar';
 import PositionChange from './PositionChange';
-import type { Player } from '~/lib/mock-data';
-import { ME_ID } from '~/lib/mock-data';
+import type { Member } from '~/lib/types';
 
 interface Props {
-  player: Player;
+  player: Member;
   rankColor: string;
   isFirst?: boolean;
+  isMe?: boolean;
 }
 
-export default function PodiumCard({ player, rankColor, isFirst }: Props) {
+export default function PodiumCard({ player, rankColor, isFirst, isMe }: Props) {
   const sz = isFirst ? 64 : 48;
   return (
     <div
@@ -18,7 +18,7 @@ export default function PodiumCard({ player, rankColor, isFirst }: Props) {
       style={{ width: isFirst ? 140 : 110 }}
     >
       <div className="podium-card__avatar-wrap">
-        <Avatar name={player.name} index={player.id - 1} size={sz} />
+        <Avatar name={player.displayName} color={player.avatarColor} size={sz} />
         <div
           className="podium-card__rank-badge"
           style={{ background: rankColor }}
@@ -28,7 +28,7 @@ export default function PodiumCard({ player, rankColor, isFirst }: Props) {
       </div>
 
       <span className="podium-card__name">
-        {player.id === ME_ID ? 'You' : player.name.split(' ')[0]}
+        {isMe ? 'You' : player.displayName.split(' ')[0]}
       </span>
 
       <div className="podium-card__pts">
@@ -41,7 +41,7 @@ export default function PodiumCard({ player, rankColor, isFirst }: Props) {
         <span className="podium-card__pts-label">pts</span>
       </div>
 
-      <PositionChange current={player.rank} previous={player.prevRank} />
+      <PositionChange current={player.rank} previous={player.prevRank ?? player.rank} />
     </div>
   );
 }

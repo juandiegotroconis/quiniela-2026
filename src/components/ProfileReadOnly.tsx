@@ -6,9 +6,10 @@ import PositionChange from './PositionChange';
 import TeamFlag from './TeamFlag';
 import TopScorerPicker from './TopScorerPicker';
 import { getPickResult, getResultVariant, getResultPoints } from '~/lib/helpers';
-import { PLAYERS, MATCHES, ME_ID } from '~/lib/mock-data';
 import type { TopScorerSuggestion } from '~/lib/mock-data';
 import type { UserPickEntry } from '~/lib/auth-context';
+import { useAuth } from '~/lib/auth-context';
+import { useData } from '~/lib/data-context';
 
 interface Props {
   userPicks: Record<number, UserPickEntry>;
@@ -23,15 +24,17 @@ const RESULT_COLORS: Record<string, string> = {
 };
 
 export default function ProfileReadOnly({ userPicks, topScorer, onLogout }: Props) {
-  const me = PLAYERS.find(p => p.id === ME_ID)!;
+  const { user } = useAuth();
+  const { matches, getMember } = useData();
+  const me = user ? getMember(user.id) : undefined;
 
   const matchdays = [1, 2, 3].map(day => ({
     day,
     label: `Matchday ${day}`,
-    matches: MATCHES.filter(m => m.day === day),
+    matches: matches.filter(m => m.day === day),
   }));
 
-  const finishedWithPicks = MATCHES.filter(m => {
+  const finishedWithPicks = matches.filter(m => {
     if (m.status !== 'finished') return false;
     const p = userPicks[m.id];
     return p && p.pickA !== '' && p.pickB !== '';
@@ -62,15 +65,15 @@ export default function ProfileReadOnly({ userPicks, topScorer, onLogout }: Prop
   return (
     <PageContainer>
       <div className="profile-ro__header">
-        <Avatar name={me.name} index={me.id - 1} size={64} />
+        <Avatar name={user?.name ?? 'You'} color={me?.avatarColor} size={64} />
         <div className="profile-ro__header-info">
           <div className="profile-ro__name">Your Profile</div>
           <div className="profile-ro__rank-row">
             <span className="profile-ro__rank-label">
-              Rank <span className="profile-ro__rank-num">#{me.rank}</span>
+              Rank <span className="profile-ro__rank-num">#{me?.rank ?? '—'}</span>
             </span>
-            <PositionChange current={me.rank} previous={me.prevRank} />
-            <span className="profile-ro__pts">{me.pts} pts</span>
+            {me && <PositionChange current={me.rank} previous={me.prevRank ?? me.rank} />}
+            <span className="profile-ro__pts">{me?.pts ?? 0} pts</span>
           </div>
         </div>
         <button className="profile-ro__logout" onClick={onLogout}>

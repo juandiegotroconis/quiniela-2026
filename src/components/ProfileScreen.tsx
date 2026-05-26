@@ -9,8 +9,8 @@ export default function ProfileScreen() {
   const { submitted, userPicks, topScorer, submitPredictions, logout } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (picks: Record<number, UserPickEntry>, scorer: TopScorerSuggestion) => {
-    submitPredictions(picks, scorer);
+  const handleSubmit = async (picks: Record<number, UserPickEntry>, scorer: TopScorerSuggestion) => {
+    await submitPredictions(picks, scorer);
     navigate('/rankings');
   };
 

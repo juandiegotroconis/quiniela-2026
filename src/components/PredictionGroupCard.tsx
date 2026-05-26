@@ -2,8 +2,7 @@ import './PredictionGroupCard.css';
 import Avatar from './Avatar';
 import Badge from './Badge';
 import type { PredictionGroup } from '~/lib/helpers';
-import type { Match } from '~/lib/mock-data';
-import { ME_ID } from '~/lib/mock-data';
+import type { Match } from '~/lib/types';
 
 interface Props {
   group: PredictionGroup;
@@ -27,9 +26,7 @@ export default function PredictionGroupCard({ group, match }: Props) {
       className={`pred-group-card${group.hasMe ? ' pred-group-card--me' : ''}`}
       style={{ borderColor }}
     >
-      {group.hasMe && (
-        <div className="pred-group-card__your-pick">Your pick</div>
-      )}
+      {group.hasMe && <div className="pred-group-card__your-pick">Your pick</div>}
 
       <div className="pred-group-card__score">
         <span>{group.pickA}</span>
@@ -46,18 +43,14 @@ export default function PredictionGroupCard({ group, match }: Props) {
       )}
 
       <div className="pred-group-card__players">
-        {group.players.map(p => {
-          if (!p) return null;
-          const isMe = p.id === ME_ID;
-          return (
-            <div key={p.id} className="pred-group-card__player" title={p.name}>
-              <Avatar name={p.name} index={p.id - 1} size={28} />
-              <span className={`pred-group-card__player-name${isMe ? ' pred-group-card__player-name--me' : ''}`}>
-                {isMe ? 'You' : p.name.split(' ')[0]}
-              </span>
-            </div>
-          );
-        })}
+        {group.players.map(p => (
+          <div key={p.userId} className="pred-group-card__player" title={p.displayName}>
+            <Avatar name={p.displayName} color={p.avatarColor} size={28} />
+            <span className={`pred-group-card__player-name${p.isMe ? ' pred-group-card__player-name--me' : ''}`}>
+              {p.isMe ? 'You' : p.displayName.split(' ')[0]}
+            </span>
+          </div>
+        ))}
       </div>
     </div>
   );

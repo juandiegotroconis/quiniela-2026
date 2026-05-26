@@ -3,5 +3,5 @@ import PlayerProfile from '~/components/PlayerProfile';
 
 export default function PlayerRoute() {
   const { id } = useParams<{ id: string }>();
-  return <PlayerProfile playerId={Number(id)} />;
+  return <PlayerProfile userId={id!} />;
 }

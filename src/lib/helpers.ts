@@ -1,11 +1,7 @@
-import { GROUPS, MATCHES, ME_ID, PLAYERS, PREDICTIONS, TEAM_COLORS } from './mock-data';
-import type { Match, Player, Prediction } from './mock-data';
+import { GROUPS, TEAM_COLORS } from './mock-data';
+import type { Match, MatchPrediction } from './types';
 
 export type PickResult = 'exact' | 'winner' | 'miss';
-
-export function getPlayer(id: number): Player | undefined {
-  return PLAYERS.find(p => p.id === id);
-}
 
 export function getPickResult(match: Match, pickA: number, pickB: number): PickResult | null {
   if (match.status !== 'finished') return null;
@@ -17,8 +13,8 @@ export function getPickResult(match: Match, pickA: number, pickB: number): PickR
 }
 
 export function getResultPoints(r: PickResult | null): number {
-  if (r === 'exact') return 10;
-  if (r === 'winner') return 5;
+  if (r === 'exact') return 5;
+  if (r === 'winner') return 3;
   return 0;
 }
 
@@ -34,6 +30,13 @@ export function getResultVariant(r: PickResult | null): 'success' | 'warning' | 
   return 'default';
 }
 
+export interface PredictionGroupPlayer {
+  userId: string;
+  displayName: string;
+  avatarColor: string;
+  isMe: boolean;
+}
+
 export interface PredictionGroup {
   pickA: number;
   pickB: number;
@@ -42,19 +45,21 @@ export interface PredictionGroup {
   points: number;
   label: string | null;
   variant: 'success' | 'warning' | 'default' | null;
-  players: (Player | undefined)[];
+  players: PredictionGroupPlayer[];
   hasMe: boolean;
 }
 
-export function groupPredictions(matchId: number): PredictionGroup[] {
-  const preds: Prediction[] = PREDICTIONS[matchId] ?? [];
-  const match = MATCHES.find(m => m.id === matchId);
+export function groupPredictions(
+  preds: MatchPrediction[],
+  match: Match,
+  myUserId: string | null,
+): PredictionGroup[] {
   const groups: Record<string, PredictionGroup> = {};
 
-  preds.forEach(p => {
+  for (const p of preds) {
     const key = `${p.pickA}-${p.pickB}`;
     if (!groups[key]) {
-      const result = match ? getPickResult(match, p.pickA, p.pickB) : null;
+      const result = getPickResult(match, p.pickA, p.pickB);
       groups[key] = {
         pickA: p.pickA,
         pickB: p.pickB,
@@ -67,9 +72,10 @@ export function groupPredictions(matchId: number): PredictionGroup[] {
         hasMe: false,
       };
     }
-    groups[key].players.push(getPlayer(p.playerId));
-    if (p.playerId === ME_ID) groups[key].hasMe = true;
-  });
+    const isMe = p.userId === myUserId;
+    groups[key].players.push({ userId: p.userId, displayName: p.displayName, avatarColor: p.avatarColor, isMe });
+    if (isMe) groups[key].hasMe = true;
+  }
 
   const order: Record<string, number> = { exact: 0, winner: 1, miss: 2 };
   return Object.values(groups).sort((a, b) => {
@@ -99,10 +105,11 @@ export interface UserPick {
 
 export function calcGroupStandings(
   groupId: string,
-  userPicks: Record<number, UserPick> | null
+  matches: Match[],
+  userPicks: Record<number, UserPick> | null,
 ): TeamStanding[] {
   const teams = GROUPS[groupId] ?? [];
-  const gm = MATCHES.filter(m => m.group === groupId);
+  const gm = matches.filter(m => m.group === groupId);
   const s: Record<string, TeamStanding> = {};
   teams.forEach(t => {
     s[t] = { team: t, mp: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, gd: 0, pts: 0, projected: false };
@@ -133,31 +140,20 @@ export function calcGroupStandings(
     s[match.teamA].ga += sB;
     s[match.teamB].gf += sB;
     s[match.teamB].ga += sA;
-    if (proj) {
-      s[match.teamA].projected = true;
-      s[match.teamB].projected = true;
-    }
+    if (proj) { s[match.teamA].projected = true; s[match.teamB].projected = true; }
     if (sA > sB) {
-      s[match.teamA].w++;
-      s[match.teamA].pts += 3;
-      s[match.teamB].l++;
+      s[match.teamA].w++; s[match.teamA].pts += 3; s[match.teamB].l++;
     } else if (sA < sB) {
-      s[match.teamB].w++;
-      s[match.teamB].pts += 3;
-      s[match.teamA].l++;
+      s[match.teamB].w++; s[match.teamB].pts += 3; s[match.teamA].l++;
     } else {
-      s[match.teamA].d++;
-      s[match.teamA].pts += 1;
-      s[match.teamB].d++;
-      s[match.teamB].pts += 1;
+      s[match.teamA].d++; s[match.teamA].pts += 1;
+      s[match.teamB].d++; s[match.teamB].pts += 1;
     }
     s[match.teamA].gd = s[match.teamA].gf - s[match.teamA].ga;
     s[match.teamB].gd = s[match.teamB].gf - s[match.teamB].ga;
   });
 
-  return Object.values(s).sort(
-    (a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf
-  );
+  return Object.values(s).sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
 }
 
 export function getTeamColor(code: string): string {
