@@ -74,7 +74,7 @@
 
 .pred-form__groups {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(440px, 100%), 1fr));
   gap: 24px;
   margin-bottom: 28px;
 }
@@ -216,9 +216,10 @@
 .pred-form__match-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
   padding: 7px 0;
   border-bottom: 1px solid var(--border-subtle);
+  min-width: 0;
 }
 
 .pred-form__match-row:last-child {

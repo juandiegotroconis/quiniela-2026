@@ -10,7 +10,7 @@ export default function TopNav() {
     <header className='top-nav'>
       <NavLink to='/rankings' className='top-nav__logo'>
         <img
-          src='/logo.png'
+          src='/logo-black.svg'
           alt='FWC26 Quiniela Logo'
           className='top-nav__logo-icon'
         />

@@ -90,3 +90,33 @@
 .top-nav__profile-name--active {
   color: var(--color-brand);
 }
+
+@media (max-width: 600px) {
+  .top-nav {
+    padding: 0 12px;
+    gap: 4px;
+  }
+
+  .top-nav__logo {
+    margin-right: 8px;
+    gap: 6px;
+  }
+
+  .top-nav__logo span:not(.top-nav__logo-sub),
+  .top-nav__logo-sub {
+    display: none;
+  }
+
+  .top-nav__btn {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  .top-nav__profile-name {
+    display: none;
+  }
+
+  .top-nav__profile {
+    padding: 4px 6px;
+  }
+}

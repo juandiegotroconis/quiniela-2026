@@ -45,7 +45,7 @@ export default function AuthScreen() {
       <div className='auth-screen__inner'>
         <div className='auth-screen__logo'>
           <img
-            src='/logo.png'
+            src='/logo-black.svg'
             alt='FIFA World Cup 2026'
             className='auth-screen__logo-img'
           />

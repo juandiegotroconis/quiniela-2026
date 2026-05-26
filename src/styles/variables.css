@@ -40,83 +40,98 @@
 
   /* ── FIFA World Cup 2026 Brand Palette ── */
 
-  /* Primary brand — FIFA Crimson */
-  --color-brand: #2550ff;
-  --color-brand-bg: rgba(232, 25, 44, 0.1);
+  /* Primary brand — FIFA Blue */
+  --color-brand: #2979ff;
+  --color-brand-bg: rgba(41, 121, 255, 0.1);
 
-  /* Success / correct picks — WC26 Lime */
-  --color-green: #39d353;
-  --color-green-light: #6ee58a;
-  --color-green-dark: #22a83a;
+  /* Success / correct picks — FIFA Bright Green */
+  --color-green: #00cc33;
+  --color-green-light: #33dd55;
+  --color-green-dark: #009922;
 
   /* Rankings / podium — Gold */
   --color-gold: #c8a94e;
   --color-gold-light: #e2d08a;
   --color-gold-dark: #9a7b2f;
 
-  /* WC26 extended palette */
-  --color-wc-purple: #6b2f8a; /* FIFA Royal Purple */
-  --color-wc-teal: #005f61; /* FIFA Dark Teal */
-  --color-wc-orange: #ff4713; /* FIFA Orange-Red */
-  --color-wc-cyan: #00c4b4; /* FIFA Cyan */
-  --color-wc-maroon: #73182a; /* FIFA Deep Maroon */
+  /* WC26 extended palette — red column */
+  --color-wc-maroon: #7a0c1e;
+  --color-wc-orange: #ff4713;
+  --color-wc-salmon: #ff9976;
+
+  /* WC26 extended palette — purple column */
+  --color-wc-deep-purple: #5500bb;
+  --color-wc-purple: #9b6bcc;
+  --color-wc-dusty-rose: #bb8899;
+  --color-wc-magenta: #dd1177;
+
+  /* WC26 extended palette — blue column */
+  --color-wc-navy: #152266;
+  --color-wc-cobalt: #2979ff;
+  --color-wc-sky: #3399ee;
+  --color-wc-mint: #33ddaa;
+
+  /* WC26 extended palette — green/yellow column */
+  --color-wc-teal: #0d3d3a;
+  --color-wc-lime: #aacc00;
+  --color-wc-yellow: #eedd00;
 
   /* Host nation accents */
-  --color-usa-blue: #2a398d;
-  --color-mexico-green: #3cac3b;
+  --color-usa-blue: #2979ff;
+  --color-mexico-green: #00cc33;
   --color-canada-red: #e8192c;
 
   /* Semantic colors */
-  --color-vermilion: #e84c30;
-  --color-purple: #6b2f8a;
+  --color-vermilion: #ff4713;
+  --color-purple: #9b6bcc;
   --color-bright-blue: #2979ff;
-  --color-cyan: #00c4b4;
-  --color-teal: #005f61;
-  --color-aqua: #00bfa5;
-  --color-mint: #00e676;
-  --color-magenta: #c2185b;
+  --color-cyan: #33ddaa;
+  --color-teal: #0d3d3a;
+  --color-aqua: #33ddaa;
+  --color-mint: #33ddaa;
+  --color-magenta: #dd1177;
   --color-orange: #ff4713;
-  --color-yellow: #ffd600;
-  --color-coral: #ff1744;
+  --color-yellow: #eedd00;
+  --color-coral: #e8192c;
 
   /* Status */
-  --color-success: #39d353;
-  --color-error: #ff1744;
-  --color-warning: #ffd600;
-  --color-info: #00c4b4;
-  --color-success-bg: rgba(57, 211, 83, 0.1);
-  --color-error-bg: rgba(255, 23, 68, 0.1);
-  --color-warning-bg: rgba(255, 214, 0, 0.1);
-  --color-info-bg: rgba(0, 196, 180, 0.1);
+  --color-success: #00cc33;
+  --color-error: #e8192c;
+  --color-warning: #eedd00;
+  --color-info: #33ddaa;
+  --color-success-bg: rgba(0, 204, 51, 0.1);
+  --color-error-bg: rgba(232, 25, 44, 0.1);
+  --color-warning-bg: rgba(238, 221, 0, 0.1);
+  --color-info-bg: rgba(51, 221, 170, 0.1);
 
   /* Pre-computed alpha variants used by multiple components */
-  --color-green-04: rgba(57, 211, 83, 0.04);
-  --color-green-06: rgba(57, 211, 83, 0.06);
-  --color-green-10: rgba(57, 211, 83, 0.1);
-  --color-green-15: rgba(57, 211, 83, 0.15);
-  --color-green-25: rgba(57, 211, 83, 0.25);
-  --color-brand-06: rgba(232, 25, 44, 0.06);
-  --color-brand-08: rgba(232, 25, 44, 0.08);
-  --color-brand-15: rgba(232, 25, 44, 0.15);
-  --color-brand-25: rgba(232, 25, 44, 0.25);
+  --color-green-04: rgba(0, 204, 51, 0.04);
+  --color-green-06: rgba(0, 204, 51, 0.06);
+  --color-green-10: rgba(0, 204, 51, 0.1);
+  --color-green-15: rgba(0, 204, 51, 0.15);
+  --color-green-25: rgba(0, 204, 51, 0.25);
+  --color-brand-06: rgba(41, 121, 255, 0.06);
+  --color-brand-08: rgba(41, 121, 255, 0.08);
+  --color-brand-15: rgba(41, 121, 255, 0.15);
+  --color-brand-25: rgba(41, 121, 255, 0.25);
 
-  /* Surfaces — pure-black family, aligned with WC26 black base */
-  --surface-0: #000000;
-  --surface-1: #0c0c0c;
-  --surface-2: #161616;
-  --surface-3: #1e1e1e;
-  --surface-4: #272727;
+  /* Surfaces — white family, aligned with WC26 light canvas */
+  --surface-0: #ffffff;
+  --surface-1: #f7f7f7;
+  --surface-2: #efefef;
+  --surface-3: #e5e5e5;
+  --surface-4: #d8d8d8;
 
   /* Borders */
-  --border-subtle: rgba(255, 255, 255, 0.06);
-  --border-default: rgba(255, 255, 255, 0.1);
-  --border-strong: rgba(255, 255, 255, 0.22);
+  --border-subtle: rgba(0, 0, 0, 0.06);
+  --border-default: rgba(0, 0, 0, 0.12);
+  --border-strong: rgba(0, 0, 0, 0.25);
 
   /* Foreground */
-  --fg-primary: #ffffff;
-  --fg-secondary: rgba(255, 255, 255, 0.7);
-  --fg-tertiary: rgba(255, 255, 255, 0.45);
-  --fg-disabled: rgba(255, 255, 255, 0.25);
+  --fg-primary: #0a0a0a;
+  --fg-secondary: rgba(0, 0, 0, 0.60);
+  --fg-tertiary: rgba(0, 0, 0, 0.38);
+  --fg-disabled: rgba(0, 0, 0, 0.20);
 
   /* Typography — Oswald mirrors FWC26 event typeface */
   --font-display: "Oswald", "Arial Narrow", sans-serif;
@@ -129,9 +144,9 @@
   --radius-xl: 16px;
   --radius-full: 9999px;
 
-  /* Shadows — deeper on pure-black backgrounds */
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
+  /* Shadows — softer on white backgrounds */
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.10);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.15);
 
   /* Motion */
   --ease-default: cubic-bezier(0.4, 0, 0.2, 1);

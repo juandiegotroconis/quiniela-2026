@@ -1,6 +1,7 @@
 import './MatchesScreen.css';
 import { useState } from 'react';
 import PageContainer from './PageContainer';
+import Wc26Banner from './Wc26Banner';
 import SectionHeader from './SectionHeader';
 import FilterTabs from './FilterTabs';
 import MatchCard from './MatchCard';
@@ -42,7 +43,9 @@ export default function MatchesScreen() {
   }
 
   return (
-    <PageContainer>
+    <>
+      <Wc26Banner />
+      <PageContainer>
       <div className="matches-screen__header">
         <SectionHeader title="Matches" subtitle="FIFA World Cup 2026 · Group Stage" />
         <FilterTabs tabs={FILTER_TABS} active={tab} onChange={setTab} />
@@ -60,5 +63,6 @@ export default function MatchesScreen() {
         ))}
       </div>
     </PageContainer>
+    </>
   );
 }

@@ -1,0 +1,11 @@
+.wc26-banner {
+  width: 100%;
+  flex-shrink: 0;
+  display: block;
+}
+
+.wc26-banner img {
+  width: 100%;
+  height: auto;
+  display: block;
+}

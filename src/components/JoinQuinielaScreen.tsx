@@ -74,7 +74,7 @@ export default function JoinQuinielaScreen() {
       <div className='join-screen__inner'>
         <div className='join-screen__logo'>
           <img
-            src='/logo.png'
+            src='/logo-black.svg'
             alt='FIFA World Cup 2026'
             className='join-screen__logo-img'
           />

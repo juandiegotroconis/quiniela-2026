@@ -16,7 +16,15 @@
       "mcp__claude_ai_Context7__resolve-library-id",
       "mcp__claude_ai_Context7__query-docs",
       "WebFetch(domain:api.football-data.org)",
-      "Bash(curl -s \"https://api.football-data.org/v4/competitions/WC/matches?season=2026\" -H \"X-Auth-Token: 3cb9af8b9b324b75b4af34f93e428184\")"
+      "Bash(curl -s \"https://api.football-data.org/v4/competitions/WC/matches?season=2026\" -H \"X-Auth-Token: 3cb9af8b9b324b75b4af34f93e428184\")",
+      "WebSearch",
+      "WebFetch(domain:logo.com)",
+      "WebFetch(domain:bigdatasports.media)",
+      "WebFetch(domain:brandpalettes.com)",
+      "WebFetch(domain:fwcumc.com)",
+      "WebFetch(domain:1000logos.net)",
+      "WebFetch(domain:www.eideticmarketing.com)",
+      "WebFetch(domain:www.schemecolor.com)"
     ],
     "additionalDirectories": [
       "c:\\Users\\juant\\Documents\\Projects\\quiniela-2026\\src\\routes",

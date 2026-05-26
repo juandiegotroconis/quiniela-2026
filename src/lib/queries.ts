@@ -217,17 +217,22 @@ export async function submitAllPredictions(
   }));
 
   const [predRes, tsRes, subRes] = await Promise.all([
-    client.from("predictions").insert(predRows),
-    client.from("top_scorer_predictions").insert({
-      quiniela_id: quinielaId,
-      user_id: userId,
-      player_name: topScorer.name,
-      player_team: topScorer.team,
+    client.from("predictions").upsert(predRows, {
+      onConflict: "user_id,quiniela_id,match_id",
     }),
-    client.from("prediction_submissions").insert({
-      quiniela_id: quinielaId,
-      user_id: userId,
-    }),
+    client.from("top_scorer_predictions").upsert(
+      {
+        quiniela_id: quinielaId,
+        user_id: userId,
+        player_name: topScorer.name,
+        player_team: topScorer.team,
+      },
+      { onConflict: "user_id,quiniela_id" },
+    ),
+    client.from("prediction_submissions").upsert(
+      { quiniela_id: quinielaId, user_id: userId },
+      { onConflict: "user_id,quiniela_id" },
+    ),
   ]);
   if (predRes.error) throw predRes.error;
   if (tsRes.error) throw tsRes.error;

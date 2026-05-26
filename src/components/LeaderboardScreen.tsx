@@ -1,6 +1,7 @@
 import './LeaderboardScreen.css';
 import { Link } from 'react-router';
 import PageContainer from './PageContainer';
+import Wc26Banner from './Wc26Banner';
 import SectionHeader from './SectionHeader';
 import PodiumCard from './PodiumCard';
 import Avatar from './Avatar';
@@ -53,7 +54,9 @@ export default function LeaderboardScreen() {
   ];
 
   return (
-    <PageContainer>
+    <>
+      <Wc26Banner />
+      <PageContainer>
       <SectionHeader title="Rankings" subtitle={`Friends League · ${sorted.length} player${sorted.length !== 1 ? 's' : ''}`} />
 
       <div className="leaderboard__podium">
@@ -110,5 +113,6 @@ export default function LeaderboardScreen() {
         </div>
       )}
     </PageContainer>
+    </>
   );
 }

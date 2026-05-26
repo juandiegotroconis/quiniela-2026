@@ -2,11 +2,14 @@ import './GroupsScreen.css';
 import PageContainer from './PageContainer';
 import SectionHeader from './SectionHeader';
 import GroupPanel from './GroupPanel';
+import Wc26Banner from './Wc26Banner';
 import { GROUPS } from '~/lib/mock-data';
 
 export default function GroupsScreen() {
   return (
-    <PageContainer wide>
+    <>
+      <Wc26Banner />
+      <PageContainer wide>
       <SectionHeader
         title="Group Standings"
         subtitle="FIFA World Cup 2026 · Group Stage"
@@ -17,5 +20,6 @@ export default function GroupsScreen() {
         ))}
       </div>
     </PageContainer>
+    </>
   );
 }
