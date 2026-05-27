@@ -3,6 +3,7 @@ import {
   useContext,
   useState,
   useEffect,
+  useRef,
   type ReactNode,
 } from "react";
 import { getClient } from "./client";
@@ -81,6 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isUpdatable, setIsUpdatable] = useState(true);
   const [userPicks, setUserPicks] = useState<Record<number, UserPickEntry>>({});
   const [topScorer, setTopScorer] = useState<TopScorerSuggestion | null>(null);
+  const loadedForUser = useRef<string | null>(null);
   const client = getClient();
 
   useEffect(() => {
@@ -94,18 +96,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         fetchQuinielaIsUpdatable(qId),
         fetchUserAvatarColor(userId, qId),
       ]);
-      if (mounted) {
-        setSubmitted(sub);
-        setUserPicks(picks);
-        setTopScorer(scorer);
-        setIsUpdatable(updatable);
-        setUser((prev) => (prev ? { ...prev, avatarColor } : prev));
+      if (!mounted) return;
+      setSubmitted(sub);
+      setUserPicks(picks);
+      setTopScorer(scorer);
+      setIsUpdatable(updatable);
+      setUser((prev) => (prev ? { ...prev, avatarColor } : prev));
+    };
+
+    const loadAfterAuth = async (userId: string) => {
+      try {
+        const qId = await fetchUserQuinielId(userId);
+        if (!mounted) return;
+        if (!qId) {
+          setNeedsQuiniela(true);
+        } else {
+          setQuinielId(qId);
+          setNeedsQuiniela(false);
+          await loadUserData(userId, qId);
+        }
+      } catch (e) {
+        console.error("Failed to load user data", e);
+      } finally {
+        if (mounted) setLoading(false);
       }
     };
 
     const {
       data: { subscription },
-    } = client.auth.onAuthStateChange(async (event, session) => {
+    } = client.auth.onAuthStateChange((event, session) => {
       if (!mounted) return;
 
       if (session?.user) {
@@ -128,22 +147,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
 
         if (event === "SIGNED_IN" || event === "INITIAL_SESSION") {
-          try {
-            const qId = await fetchUserQuinielId(u.id);
-            if (!mounted) return;
-
-            if (!qId) {
-              setNeedsQuiniela(true);
-            } else {
-              setQuinielId(qId);
-              setNeedsQuiniela(false);
-              await loadUserData(u.id, qId);
-            }
-          } catch (e) {
-            console.error("Failed to load user data", e);
+          // Supabase re-fires SIGNED_IN on tab focus; only load once per user.
+          if (loadedForUser.current === u.id) {
+            setLoading(false);
+            return;
           }
+          loadedForUser.current = u.id;
+          // Defer DB calls outside the auth-lock callback to avoid a deadlock
+          // that hangs every later query until the page is refreshed.
+          setTimeout(() => {
+            if (mounted) loadAfterAuth(u.id);
+          }, 0);
+        } else {
+          setLoading(false);
         }
       } else {
+        loadedForUser.current = null;
         setUser(null);
         setQuinielId(null);
         setNeedsQuiniela(false);
@@ -151,9 +170,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsUpdatable(true);
         setUserPicks({});
         setTopScorer(null);
+        setLoading(false);
       }
-
-      if (mounted) setLoading(false);
     });
 
     return () => {

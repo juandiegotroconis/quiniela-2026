@@ -5,23 +5,25 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-pnpm dev          # start dev server (Vite + React Router)
-pnpm build        # production build
-pnpm start        # serve the built app
-pnpm typecheck    # react-router typegen + tsc
+pnpm dev          # start Vite dev server
+pnpm build        # production build (tsc -b && vite build)
+pnpm preview      # serve the built app locally
+pnpm typecheck    # tsc (no emit)
+pnpm deploy       # build + wrangler pages deploy dist
 ```
 
 No test suite is configured yet.
 
 ## Architecture
 
-**Stack**: React Router v7 (framework/SSR mode), React 19, TypeScript, Vite, pnpm.
+**Stack**: React Router v7 (library mode — client-side SPA, no SSR), React 19, TypeScript, Vite, pnpm.
 
-**Routing** (`src/routes/`): thin route files that render a Screen component and export a `meta()` function. `_index.tsx` redirects to `/rankings`. Routes: `/login`, `/rankings`, `/matches`, `/groups`, `/profile`, `/player/:userId`.
+**Entry / routing** (`src/main.tsx`): the Vite entry. Mounts `AuthProvider` → `RouterProvider` with a `createBrowserRouter`. Top-level routes: `/login`, `/verify-email`, and the `/` layout route (`App`) whose children are index → redirect to `/rankings`, plus `/rankings`, `/matches`, `/groups`, `/profile`, `/player/:id`. Route files in `src/routes/` are thin wrappers that render a Screen component.
 
-**App shell** (`src/App.tsx`): wraps the app in `AuthProvider` → `DataProvider` → `AppContent`. `AppContent` redirects unauthenticated users to `/login` and shows `TopNav` + `PredictionsBanner` when logged in. `PredictionsBanner` shows "Enter Predictions" when not submitted, or "Update Predictions" when submitted and `isUpdatable = true`. `root.tsx` is the Vite entry point.
+**App shell** (`src/App.tsx`): the `/` layout route. Wraps `DataProvider` → `AppContent`. `AppContent` redirects unauthenticated users to `/login`, renders `JoinQuinielaScreen` when `needsQuiniela`, otherwise shows `TopNav` + `PredictionsBanner` + `<Outlet />`. `PredictionsBanner` shows "Enter Predictions" when not submitted, or "Update Predictions" when submitted and `isUpdatable = true` (hidden on `/profile`).
 
-**Auth** (`src/lib/auth-context.tsx`): Supabase Auth, client-side only. `AuthProvider` listens to `onAuthStateChange`. On auth, loads picks, top-scorer pick, submission status, `isUpdatable`, and `avatarColor` from Supabase. `AuthUser` now includes `avatarColor: string | null`. Exposes `user`, `loading`, `quinielaId`, `submitted`, `isUpdatable`, `userPicks`, `topScorer`, `login`, `signup`, `logout`, `savePredictions`, `submitPredictions`, `updateAvatarColor`.
+**Auth** (`src/lib/auth-context.tsx`): Supabase Auth, client-side only. `AuthProvider` listens to `onAuthStateChange`. On auth, loads quiniela membership, picks, top-scorer pick, submission status, `isUpdatable`, and `avatarColor` from Supabase. `AuthUser` includes `avatarColor: string | null`. Exposes `user`, `loading`, `quinielaId`, `needsQuiniela`, `submitted`, `isUpdatable`, `userPicks`, `topScorer`, `login`, `signup`, `logout`, `joinWithCode`, `savePredictions`, `submitPredictions`, `updateAvatarColor`.
+- **Critical — `onAuthStateChange` deadlock**: the callback must stay synchronous and must NOT `await` Supabase calls. All client queries share one singleton client (see below); awaiting a query inside the callback holds the auth lock and deadlocks every later query until a page refresh (manifests as taps/buttons silently not working across login, save, submit). DB work after auth is deferred via `setTimeout(0)` and guarded by a per-user ref so Supabase re-firing `SIGNED_IN` on tab focus doesn't reload.
 - `savePredictions(picks, scorer)` — upserts only filled picks; does **not** write to `prediction_submissions` (partial save).
 - `submitPredictions(picks, scorer)` — requires all picks + scorer; writes to `prediction_submissions`.
 - `updateAvatarColor(color)` — updates `profiles.avatar_color` and `quiniela_members.avatar_color` in parallel.
