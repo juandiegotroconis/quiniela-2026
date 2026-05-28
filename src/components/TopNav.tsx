@@ -8,7 +8,7 @@ export default function TopNav() {
 
   return (
     <header className='top-nav'>
-      <NavLink to='/rankings' className='top-nav__logo'>
+      <NavLink to='/matches' className='top-nav__logo'>
         <img
           src='/logo-black.svg'
           alt='FWC26 Quiniela Logo'
@@ -43,7 +43,11 @@ export default function TopNav() {
           `top-nav__profile${isActive ? " top-nav__profile--active" : ""}`
         }
       >
-        <Avatar name={displayName} size={32} color={user?.avatarColor ?? undefined} />
+        <Avatar
+          name={displayName}
+          size={32}
+          color={user?.avatarColor ?? undefined}
+        />
         <span className='top-nav__profile-name'>{displayName}</span>
       </NavLink>
     </header>

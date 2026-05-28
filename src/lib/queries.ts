@@ -210,47 +210,6 @@ export async function fetchUserMembershipInfo(
   };
 }
 
-export async function lookupQuinielByCode(code: string): Promise<{
-  id: string;
-  name: string;
-  isUpdatable: boolean;
-  variant: string | null;
-} | null> {
-  const client = getClient();
-  const { data, error } = await client
-    .from("quinielas")
-    .select("id, name, is_updatable, variant")
-    .eq("join_code", code.trim())
-    .maybeSingle();
-  if (error) throw error;
-  if (!data) return null;
-  const row = data;
-  return {
-    id: row.id,
-    name: row.name,
-    isUpdatable: row.is_updatable ?? true,
-    variant: row.variant ?? null,
-  };
-}
-
-export async function ensureMembership(
-  userId: string,
-  quinielaId: string,
-  displayName: string,
-  avatarColor: string,
-): Promise<void> {
-  const { error } = await getClient().from("quiniela_members").upsert(
-    {
-      quiniela_id: quinielaId,
-      user_id: userId,
-      display_name: displayName,
-      avatar_color: avatarColor,
-    },
-    { onConflict: "user_id,quiniela_id", ignoreDuplicates: true },
-  );
-  if (error) throw error;
-}
-
 export async function savePredictions(
   userId: string,
   quinielaId: string,

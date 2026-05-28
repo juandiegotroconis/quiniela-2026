@@ -21,11 +21,17 @@ export default function AuthScreen() {
     setError("");
 
     if (mode === "forgot") {
-      if (!email) { setError("Please enter your email"); return; }
+      if (!email) {
+        setError("Please enter your email");
+        return;
+      }
       setLoading(true);
       const err = await forgotPassword(email);
       setLoading(false);
-      if (err) { setError(err); return; }
+      if (err) {
+        setError(err);
+        return;
+      }
       setForgotSent(true);
       return;
     }
@@ -55,7 +61,7 @@ export default function AuthScreen() {
       return;
     }
     if (mode === "login") {
-      navigate("/rankings");
+      navigate("/profile");
     } else {
       navigate("/verify-email", { state: { email } });
     }
@@ -72,7 +78,6 @@ export default function AuthScreen() {
       <div className='auth-screen__inner'>
         <div className='auth-screen__stripe' />
         <div className='auth-screen__content'>
-
           <div className='auth-screen__logo'>
             <img
               src='/logo-black.svg'
@@ -85,14 +90,26 @@ export default function AuthScreen() {
           {mode === "forgot" ? (
             forgotSent ? (
               <div className='auth-screen__forgot-success'>
-                <Icon icon='mdi:email-check-outline' width={44} height={44} className='auth-screen__forgot-success-icon' />
-                <p className='auth-screen__forgot-success-title'>Check your inbox</p>
+                <Icon
+                  icon='mdi:email-check-outline'
+                  width={44}
+                  height={44}
+                  className='auth-screen__forgot-success-icon'
+                />
+                <p className='auth-screen__forgot-success-title'>
+                  Check your inbox
+                </p>
                 <p className='auth-screen__forgot-success-body'>
                   We sent a password reset link to <strong>{email}</strong>.
                 </p>
                 <button
                   className='auth-screen__back-link'
-                  onClick={() => { setMode("login"); setForgotSent(false); setEmail(""); setError(""); }}
+                  onClick={() => {
+                    setMode("login");
+                    setForgotSent(false);
+                    setEmail("");
+                    setError("");
+                  }}
                 >
                   Back to Log In
                 </button>
@@ -101,7 +118,9 @@ export default function AuthScreen() {
               <>
                 <div className='auth-screen__forgot-header'>
                   <p className='auth-screen__forgot-title'>Reset password</p>
-                  <p className='auth-screen__forgot-subtitle'>Enter your email and we'll send you a reset link.</p>
+                  <p className='auth-screen__forgot-subtitle'>
+                    Enter your email and we'll send you a reset link.
+                  </p>
                 </div>
                 <form className='auth-screen__form' onSubmit={handleSubmit}>
                   <div className='auth-screen__field'>
@@ -116,14 +135,21 @@ export default function AuthScreen() {
                     />
                   </div>
                   {error && <div className='auth-screen__error'>{error}</div>}
-                  <button type='submit' className='auth-screen__submit' disabled={loading}>
+                  <button
+                    type='submit'
+                    className='auth-screen__submit'
+                    disabled={loading}
+                  >
                     {loading ? "Sending…" : "Send Reset Link"}
                   </button>
                 </form>
                 <div className='auth-screen__footer'>
                   <button
                     className='auth-screen__back-link'
-                    onClick={() => { setMode("login"); setError(""); }}
+                    onClick={() => {
+                      setMode("login");
+                      setError("");
+                    }}
                   >
                     Back to Log In
                   </button>
@@ -182,16 +208,26 @@ export default function AuthScreen() {
                       className='auth-screen__input-toggle'
                       onClick={() => setShowPassword((v) => !v)}
                       tabIndex={-1}
-                      aria-label={showPassword ? "Hide password" : "Show password"}
+                      aria-label={
+                        showPassword ? "Hide password" : "Show password"
+                      }
                     >
-                      <Icon icon={showPassword ? "mdi:eye-off" : "mdi:eye"} width={18} height={18} />
+                      <Icon
+                        icon={showPassword ? "mdi:eye-off" : "mdi:eye"}
+                        width={18}
+                        height={18}
+                      />
                     </button>
                   </div>
                 </div>
 
                 {error && <div className='auth-screen__error'>{error}</div>}
 
-                <button type='submit' className='auth-screen__submit' disabled={loading}>
+                <button
+                  type='submit'
+                  className='auth-screen__submit'
+                  disabled={loading}
+                >
                   {loading
                     ? "Please wait…"
                     : mode === "login"
@@ -204,7 +240,10 @@ export default function AuthScreen() {
                 <div className='auth-screen__footer'>
                   <button
                     className='auth-screen__footer-link auth-screen__footer-link--btn'
-                    onClick={() => { setMode("forgot"); setError(""); }}
+                    onClick={() => {
+                      setMode("forgot");
+                      setError("");
+                    }}
                   >
                     Forgot password?
                   </button>
@@ -212,7 +251,6 @@ export default function AuthScreen() {
               )}
             </>
           )}
-
         </div>
       </div>
     </div>

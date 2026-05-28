@@ -491,6 +491,14 @@ export type Database = {
       }
       get_my_quiniela_ids: { Args: never; Returns: string[] }
       immutable_unaccent: { Args: { "": string }; Returns: string }
+      join_quiniela_by_code: {
+        Args: { p_join_code: string }
+        Returns: {
+          is_updatable: boolean
+          quiniela_id: string
+          variant: string
+        }[]
+      }
       prediction_points: {
         Args: {
           p_away_team_code: string

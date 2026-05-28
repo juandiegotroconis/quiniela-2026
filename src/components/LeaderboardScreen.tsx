@@ -1,18 +1,18 @@
-import './LeaderboardScreen.css';
-import { useMemo, useState, useEffect } from 'react';
-import { Link } from 'react-router';
-import PageContainer from './PageContainer';
-import Wc26Banner from './Wc26Banner';
-import SectionHeader from './SectionHeader';
-import PodiumCard from './PodiumCard';
-import Avatar from './Avatar';
-import PositionChange from './PositionChange';
-import Sparkline from './Sparkline';
-import { useData } from '~/lib/data-context';
-import { useAuth } from '~/lib/auth-context';
-import { fetchMemberHistory } from '~/lib/queries';
+import "./LeaderboardScreen.css";
+import { useMemo, useState, useEffect } from "react";
+import { Link } from "react-router";
+import PageContainer from "./PageContainer";
+import Wc26Banner from "./Wc26Banner";
+import SectionHeader from "./SectionHeader";
+import PodiumCard from "./PodiumCard";
+import Avatar from "./Avatar";
+import PositionChange from "./PositionChange";
+import Sparkline from "./Sparkline";
+import { useData } from "~/lib/data-context";
+import { useAuth } from "~/lib/auth-context";
+import { fetchMemberHistory } from "~/lib/queries";
 
-const RANK_COLORS = ['#FFD700', '#C0C0C0', '#CD7F32'];
+const RANK_COLORS = ["#FFD700", "#C0C0C0", "#CD7F32"];
 
 export default function LeaderboardScreen() {
   const { members, membersLoading } = useData();
@@ -27,7 +27,7 @@ export default function LeaderboardScreen() {
   if (membersLoading) {
     return (
       <PageContainer>
-        <SectionHeader title="Rankings" subtitle="Loading…" />
+        <SectionHeader title='Rankings' subtitle='Loading…' />
       </PageContainer>
     );
   }
@@ -35,8 +35,14 @@ export default function LeaderboardScreen() {
   if (members.length === 0) {
     return (
       <PageContainer>
-        <SectionHeader title="Rankings" subtitle="Friends League" />
-        <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--fg-secondary)' }}>
+        <SectionHeader title='Rankings' subtitle='Friends League' />
+        <div
+          style={{
+            padding: "2rem",
+            textAlign: "center",
+            color: "var(--fg-secondary)",
+          }}
+        >
           No players yet — be the first to join!
         </div>
       </PageContainer>
@@ -45,21 +51,27 @@ export default function LeaderboardScreen() {
 
   // rank=0 means unranked (DB default); ties broken by join date (earlier = higher)
   const sorted = useMemo(() => {
-    return [...members].sort((a, b) => {
-      const ra = a.rank || Infinity;
-      const rb = b.rank || Infinity;
-      if (ra !== rb) return ra - rb;
-      const aJoined = a.joinedAt ?? '';
-      const bJoined = b.joinedAt ?? '';
-      return aJoined < bJoined ? -1 : aJoined > bJoined ? 1 : 0;
-    }).map((m, i) => ({ ...m, rank: m.rank || i + 1, history: historyMap[m.userId] ?? [] }));
+    return [...members]
+      .sort((a, b) => {
+        const ra = a.rank || Infinity;
+        const rb = b.rank || Infinity;
+        if (ra !== rb) return ra - rb;
+        const aJoined = a.joinedAt ?? "";
+        const bJoined = b.joinedAt ?? "";
+        return aJoined < bJoined ? -1 : aJoined > bJoined ? 1 : 0;
+      })
+      .map((m, i) => ({
+        ...m,
+        rank: m.rank || i + 1,
+        history: historyMap[m.userId] ?? [],
+      }));
   }, [members, historyMap]);
 
   const podium = sorted.slice(0, 3);
   const rest = sorted.slice(3);
 
   // Podium order: 2nd (left), 1st (centre), 3rd (right) — fill from available
-  const podiumSlots: (typeof sorted[0] | null)[] = [
+  const podiumSlots: ((typeof sorted)[0] | null)[] = [
     podium[1] ?? null,
     podium[0],
     podium[2] ?? null,
@@ -69,62 +81,79 @@ export default function LeaderboardScreen() {
     <>
       <Wc26Banner />
       <PageContainer>
-      <SectionHeader title="Rankings" subtitle={`Friends League · ${sorted.length} player${sorted.length !== 1 ? 's' : ''}`} />
+        <SectionHeader
+          title='Rankings'
+          subtitle={`Friends League · ${sorted.length} player${sorted.length !== 1 ? "s" : ""}`}
+        />
 
-      <div className="leaderboard__podium">
-        {podiumSlots.map((p, slotIdx) => {
-          if (!p) return <div key={slotIdx} className="leaderboard__podium-link" />;
-          const isFirst = slotIdx === 1;
-          const rankColor = RANK_COLORS[p.rank - 1];
-          return (
-            <Link key={p.userId} to={`/player/${p.userId}`} className="leaderboard__podium-link">
-              <PodiumCard
-                player={p}
-                rankColor={rankColor}
-                isFirst={isFirst}
-                isMe={p.userId === user?.id}
-              />
-            </Link>
-          );
-        })}
-      </div>
-
-      {rest.length > 0 && (
-        <div className="leaderboard__table">
-          <div className="leaderboard__table-header">
-            <span>#</span>
-            <span />
-            <span>Player</span>
-            <span className="leaderboard__table-header-trend">Trend</span>
-            <span className="leaderboard__table-header-pts">Pts</span>
-          </div>
-
-          {rest.map(p => {
-            const isMe = p.userId === user?.id;
+        <div className='leaderboard__podium'>
+          {podiumSlots.map((p, slotIdx) => {
+            if (!p)
+              return <div key={slotIdx} className='leaderboard__podium-link' />;
+            const isFirst = slotIdx === 1;
+            const rankColor = RANK_COLORS[p.rank - 1];
             return (
               <Link
                 key={p.userId}
                 to={`/player/${p.userId}`}
-                className={`leaderboard__row${isMe ? ' leaderboard__row--me' : ''}`}
+                className='leaderboard__podium-link'
               >
-                <span className="leaderboard__row-rank">{p.rank}</span>
-                <PositionChange current={p.rank} previous={p.prevRank ?? p.rank} />
-                <div className="leaderboard__row-player">
-                  <Avatar name={p.displayName} color={p.avatarColor} size={32} />
-                  <span className={`leaderboard__row-name${isMe ? ' leaderboard__row-name--me' : ''}`}>
-                    {isMe ? 'You' : p.displayName}
-                  </span>
-                </div>
-                <div className="leaderboard__row-trend">
-                  <Sparkline history={p.history} />
-                </div>
-                <span className="leaderboard__row-pts">{p.pts}</span>
+                <PodiumCard
+                  player={p}
+                  rankColor={rankColor}
+                  isFirst={isFirst}
+                  isMe={p.userId === user?.id}
+                />
               </Link>
             );
           })}
         </div>
-      )}
-    </PageContainer>
+
+        {rest.length > 0 && (
+          <div className='leaderboard__table'>
+            <div className='leaderboard__table-header'>
+              <span>#</span>
+              <span />
+              <span>Player</span>
+              <span className='leaderboard__table-header-trend'>Trend</span>
+              <span className='leaderboard__table-header-pts'>Pts</span>
+            </div>
+
+            {rest.map((p) => {
+              const isMe = p.userId === user?.id;
+              return (
+                <Link
+                  key={p.userId}
+                  to={`/player/${p.userId}`}
+                  className={`leaderboard__row${isMe ? " leaderboard__row--me" : ""}`}
+                >
+                  <span className='leaderboard__row-rank'>{p.rank}</span>
+                  <PositionChange
+                    current={p.rank}
+                    previous={p.prevRank ?? p.rank}
+                  />
+                  <div className='leaderboard__row-player'>
+                    <Avatar
+                      name={p.displayName}
+                      color={p.avatarColor}
+                      size={32}
+                    />
+                    <span
+                      className={`leaderboard__row-name${isMe ? " leaderboard__row-name--me" : ""}`}
+                    >
+                      {isMe ? "You" : p.displayName}
+                    </span>
+                  </div>
+                  <div className='leaderboard__row-trend'>
+                    <Sparkline history={p.history} />
+                  </div>
+                  <span className='leaderboard__row-pts'>{p.pts}</span>
+                </Link>
+              );
+            })}
+          </div>
+        )}
+      </PageContainer>
     </>
   );
 }

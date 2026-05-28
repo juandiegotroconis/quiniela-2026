@@ -21,7 +21,7 @@ const router = createBrowserRouter([
     path: "/",
     Component: App,
     children: [
-      { index: true, loader: () => redirect("/rankings") },
+      { index: true, loader: () => redirect("/profile") },
       { path: "rankings", Component: RankingsRoute },
       { path: "matches", Component: MatchesRoute },
       { path: "groups", Component: GroupsRoute },

@@ -8,14 +8,12 @@ import {
 } from "react";
 import { getClient } from "./client";
 import {
-  ensureMembership,
   fetchUserPicks,
   fetchUserTopScorer,
   checkSubmitted,
   submitAllPredictions,
   savePredictions as querySavePredictions,
   fetchUserMembershipInfo,
-  lookupQuinielByCode,
   updateAvatarColor as queryUpdateAvatarColor,
 } from "./queries";
 import { AVATAR_COLORS } from "./mock-data";
@@ -115,7 +113,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setNeedsQuiniela(false);
           setIsUpdatable(membership.isUpdatable);
           setQuinielaVariant(membership.variant);
-          setUser((prev) => (prev ? { ...prev, avatarColor: membership.avatarColor } : prev));
+          setUser((prev) =>
+            prev ? { ...prev, avatarColor: membership.avatarColor } : prev,
+          );
           await loadUserData(userId, membership.quinielaId);
         }
       } catch (e) {
@@ -226,7 +226,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const resetPassword = async (newPassword: string): Promise<string | null> => {
-    const { error } = await getClient().auth.updateUser({ password: newPassword });
+    const { error } = await getClient().auth.updateUser({
+      password: newPassword,
+    });
     if (!error) setIsPasswordRecovery(false);
     return error ? error.message : null;
   };
@@ -234,27 +236,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const joinWithCode = async (code: string): Promise<string | null> => {
     if (!user) return "Not authenticated";
     try {
-      const quiniela = await lookupQuinielByCode(code);
-      if (!quiniela) return "Code not found. Please check and try again.";
+      const { data, error } = await client
+        .rpc("join_quiniela_by_code", { p_join_code: code })
+        .select("*")
+        .maybeSingle();
+      if (error || !data) return error ? error.message : "Quiniela not found";
 
-      await ensureMembership(
-        user.id,
-        quiniela.id,
-        user.name,
-        avatarColorForUser(user.id),
-      );
       const [sub, picks, scorer] = await Promise.all([
-        checkSubmitted(user.id, quiniela.id),
-        fetchUserPicks(user.id, quiniela.id),
-        fetchUserTopScorer(user.id, quiniela.id),
+        checkSubmitted(user.id, data.quiniela_id),
+        fetchUserPicks(user.id, data.quiniela_id),
+        fetchUserTopScorer(user.id, data.quiniela_id),
       ]);
-      setQuinielId(quiniela.id);
+      setQuinielId(data.quiniela_id);
       setNeedsQuiniela(false);
       setSubmitted(sub);
       setUserPicks(picks);
       setTopScorer(scorer);
-      setIsUpdatable(quiniela.isUpdatable);
-      setQuinielaVariant(quiniela.variant);
+      setIsUpdatable(data.is_updatable);
+      setQuinielaVariant(data.variant);
       return null;
     } catch (e: unknown) {
       return e instanceof Error ? e.message : "Failed to join quiniela";
