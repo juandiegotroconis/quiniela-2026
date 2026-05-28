@@ -32,8 +32,11 @@ export default function PredictionEntryForm({
   onSubmit,
 }: Props) {
   const { matches } = useData();
-  const [picks, setPicks] = useState<Record<number, UserPickEntry>>(initialPicks);
-  const [topScorer, setTopScorer] = useState<TopScorerSuggestion | null>(initialTopScorer);
+  const [picks, setPicks] =
+    useState<Record<number, UserPickEntry>>(initialPicks);
+  const [topScorer, setTopScorer] = useState<TopScorerSuggestion | null>(
+    initialTopScorer,
+  );
   const [showErrors, setShowErrors] = useState(false);
   const [saving, setSaving] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -208,6 +211,7 @@ export default function PredictionEntryForm({
                         <span className='pred-form__match-sep'>:</span>
                         <input
                           type='number'
+                          inputMode='numeric'
                           min='0'
                           max='20'
                           className={`pred-form__match-input${hasError ? " pred-form__match-input--error" : ""}`}
@@ -286,7 +290,7 @@ export default function PredictionEntryForm({
           onClick={handleSave}
           disabled={saving || submitting || !hasSomeFilled}
         >
-          {saving ? "Saving…" : saveMsg ?? "Save Progress"}
+          {saving ? "Saving…" : (saveMsg ?? "Save Progress")}
         </button>
         <button
           className={`pred-form__submit${allFilled ? " pred-form__submit--ready" : " pred-form__submit--disabled"}`}
