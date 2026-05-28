@@ -16,7 +16,7 @@ import {
   fetchUserMembershipInfo,
   updateAvatarColor as queryUpdateAvatarColor,
 } from "./queries";
-import type { TopScorerSuggestion } from "./mock-data";
+import { AVATAR_COLORS, type TopScorerSuggestion } from "./mock-data";
 
 export interface AuthUser {
   id: string;
@@ -93,12 +93,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setTopScorer(scorer);
     };
 
-    const loadAfterAuth = async (userId: string) => {
+    const loadAfterAuth = async (
+      userId: string,
+      userMeta?: Record<string, string>,
+    ) => {
       try {
+        const metaColor = userMeta?.avatar_color;
+        if (metaColor) {
+          await getClient()
+            .from("profiles")
+            .update({ avatar_color: metaColor })
+            .eq("id", userId);
+        }
         const membership = await fetchUserMembershipInfo(userId);
         if (!mounted) return;
         if (!membership) {
           setNeedsQuiniela(true);
+          if (metaColor) setUser((prev) => prev ? { ...prev, avatarColor: metaColor } : prev);
         } else {
           setQuinielId(membership.quinielaId);
           setNeedsQuiniela(false);
@@ -156,7 +167,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // Defer DB calls outside the auth-lock callback to avoid a deadlock
           // that hangs every later query until the page is refreshed.
           setTimeout(() => {
-            if (mounted) loadAfterAuth(u.id);
+            if (mounted) loadAfterAuth(u.id, u.user_metadata as Record<string, string>);
           }, 0);
         } else {
           setLoading(false);
@@ -197,10 +208,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     password: string,
     name: string,
   ): Promise<string | null> => {
+    const avatar_color =
+      AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)];
     const { error } = await getClient().auth.signUp({
       email,
       password,
-      options: { data: { name } },
+      options: { data: { name, avatar_color } },
     });
     return error ? error.message : null;
   };

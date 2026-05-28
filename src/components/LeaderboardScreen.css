@@ -27,7 +27,7 @@
 
 .leaderboard__table-header {
   display: grid;
-  grid-template-columns: 36px 40px 1fr 70px 56px;
+  grid-template-columns: 28px 24px 1fr 52px 44px;
   align-items: center;
   padding: 10px 16px;
   gap: 8px;
@@ -50,7 +50,7 @@
 
 .leaderboard__row {
   display: grid;
-  grid-template-columns: 36px 40px 1fr 70px 56px;
+  grid-template-columns: 28px 24px 1fr 52px 44px;
   align-items: center;
   padding: 10px 16px;
   gap: 8px;
@@ -62,7 +62,7 @@
 }
 
 .leaderboard__row:hover {
-  background: var(--surface-3, rgba(255,255,255,0.04));
+  background: var(--surface-3, rgba(255, 255, 255, 0.04));
 }
 
 .leaderboard__row:last-child {
@@ -87,7 +87,7 @@
 .leaderboard__row-player {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
   min-width: 0;
 }
 
@@ -111,7 +111,7 @@
 
 .leaderboard__row-pts {
   font-family: var(--font-display);
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--color-green);
   text-align: right;

@@ -1,5 +1,5 @@
-import './PageContainer.css';
-import type { ReactNode } from 'react';
+import "./PageContainer.css";
+import type { ReactNode } from "react";
 
 interface Props {
   children: ReactNode;
@@ -8,7 +8,7 @@ interface Props {
 
 export default function PageContainer({ children, wide }: Props) {
   return (
-    <div className={`page-container${wide ? ' page-container--wide' : ''}`}>
+    <div className={`page-container${wide ? " page-container--wide" : ""}`}>
       {children}
     </div>
   );
