@@ -16,7 +16,6 @@ import {
   fetchUserMembershipInfo,
   updateAvatarColor as queryUpdateAvatarColor,
 } from "./queries";
-import { AVATAR_COLORS } from "./mock-data";
 import type { TopScorerSuggestion } from "./mock-data";
 
 export interface AuthUser {
@@ -64,14 +63,6 @@ interface AuthContextValue {
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
-
-function avatarColorForUser(userId: string): string {
-  let hash = 0;
-  for (let i = 0; i < userId.length; i++) {
-    hash = (hash * 31 + userId.charCodeAt(i)) >>> 0;
-  }
-  return AVATAR_COLORS[hash % AVATAR_COLORS.length];
-}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
