@@ -49,17 +49,23 @@ export async function fetchMatches(): Promise<Match[]> {
   const client = getClient();
   const { data, error } = await client
     .from("matches")
-    .select("id, group_name, matchday, home_team_code, away_team_code, utc_date, status, score_home_regular, score_away_regular")
+    .select(
+      "id, group_name, matchday, home_team_code, away_team_code, utc_date, status, score_home_regular, score_away_regular",
+    )
     .order("utc_date", { ascending: true });
   if (error) throw error;
-  return (data ?? []).map(row => rowToMatch(row as unknown as Tables<"matches">));
+  return (data ?? []).map((row) =>
+    rowToMatch(row as unknown as Tables<"matches">),
+  );
 }
 
 export async function fetchMembersCore(quinielaId: string): Promise<Member[]> {
   const client = getClient();
   const { data, error } = await client
     .from("quiniela_members")
-    .select("user_id, display_name, avatar_color, total_pts, rank, prev_rank, rank_change, exact_count, correct_count, scored_matches, joined_at")
+    .select(
+      "user_id, display_name, avatar_color, total_pts, rank, prev_rank, rank_change, exact_count, correct_count, scored_matches, joined_at",
+    )
     .eq("quiniela_id", quinielaId)
     .order("rank", { ascending: true, nullsFirst: false });
   if (error) throw error;
@@ -81,7 +87,9 @@ export async function fetchMembersCore(quinielaId: string): Promise<Member[]> {
   );
 }
 
-export async function fetchMemberHistory(quinielaId: string): Promise<Record<string, number[]>> {
+export async function fetchMemberHistory(
+  quinielaId: string,
+): Promise<Record<string, number[]>> {
   const { data } = await getClient()
     .from("leaderboard_snapshots")
     .select("user_id, cumulative_pts")
@@ -95,14 +103,17 @@ export async function fetchMemberHistory(quinielaId: string): Promise<Record<str
   return map;
 }
 
-export async function fetchSingleMemberHistory(userId: string, quinielaId: string): Promise<number[]> {
+export async function fetchSingleMemberHistory(
+  userId: string,
+  quinielaId: string,
+): Promise<number[]> {
   const { data } = await getClient()
     .from("leaderboard_snapshots")
     .select("cumulative_pts")
     .eq("quiniela_id", quinielaId)
     .eq("user_id", userId)
     .order("match_id", { ascending: true });
-  return (data ?? []).map(r => r.cumulative_pts);
+  return (data ?? []).map((r) => r.cumulative_pts);
 }
 
 export async function fetchUserPicks(
@@ -180,16 +191,17 @@ export interface MembershipInfo {
   variant: string | null;
 }
 
-export async function fetchUserMembershipInfo(userId: string): Promise<MembershipInfo | null> {
+export async function fetchUserMembershipInfo(
+  userId: string,
+): Promise<MembershipInfo | null> {
   const { data } = await getClient()
     .from("quiniela_members")
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .select("quiniela_id, avatar_color, quinielas(is_updatable, variant)" as any)
+    .select("quiniela_id, avatar_color, quinielas(is_updatable, variant)")
     .eq("user_id", userId)
     .limit(1)
     .maybeSingle();
   if (!data) return null;
-  const row = data as { quiniela_id: string; avatar_color: string | null; quinielas: { is_updatable: boolean; variant: string | null } | null };
+  const row = data;
   return {
     quinielaId: row.quiniela_id ?? "",
     avatarColor: row.avatar_color ?? null,
@@ -198,20 +210,27 @@ export async function fetchUserMembershipInfo(userId: string): Promise<Membershi
   };
 }
 
-export async function lookupQuinielByCode(
-  code: string,
-): Promise<{ id: string; name: string; isUpdatable: boolean; variant: string | null } | null> {
+export async function lookupQuinielByCode(code: string): Promise<{
+  id: string;
+  name: string;
+  isUpdatable: boolean;
+  variant: string | null;
+} | null> {
   const client = getClient();
   const { data, error } = await client
     .from("quinielas")
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .select("id, name, is_updatable, variant" as any)
+    .select("id, name, is_updatable, variant")
     .eq("join_code", code.trim())
     .maybeSingle();
   if (error) throw error;
   if (!data) return null;
-  const row = data as { id: string; name: string; is_updatable: boolean; variant: string | null };
-  return { id: row.id, name: row.name, isUpdatable: row.is_updatable ?? true, variant: row.variant ?? null };
+  const row = data;
+  return {
+    id: row.id,
+    name: row.name,
+    isUpdatable: row.is_updatable ?? true,
+    variant: row.variant ?? null,
+  };
 }
 
 export async function ensureMembership(
@@ -220,15 +239,17 @@ export async function ensureMembership(
   displayName: string,
   avatarColor: string,
 ): Promise<void> {
-  const { error } = await getClient()
-    .from("quiniela_members")
-    .upsert(
-      { quiniela_id: quinielaId, user_id: userId, display_name: displayName, avatar_color: avatarColor },
-      { onConflict: "user_id,quiniela_id", ignoreDuplicates: true },
-    );
+  const { error } = await getClient().from("quiniela_members").upsert(
+    {
+      quiniela_id: quinielaId,
+      user_id: userId,
+      display_name: displayName,
+      avatar_color: avatarColor,
+    },
+    { onConflict: "user_id,quiniela_id", ignoreDuplicates: true },
+  );
   if (error) throw error;
 }
-
 
 export async function savePredictions(
   userId: string,
