@@ -59,7 +59,7 @@ export default function JoinQuinielaScreen() {
       setError(err);
       return;
     }
-    navigate("/profile");
+    navigate("/rankings");
   };
 
   const handleLogout = async () => {

@@ -61,7 +61,7 @@ export default function AuthScreen() {
       return;
     }
     if (mode === "login") {
-      navigate("/profile");
+      navigate("/rankings");
     } else {
       navigate("/verify-email", { state: { email } });
     }
