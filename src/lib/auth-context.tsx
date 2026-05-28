@@ -11,13 +11,11 @@ import {
   ensureMembership,
   fetchUserPicks,
   fetchUserTopScorer,
-  fetchUserAvatarColor,
   checkSubmitted,
   submitAllPredictions,
   savePredictions as querySavePredictions,
-  fetchUserQuinielId,
+  fetchUserMembershipInfo,
   lookupQuinielByCode,
-  fetchQuinielaIsUpdatable,
   updateAvatarColor as queryUpdateAvatarColor,
 } from "./queries";
 import { AVATAR_COLORS } from "./mock-data";
@@ -42,8 +40,10 @@ interface AuthContextValue {
   needsQuiniela: boolean;
   submitted: boolean;
   isUpdatable: boolean;
+  quinielaVariant: string | null;
   userPicks: Record<number, UserPickEntry>;
   topScorer: TopScorerSuggestion | null;
+  isPasswordRecovery: boolean;
   login: (email: string, password: string) => Promise<string | null>;
   signup: (
     email: string,
@@ -51,6 +51,8 @@ interface AuthContextValue {
     name: string,
   ) => Promise<string | null>;
   logout: () => Promise<void>;
+  forgotPassword: (email: string) => Promise<string | null>;
+  resetPassword: (newPassword: string) => Promise<string | null>;
   joinWithCode: (code: string) => Promise<string | null>;
   savePredictions: (
     picks: Record<number, UserPickEntry>,
@@ -80,8 +82,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [needsQuiniela, setNeedsQuiniela] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [isUpdatable, setIsUpdatable] = useState(true);
+  const [quinielaVariant, setQuinielaVariant] = useState<string | null>(null);
   const [userPicks, setUserPicks] = useState<Record<number, UserPickEntry>>({});
   const [topScorer, setTopScorer] = useState<TopScorerSuggestion | null>(null);
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
   const loadedForUser = useRef<string | null>(null);
   const client = getClient();
 
@@ -89,31 +93,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let mounted = true;
 
     const loadUserData = async (userId: string, qId: string) => {
-      const [sub, picks, scorer, updatable, avatarColor] = await Promise.all([
+      const [sub, picks, scorer] = await Promise.all([
         checkSubmitted(userId, qId),
         fetchUserPicks(userId, qId),
         fetchUserTopScorer(userId, qId),
-        fetchQuinielaIsUpdatable(qId),
-        fetchUserAvatarColor(userId, qId),
       ]);
       if (!mounted) return;
       setSubmitted(sub);
       setUserPicks(picks);
       setTopScorer(scorer);
-      setIsUpdatable(updatable);
-      setUser((prev) => (prev ? { ...prev, avatarColor } : prev));
     };
 
     const loadAfterAuth = async (userId: string) => {
       try {
-        const qId = await fetchUserQuinielId(userId);
+        const membership = await fetchUserMembershipInfo(userId);
         if (!mounted) return;
-        if (!qId) {
+        if (!membership) {
           setNeedsQuiniela(true);
         } else {
-          setQuinielId(qId);
+          setQuinielId(membership.quinielaId);
           setNeedsQuiniela(false);
-          await loadUserData(userId, qId);
+          setIsUpdatable(membership.isUpdatable);
+          setQuinielaVariant(membership.variant);
+          setUser((prev) => (prev ? { ...prev, avatarColor: membership.avatarColor } : prev));
+          await loadUserData(userId, membership.quinielaId);
         }
       } catch (e) {
         console.error("Failed to load user data", e);
@@ -146,6 +149,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           };
         });
 
+        if (event === "PASSWORD_RECOVERY") {
+          setIsPasswordRecovery(true);
+          setLoading(false);
+          return;
+        }
+
         if (event === "SIGNED_IN" || event === "INITIAL_SESSION") {
           // Supabase re-fires SIGNED_IN on tab focus; only load once per user.
           if (loadedForUser.current === u.id) {
@@ -168,6 +177,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setNeedsQuiniela(false);
         setSubmitted(false);
         setIsUpdatable(true);
+        setQuinielaVariant(null);
         setUserPicks({});
         setTopScorer(null);
         setLoading(false);
@@ -208,6 +218,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await getClient().auth.signOut();
   };
 
+  const forgotPassword = async (email: string): Promise<string | null> => {
+    const { error } = await getClient().auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    return error ? error.message : null;
+  };
+
+  const resetPassword = async (newPassword: string): Promise<string | null> => {
+    const { error } = await getClient().auth.updateUser({ password: newPassword });
+    if (!error) setIsPasswordRecovery(false);
+    return error ? error.message : null;
+  };
+
   const joinWithCode = async (code: string): Promise<string | null> => {
     if (!user) return "Not authenticated";
     try {
@@ -220,18 +243,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user.name,
         avatarColorForUser(user.id),
       );
-      const [sub, picks, scorer, updatable] = await Promise.all([
+      const [sub, picks, scorer] = await Promise.all([
         checkSubmitted(user.id, quiniela.id),
         fetchUserPicks(user.id, quiniela.id),
         fetchUserTopScorer(user.id, quiniela.id),
-        fetchQuinielaIsUpdatable(quiniela.id),
       ]);
       setQuinielId(quiniela.id);
       setNeedsQuiniela(false);
       setSubmitted(sub);
       setUserPicks(picks);
       setTopScorer(scorer);
-      setIsUpdatable(updatable);
+      setIsUpdatable(quiniela.isUpdatable);
+      setQuinielaVariant(quiniela.variant);
       return null;
     } catch (e: unknown) {
       return e instanceof Error ? e.message : "Failed to join quiniela";
@@ -289,11 +312,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         needsQuiniela,
         submitted,
         isUpdatable,
+        quinielaVariant,
         userPicks,
         topScorer,
+        isPasswordRecovery,
         login,
         signup,
         logout,
+        forgotPassword,
+        resetPassword,
         joinWithCode,
         savePredictions,
         submitPredictions,

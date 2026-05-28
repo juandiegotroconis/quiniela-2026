@@ -1,4 +1,5 @@
 import './LeaderboardScreen.css';
+import { useMemo, useState, useEffect } from 'react';
 import { Link } from 'react-router';
 import PageContainer from './PageContainer';
 import Wc26Banner from './Wc26Banner';
@@ -9,12 +10,19 @@ import PositionChange from './PositionChange';
 import Sparkline from './Sparkline';
 import { useData } from '~/lib/data-context';
 import { useAuth } from '~/lib/auth-context';
+import { fetchMemberHistory } from '~/lib/queries';
 
-const RANK_COLORS = ['#C8A94E', '#B0B0B0', '#CD7F32'];
+const RANK_COLORS = ['#FFD700', '#C0C0C0', '#CD7F32'];
 
 export default function LeaderboardScreen() {
   const { members, membersLoading } = useData();
-  const { user } = useAuth();
+  const { user, quinielaId } = useAuth();
+  const [historyMap, setHistoryMap] = useState<Record<string, number[]>>({});
+
+  useEffect(() => {
+    if (!quinielaId) return;
+    fetchMemberHistory(quinielaId).then(setHistoryMap).catch(console.error);
+  }, [quinielaId]);
 
   if (membersLoading) {
     return (
@@ -35,13 +43,17 @@ export default function LeaderboardScreen() {
     );
   }
 
-  // Members with null rank get sorted to the end; assign display rank by index
-  const sorted = [...members].sort((a, b) => {
-    if (a.rank == null && b.rank == null) return 0;
-    if (a.rank == null) return 1;
-    if (b.rank == null) return -1;
-    return a.rank - b.rank;
-  }).map((m, i) => ({ ...m, rank: m.rank ?? i + 1 }));
+  // rank=0 means unranked (DB default); ties broken by join date (earlier = higher)
+  const sorted = useMemo(() => {
+    return [...members].sort((a, b) => {
+      const ra = a.rank || Infinity;
+      const rb = b.rank || Infinity;
+      if (ra !== rb) return ra - rb;
+      const aJoined = a.joinedAt ?? '';
+      const bJoined = b.joinedAt ?? '';
+      return aJoined < bJoined ? -1 : aJoined > bJoined ? 1 : 0;
+    }).map((m, i) => ({ ...m, rank: m.rank || i + 1, history: historyMap[m.userId] ?? [] }));
+  }, [members, historyMap]);
 
   const podium = sorted.slice(0, 3);
   const rest = sorted.slice(3);
@@ -63,7 +75,7 @@ export default function LeaderboardScreen() {
         {podiumSlots.map((p, slotIdx) => {
           if (!p) return <div key={slotIdx} className="leaderboard__podium-link" />;
           const isFirst = slotIdx === 1;
-          const rankColor = RANK_COLORS[slotIdx];
+          const rankColor = RANK_COLORS[p.rank - 1];
           return (
             <Link key={p.userId} to={`/player/${p.userId}`} className="leaderboard__podium-link">
               <PodiumCard

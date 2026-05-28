@@ -41,6 +41,7 @@ function rowToMatch(row: Tables<"matches">): Match {
     status: dbStatusToUi(row.status),
     time: formatLocalTime(row.utc_date),
     date: formatLocalDate(row.utc_date),
+    utcDate: row.utc_date ?? "",
   };
 }
 
@@ -48,35 +49,21 @@ export async function fetchMatches(): Promise<Match[]> {
   const client = getClient();
   const { data, error } = await client
     .from("matches")
-    .select("*")
+    .select("id, group_name, matchday, home_team_code, away_team_code, utc_date, status, score_home_regular, score_away_regular")
     .order("utc_date", { ascending: true });
   if (error) throw error;
-  return (data ?? []).map(rowToMatch);
+  return (data ?? []).map(row => rowToMatch(row as unknown as Tables<"matches">));
 }
 
-export async function fetchMembers(quinielaId: string): Promise<Member[]> {
+export async function fetchMembersCore(quinielaId: string): Promise<Member[]> {
   const client = getClient();
-  const [membersRes, snapshotsRes] = await Promise.all([
-    client
-      .from("quiniela_members")
-      .select("*")
-      .eq("quiniela_id", quinielaId)
-      .order("rank", { ascending: true, nullsFirst: false }),
-    client
-      .from("leaderboard_snapshots")
-      .select("user_id, cumulative_pts, match_id")
-      .eq("quiniela_id", quinielaId)
-      .order("match_id", { ascending: true }),
-  ]);
-  if (membersRes.error) throw membersRes.error;
-
-  const historyMap: Record<string, number[]> = {};
-  for (const snap of snapshotsRes.data ?? []) {
-    if (!historyMap[snap.user_id]) historyMap[snap.user_id] = [];
-    historyMap[snap.user_id].push(snap.cumulative_pts);
-  }
-
-  return (membersRes.data ?? []).map(
+  const { data, error } = await client
+    .from("quiniela_members")
+    .select("user_id, display_name, avatar_color, total_pts, rank, prev_rank, rank_change, exact_count, correct_count, scored_matches, joined_at")
+    .eq("quiniela_id", quinielaId)
+    .order("rank", { ascending: true, nullsFirst: false });
+  if (error) throw error;
+  return (data ?? []).map(
     (row): Member => ({
       userId: row.user_id ?? "",
       displayName: row.display_name,
@@ -88,9 +75,34 @@ export async function fetchMembers(quinielaId: string): Promise<Member[]> {
       exactCount: row.exact_count,
       correctCount: row.correct_count,
       scoredMatches: row.scored_matches,
-      history: historyMap[row.user_id ?? ""] ?? [],
+      history: [],
+      joinedAt: row.joined_at,
     }),
   );
+}
+
+export async function fetchMemberHistory(quinielaId: string): Promise<Record<string, number[]>> {
+  const { data } = await getClient()
+    .from("leaderboard_snapshots")
+    .select("user_id, cumulative_pts")
+    .eq("quiniela_id", quinielaId)
+    .order("match_id", { ascending: true });
+  const map: Record<string, number[]> = {};
+  for (const snap of data ?? []) {
+    if (!map[snap.user_id]) map[snap.user_id] = [];
+    map[snap.user_id].push(snap.cumulative_pts);
+  }
+  return map;
+}
+
+export async function fetchSingleMemberHistory(userId: string, quinielaId: string): Promise<number[]> {
+  const { data } = await getClient()
+    .from("leaderboard_snapshots")
+    .select("cumulative_pts")
+    .eq("quiniela_id", quinielaId)
+    .eq("user_id", userId)
+    .order("match_id", { ascending: true });
+  return (data ?? []).map(r => r.cumulative_pts);
 }
 
 export async function fetchUserPicks(
@@ -161,44 +173,45 @@ export async function fetchMatchPredictions(
   }));
 }
 
-export async function fetchUserAvatarColor(
-  userId: string,
-  quinielaId: string,
-): Promise<string | null> {
-  const client = getClient();
-  const { data } = await client
-    .from("quiniela_members")
-    .select("avatar_color")
-    .eq("user_id", userId)
-    .eq("quiniela_id", quinielaId)
-    .maybeSingle();
-  return data?.avatar_color ?? null;
+export interface MembershipInfo {
+  quinielaId: string;
+  avatarColor: string | null;
+  isUpdatable: boolean;
+  variant: string | null;
 }
 
-export async function fetchUserQuinielId(
-  userId: string,
-): Promise<string | null> {
-  const client = getClient();
-  const { data } = await client
+export async function fetchUserMembershipInfo(userId: string): Promise<MembershipInfo | null> {
+  const { data } = await getClient()
     .from("quiniela_members")
-    .select("quiniela_id")
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .select("quiniela_id, avatar_color, quinielas(is_updatable, variant)" as any)
     .eq("user_id", userId)
     .limit(1)
     .maybeSingle();
-  return data?.quiniela_id ?? null;
+  if (!data) return null;
+  const row = data as { quiniela_id: string; avatar_color: string | null; quinielas: { is_updatable: boolean; variant: string | null } | null };
+  return {
+    quinielaId: row.quiniela_id ?? "",
+    avatarColor: row.avatar_color ?? null,
+    isUpdatable: row.quinielas?.is_updatable ?? true,
+    variant: row.quinielas?.variant ?? null,
+  };
 }
 
 export async function lookupQuinielByCode(
   code: string,
-): Promise<{ id: string; name: string } | null> {
+): Promise<{ id: string; name: string; isUpdatable: boolean; variant: string | null } | null> {
   const client = getClient();
   const { data, error } = await client
     .from("quinielas")
-    .select("id, name")
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .select("id, name, is_updatable, variant" as any)
     .eq("join_code", code.trim())
     .maybeSingle();
   if (error) throw error;
-  return data ?? null;
+  if (!data) return null;
+  const row = data as { id: string; name: string; is_updatable: boolean; variant: string | null };
+  return { id: row.id, name: row.name, isUpdatable: row.is_updatable ?? true, variant: row.variant ?? null };
 }
 
 export async function ensureMembership(
@@ -207,35 +220,15 @@ export async function ensureMembership(
   displayName: string,
   avatarColor: string,
 ): Promise<void> {
-  const client = getClient();
-  const { data } = await client
+  const { error } = await getClient()
     .from("quiniela_members")
-    .select("id")
-    .eq("user_id", userId)
-    .eq("quiniela_id", quinielaId)
-    .maybeSingle();
-  if (!data) {
-    const { error } = await client.from("quiniela_members").insert({
-      quiniela_id: quinielaId,
-      user_id: userId,
-      display_name: displayName,
-      avatar_color: avatarColor,
-    });
-    if (error) throw error;
-  }
+    .upsert(
+      { quiniela_id: quinielaId, user_id: userId, display_name: displayName, avatar_color: avatarColor },
+      { onConflict: "user_id,quiniela_id", ignoreDuplicates: true },
+    );
+  if (error) throw error;
 }
 
-export async function fetchQuinielaIsUpdatable(
-  quinielaId: string,
-): Promise<boolean> {
-  const client = getClient();
-  const { data } = await client
-    .from("quinielas")
-    .select("is_updatable")
-    .eq("id", quinielaId)
-    .maybeSingle();
-  return data?.is_updatable ?? true;
-}
 
 export async function savePredictions(
   userId: string,

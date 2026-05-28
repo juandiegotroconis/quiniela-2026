@@ -7,13 +7,21 @@ import { useEffect } from "react";
 import "./root.css";
 
 function AppContent() {
-  const { user, loading, submitted, isUpdatable, needsQuiniela } = useAuth();
+  const { user, loading, submitted, isUpdatable, needsQuiniela, quinielaVariant } = useAuth();
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
   useEffect(() => {
     if (!loading && !user) navigate("/login");
   }, [user, loading, navigate]);
+
+  useEffect(() => {
+    if (quinielaVariant) {
+      document.body.dataset.variant = quinielaVariant;
+    } else {
+      delete document.body.dataset.variant;
+    }
+  }, [quinielaVariant]);
 
   if (loading) return null;
   if (!user) return null;

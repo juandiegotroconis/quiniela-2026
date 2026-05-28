@@ -8,6 +8,7 @@ import GroupsRoute from "./routes/groups";
 import ProfileRoute from "./routes/profile";
 import PlayerRoute from "./routes/player";
 import VerifyEmailRoute from "./routes/verify-email";
+import ResetPasswordRoute from "./routes/reset-password";
 import { AuthProvider } from "./lib/auth-context";
 import "./styles/variables.css";
 import "./styles/global.css";
@@ -15,6 +16,7 @@ import "./styles/global.css";
 const router = createBrowserRouter([
   { path: "/login", Component: LoginRoute },
   { path: "/verify-email", Component: VerifyEmailRoute },
+  { path: "/reset-password", Component: ResetPasswordRoute },
   {
     path: "/",
     Component: App,

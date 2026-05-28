@@ -20,3 +20,47 @@
   font-size: 14px;
   color: var(--fg-tertiary);
 }
+
+.matches-screen__filter-row {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+  margin-bottom: 10px;
+}
+
+.matches-screen__filter-row::-webkit-scrollbar {
+  display: none;
+}
+
+.matches-screen__filter-row--dates {
+  margin-bottom: 20px;
+}
+
+.matches-screen__chip {
+  flex-shrink: 0;
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-default);
+  background: transparent;
+  color: var(--fg-secondary);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 150ms var(--ease-default);
+}
+
+.matches-screen__chip:hover {
+  background: var(--color-brand-08);
+  border-color: var(--color-brand);
+  color: var(--color-brand);
+}
+
+.matches-screen__chip--active {
+  background: var(--color-brand);
+  border-color: var(--color-brand);
+  color: #fff;
+}

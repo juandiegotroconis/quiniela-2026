@@ -2,6 +2,7 @@
   background: var(--surface-2);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
   padding: 14px;
   flex: 1 1 calc(50% - 6px);
   min-width: 160px;

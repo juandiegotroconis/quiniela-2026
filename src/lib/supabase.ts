@@ -367,6 +367,7 @@ export type Database = {
           join_code: string
           name: string
           slug: string
+          variant: string | null
         }
         Insert: {
           created_at?: string | null
@@ -377,6 +378,7 @@ export type Database = {
           join_code: string
           name: string
           slug: string
+          variant?: string | null
         }
         Update: {
           created_at?: string | null
@@ -387,6 +389,7 @@ export type Database = {
           join_code?: string
           name?: string
           slug?: string
+          variant?: string | null
         }
         Relationships: []
       }

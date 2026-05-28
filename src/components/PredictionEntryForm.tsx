@@ -3,6 +3,7 @@ import { useState } from "react";
 import PageContainer from "./PageContainer";
 import TeamFlag from "./TeamFlag";
 import TopScorerPicker from "./TopScorerPicker";
+import GroupNav from "./GroupNav";
 import { calcGroupStandings } from "~/lib/helpers";
 import { GROUPS } from "~/lib/mock-data";
 import type { TopScorerSuggestion } from "~/lib/mock-data";
@@ -116,6 +117,8 @@ export default function PredictionEntryForm({
         </div>
       </div>
 
+      <GroupNav groups={groupEntries.map((g) => g.id)} />
+
       <div className='pred-form__groups'>
         {groupEntries.map((g) => {
           const standings = calcGroupStandings(g.id, matches, picks);
@@ -127,7 +130,7 @@ export default function PredictionEntryForm({
           ).length;
 
           return (
-            <div key={g.id} className='pred-form__group'>
+            <div key={g.id} id={`group-${g.id}`} className='pred-form__group'>
               <div className='pred-form__group-header'>
                 Group {g.id}
                 <span className='pred-form__group-count'>

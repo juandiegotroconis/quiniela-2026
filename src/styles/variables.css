@@ -117,15 +117,15 @@
 
   /* Surfaces — white family, aligned with WC26 light canvas */
   --surface-0: #ffffff;
-  --surface-1: #f7f7f7;
-  --surface-2: #efefef;
-  --surface-3: #e5e5e5;
-  --surface-4: #d8d8d8;
+  --surface-1: #ffffff;
+  --surface-2: #ffffff;
+  --surface-3: #f2f2f2;
+  --surface-4: #e6e6e6;
 
   /* Borders */
-  --border-subtle: rgba(0, 0, 0, 0.06);
-  --border-default: rgba(0, 0, 0, 0.12);
-  --border-strong: rgba(0, 0, 0, 0.25);
+  --border-subtle: rgba(0, 0, 0, 0.08);
+  --border-default: rgba(0, 0, 0, 0.13);
+  --border-strong: rgba(0, 0, 0, 0.26);
 
   /* Foreground */
   --fg-primary: #0a0a0a;
@@ -144,12 +144,35 @@
   --radius-xl: 16px;
   --radius-full: 9999px;
 
-  /* Shadows — softer on white backgrounds */
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.10);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.15);
+  /* Shadows */
+  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
 
   /* Motion */
   --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Quiniela Variants ── */
+body[data-variant="women"] {
+  /* Primary — deep purple (table headers, buttons, active states) */
+  --color-brand:    #8b35c8;
+  --color-brand-bg: rgba(139, 53, 200, 0.10);
+  --color-brand-06: rgba(139, 53, 200, 0.06);
+  --color-brand-08: rgba(139, 53, 200, 0.08);
+  --color-brand-15: rgba(139, 53, 200, 0.15);
+  --color-brand-25: rgba(139, 53, 200, 0.25);
+
+  /* Surfaces — page bg stays white, cards/panels get a warm pink tint */
+  --surface-1: #fef0f7;
+  --surface-2: #fce4f2;
+  --surface-3: #f9d5eb;
+  --surface-4: #f5c4e2;
+
+  /* Borders inherit the purple warmth */
+  --border-subtle:  rgba(139, 53, 200, 0.08);
+  --border-default: rgba(139, 53, 200, 0.18);
+  --border-strong:  rgba(139, 53, 200, 0.35);
 }
 
 /* ── Animations ── */

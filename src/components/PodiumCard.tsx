@@ -21,7 +21,7 @@ export default function PodiumCard({ player, rankColor, isFirst, isMe }: Props) 
         <Avatar name={player.displayName} color={player.avatarColor} size={sz} />
         <div
           className="podium-card__rank-badge"
-          style={{ background: rankColor }}
+          style={{ background: rankColor, color: '#fff' }}
         >
           {player.rank}
         </div>

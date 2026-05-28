@@ -15,14 +15,15 @@ export default function Avatar({ name, index = 0, color, size = 36 }: Props) {
     .join("")
     .slice(0, 2)
     .toUpperCase();
-  const bg = color ?? AVATAR_COLORS[index % AVATAR_COLORS.length];
+  const fg = color ?? AVATAR_COLORS[index % AVATAR_COLORS.length];
   return (
     <div
       className='avatar'
       style={{
         width: size,
         height: size,
-        background: bg,
+        background: `color-mix(in srgb, ${fg} 18%, transparent)`,
+        color: fg,
         fontSize: size * 0.38,
       }}
     >

@@ -1,0 +1,1 @@
+- [Performance audit findings](project-perf-context.md) — identified hotspots, N+1s, missing Realtime, redundant queries (audited 2026-05-28)

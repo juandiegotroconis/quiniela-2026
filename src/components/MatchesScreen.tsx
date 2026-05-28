@@ -1,5 +1,5 @@
 import './MatchesScreen.css';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import PageContainer from './PageContainer';
 import Wc26Banner from './Wc26Banner';
 import SectionHeader from './SectionHeader';
@@ -17,16 +17,45 @@ const FILTER_TABS = [
   { id: 'finished', label: 'Finished' },
 ];
 
+function formatDateChip(isoDate: string): string {
+  const d = new Date(isoDate + 'T00:00:00Z');
+  return new Intl.DateTimeFormat('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    timeZone: 'UTC',
+  }).format(d);
+}
+
 export default function MatchesScreen() {
   const [tab, setTab] = useState('all');
+  const [group, setGroup] = useState('all');
+  const [date, setDate] = useState('all');
   const [selected, setSelected] = useState<Match | null>(null);
   const { userPicks } = useAuth();
   const { matches, matchesLoading } = useData();
 
+  const groups = useMemo(() => {
+    const seen = new Set<string>();
+    for (const m of matches) if (m.group) seen.add(m.group);
+    return [...seen].sort();
+  }, [matches]);
+
+  const dates = useMemo(() => {
+    const seen = new Set<string>();
+    for (const m of matches) {
+      const day = m.utcDate.slice(0, 10);
+      if (day) seen.add(day);
+    }
+    return [...seen].sort();
+  }, [matches]);
+
   const filtered = matches.filter(m => {
-    if (tab === 'live') return m.status === 'live';
-    if (tab === 'upcoming') return m.status === 'upcoming';
-    if (tab === 'finished') return m.status === 'finished';
+    if (tab === 'live' && m.status !== 'live') return false;
+    if (tab === 'upcoming' && m.status !== 'upcoming') return false;
+    if (tab === 'finished' && m.status !== 'finished') return false;
+    if (group !== 'all' && m.group !== group) return false;
+    if (date !== 'all' && !m.utcDate.startsWith(date)) return false;
     return true;
   });
 
@@ -49,6 +78,42 @@ export default function MatchesScreen() {
       <div className="matches-screen__header">
         <SectionHeader title="Matches" subtitle="FIFA World Cup 2026 · Group Stage" />
         <FilterTabs tabs={FILTER_TABS} active={tab} onChange={setTab} />
+      </div>
+
+      <div className="matches-screen__filter-row">
+        <button
+          className={`matches-screen__chip${group === 'all' ? ' matches-screen__chip--active' : ''}`}
+          onClick={() => setGroup('all')}
+        >
+          All Groups
+        </button>
+        {groups.map(g => (
+          <button
+            key={g}
+            className={`matches-screen__chip${group === g ? ' matches-screen__chip--active' : ''}`}
+            onClick={() => setGroup(g)}
+          >
+            Group {g}
+          </button>
+        ))}
+      </div>
+
+      <div className="matches-screen__filter-row matches-screen__filter-row--dates">
+        <button
+          className={`matches-screen__chip${date === 'all' ? ' matches-screen__chip--active' : ''}`}
+          onClick={() => setDate('all')}
+        >
+          All Dates
+        </button>
+        {dates.map(d => (
+          <button
+            key={d}
+            className={`matches-screen__chip${date === d ? ' matches-screen__chip--active' : ''}`}
+            onClick={() => setDate(d)}
+          >
+            {formatDateChip(d)}
+          </button>
+        ))}
       </div>
 
       {matchesLoading && <div className="matches-screen__empty">Loading…</div>}

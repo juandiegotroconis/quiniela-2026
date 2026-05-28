@@ -1,61 +1,104 @@
+/* ──────────────────────────────────────────────
+   Auth Screen — Liquid Glass / Light
+   WC2026 Edition
+────────────────────────────────────────────── */
+
+/* ── Page shell ── */
 .auth-screen {
-  min-height: 100vh;
-  background: var(--surface-0);
+  min-height: 100dvh;
   display: flex;
-  flex-direction: column;
-}
-
-.auth-screen__inner {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  width: 100%;
-  max-width: 400px;
-  margin: 0 auto;
-  padding: 40px 24px;
+  padding: 24px 16px;
+  position: relative;
+  overflow: hidden;
 }
 
+/* ── Liquid glass card ── */
+.auth-screen__inner {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 432px;
+  border-radius: 22px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(40px) saturate(200%) brightness(1.03);
+  -webkit-backdrop-filter: blur(40px) saturate(200%) brightness(1.03);
+  box-shadow:
+    0 24px 72px rgba(0, 0, 0, 0.11),
+    0 2px 0 rgba(255, 255, 255, 1) inset,
+    0 -1px 0 rgba(0, 0, 0, 0.04) inset;
+  animation: cardIn 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ── Host nation tricolor stripe (USA · Mexico · Canada) ── */
+.auth-screen__stripe {
+  height: 3px;
+  background: linear-gradient(
+    to right,
+    #2979ff 0%, #2979ff 33.33%,
+    #00cc33 33.33%, #00cc33 66.66%,
+    #e8192c 66.66%, #e8192c 100%
+  );
+  flex-shrink: 0;
+}
+
+/* ── Card content ── */
+.auth-screen__content {
+  padding: 34px 28px 38px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Logo ── */
 .auth-screen__logo {
   text-align: center;
-  margin-bottom: 40px;
+  margin-bottom: 28px;
 }
 
 .auth-screen__logo-img {
-  width: 160px;
-  height: 160px;
+  width: 108px;
+  height: 108px;
   object-fit: contain;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .auth-screen__tagline {
-  font-family: var(--font-body);
-  font-size: 14px;
+  font-family: var(--font-display);
+  font-size: 10.5px;
+  font-weight: 500;
   color: var(--fg-tertiary);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
 }
 
+/* ── Mode toggle ── */
 .auth-screen__toggle {
   display: flex;
-  background: var(--surface-2);
-  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 11px;
   padding: 3px;
   gap: 2px;
-  margin-bottom: 28px;
+  margin-bottom: 24px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .auth-screen__toggle-btn {
   flex: 1;
-  padding: 10px 8px;
-  border-radius: var(--radius-md);
+  padding: 11px 8px;
+  border-radius: 9px;
   background: transparent;
   color: var(--fg-tertiary);
   border: none;
-  font-family: var(--font-body);
-  font-size: 14px;
+  font-family: var(--font-display);
+  font-size: 13px;
   font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   cursor: pointer;
-  transition: all 200ms var(--ease-default);
-  text-transform: capitalize;
+  transition: all 220ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .auth-screen__toggle-btn--active {
@@ -63,10 +106,13 @@
   color: #fff;
 }
 
+/* ── Form ── */
 .auth-screen__form {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 15px;
+  animation: contentIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: 0.16s;
 }
 
 .auth-screen__field {
@@ -77,66 +123,224 @@
 
 .auth-screen__label {
   font-family: var(--font-body);
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 11px;
+  font-weight: 700;
   color: var(--fg-secondary);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
 .auth-screen__input {
   width: 100%;
-  padding: 12px 16px;
-  background: var(--surface-3);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
+  padding: 13px 16px;
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(0, 0, 0, 0.10);
+  border-radius: 10px;
   color: var(--fg-primary);
   font-family: var(--font-body);
   font-size: 14px;
   outline: none;
-  transition: border-color 200ms var(--ease-default);
+  transition:
+    border-color 200ms cubic-bezier(0.4, 0, 0.2, 1),
+    background 200ms cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  caret-color: var(--color-brand);
+}
+
+.auth-screen__input::placeholder {
+  color: var(--fg-disabled);
 }
 
 .auth-screen__input:focus {
-  border-color: var(--color-brand);
+  border-color: rgba(41, 121, 255, 0.45);
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 0 0 3px rgba(41, 121, 255, 0.08);
 }
 
+.auth-screen__input-wrap {
+  position: relative;
+}
+
+.auth-screen__input--with-toggle {
+  padding-right: 46px;
+}
+
+.auth-screen__input-toggle {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: var(--fg-tertiary);
+  display: flex;
+  align-items: center;
+  transition: color 150ms;
+}
+
+.auth-screen__input-toggle:hover {
+  color: var(--fg-secondary);
+}
+
+/* ── Error ── */
 .auth-screen__error {
   font-family: var(--font-body);
   font-size: 13px;
   color: var(--color-error);
   background: var(--color-error-bg);
-  padding: 8px 14px;
-  border-radius: var(--radius-md);
+  border: 1px solid rgba(232, 25, 44, 0.18);
+  padding: 10px 14px;
+  border-radius: 8px;
+  line-height: 1.4;
 }
 
+/* ── Submit button ── */
 .auth-screen__submit {
-  padding: 14px;
+  padding: 15px;
   border-radius: 10px;
   border: none;
   background: var(--color-brand);
   color: #fff;
   font-family: var(--font-display);
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.10em;
   cursor: pointer;
-  transition: opacity 200ms var(--ease-default);
-  margin-top: 4px;
+  width: 100%;
+  transition: opacity 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  margin-top: 6px;
 }
 
-.auth-screen__submit:hover {
-  opacity: 0.85;
+.auth-screen__submit:hover:not(:disabled) {
+  opacity: 0.86;
 }
 
+.auth-screen__submit:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ── Footer ── */
 .auth-screen__footer {
   text-align: center;
-  margin-top: 16px;
+  margin-top: 18px;
   font-family: var(--font-body);
   font-size: 13px;
-  color: var(--fg-tertiary);
 }
 
 .auth-screen__footer-link {
-  color: var(--color-green);
+  color: var(--color-brand);
   text-decoration: none;
+  transition: opacity 150ms;
+}
+
+.auth-screen__footer-link:hover {
+  opacity: 0.72;
+}
+
+.auth-screen__footer-link--btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 13px;
+}
+
+/* ── Back / utility link button ── */
+.auth-screen__back-link {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--color-brand);
+  transition: opacity 150ms;
+  margin-top: 4px;
+}
+
+.auth-screen__back-link:hover {
+  opacity: 0.72;
+}
+
+/* ── Forgot password — header ── */
+.auth-screen__forgot-header {
+  margin-bottom: 24px;
+  animation: contentIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.auth-screen__forgot-title {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--fg-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
+}
+
+.auth-screen__forgot-subtitle {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--fg-secondary);
+  line-height: 1.55;
+}
+
+/* ── Forgot password — success state ── */
+.auth-screen__forgot-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+  padding: 16px 0 10px;
+  animation: contentIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.auth-screen__forgot-success-icon {
+  color: var(--color-green);
+}
+
+.auth-screen__forgot-success-title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--fg-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.auth-screen__forgot-success-body {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--fg-secondary);
+  line-height: 1.6;
+  max-width: 280px;
+}
+
+.auth-screen__forgot-success-body strong {
+  color: var(--fg-primary);
+  font-weight: 600;
+}
+
+/* ── Animations ── */
+
+@keyframes cardIn {
+  from {
+    opacity: 0;
+    transform: translateY(28px) scale(0.980);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes contentIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }

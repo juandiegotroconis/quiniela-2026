@@ -8,7 +8,7 @@ import PositionChange from './PositionChange';
 import Sparkline from './Sparkline';
 import TeamFlag from './TeamFlag';
 import { getPickResult, getResultVariant, getResultPoints } from '~/lib/helpers';
-import { fetchUserPicks } from '~/lib/queries';
+import { fetchSingleMemberHistory } from '~/lib/queries';
 import { useAuth } from '~/lib/auth-context';
 import { useData } from '~/lib/data-context';
 import type { UserPickEntry } from '~/lib/auth-context';
@@ -25,9 +25,10 @@ const RESULT_COLORS: Record<string, string> = {
 
 export default function PlayerProfile({ userId }: Props) {
   const { user, quinielaId, userPicks: myPicks } = useAuth();
-  const { matches, getMember } = useData();
+  const { matches, getMember, getPicksForUser } = useData();
   const isMe = userId === user?.id;
   const [picks, setPicks] = useState<Record<number, UserPickEntry>>(isMe ? myPicks : {});
+  const [memberHistory, setMemberHistory] = useState<number[]>([]);
 
   const member = getMember(userId);
 
@@ -37,10 +38,13 @@ export default function PlayerProfile({ userId }: Props) {
       return;
     }
     if (!quinielaId) return;
-    fetchUserPicks(userId, quinielaId)
-      .then(setPicks)
-      .catch(console.error);
-  }, [userId, quinielaId, isMe, myPicks]);
+    getPicksForUser(userId, quinielaId).then(setPicks).catch(console.error);
+  }, [userId, quinielaId, isMe, myPicks, getPicksForUser]);
+
+  useEffect(() => {
+    if (!quinielaId) return;
+    fetchSingleMemberHistory(userId, quinielaId).then(setMemberHistory).catch(console.error);
+  }, [userId, quinielaId]);
 
   if (!member) {
     return (
@@ -103,7 +107,7 @@ export default function PlayerProfile({ userId }: Props) {
             <span className="player-profile__pts">{member.pts} pts</span>
           </div>
           <div className="player-profile__sparkline">
-            <Sparkline history={member.history} />
+            <Sparkline history={memberHistory} />
           </div>
         </div>
       </div>

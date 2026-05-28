@@ -21,6 +21,7 @@
   background: var(--surface-2);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
   padding: 28px 24px 20px;
   margin-bottom: 24px;
 }

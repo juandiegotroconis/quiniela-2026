@@ -11,6 +11,7 @@ export interface Match {
   status: MatchStatus;
   time: string;
   date: string;
+  utcDate: string;
 }
 
 export interface Member {
@@ -25,6 +26,7 @@ export interface Member {
   correctCount: number;
   scoredMatches: number;
   history: number[];
+  joinedAt: string | null;
 }
 
 export interface MatchPrediction {

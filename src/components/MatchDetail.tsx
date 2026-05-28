@@ -1,5 +1,5 @@
 import './MatchDetail.css';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import TeamFlag from './TeamFlag';
 import Badge from './Badge';
 import PredictionGroupCard from './PredictionGroupCard';
@@ -33,13 +33,16 @@ function MatchStatusBadge({ match }: { match: Match }) {
 export default function MatchDetail({ match, onBack, userPick }: Props) {
   const { user, quinielaId } = useAuth();
   const { members } = useData();
+  const membersRef = useRef(members);
   const [preds, setPreds] = useState<MatchPrediction[]>([]);
+
+  useEffect(() => { membersRef.current = members; }, [members]);
 
   useEffect(() => {
     if (!quinielaId) return;
     fetchMatchPredictions(match.id, quinielaId)
       .then((raw) => {
-        const memberMap = new Map(members.map((m) => [m.userId, m]));
+        const memberMap = new Map(membersRef.current.map((m) => [m.userId, m]));
         return raw.map((r) => {
           const m = memberMap.get(r.userId);
           return {
@@ -53,7 +56,7 @@ export default function MatchDetail({ match, onBack, userPick }: Props) {
       })
       .then(setPreds)
       .catch(console.error);
-  }, [match.id, quinielaId, members]);
+  }, [match.id, quinielaId]); // members intentionally excluded — membersRef stays current
 
   const groups = groupPredictions(preds, match, user?.id ?? null);
   const isFinished = match.status === 'finished';
