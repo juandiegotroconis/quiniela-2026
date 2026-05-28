@@ -24,31 +24,6 @@ export default function LeaderboardScreen() {
     fetchMemberHistory(quinielaId).then(setHistoryMap).catch(console.error);
   }, [quinielaId]);
 
-  if (membersLoading) {
-    return (
-      <PageContainer>
-        <SectionHeader title='Rankings' subtitle='Loading…' />
-      </PageContainer>
-    );
-  }
-
-  if (members.length === 0) {
-    return (
-      <PageContainer>
-        <SectionHeader title='Rankings' subtitle='Friends League' />
-        <div
-          style={{
-            padding: "2rem",
-            textAlign: "center",
-            color: "var(--fg-secondary)",
-          }}
-        >
-          No players yet — be the first to join!
-        </div>
-      </PageContainer>
-    );
-  }
-
   // rank=0 means unranked (DB default); ties broken by join date (earlier = higher)
   const sorted = useMemo(() => {
     return [...members]
@@ -76,6 +51,31 @@ export default function LeaderboardScreen() {
     podium[0],
     podium[2] ?? null,
   ];
+
+  if (membersLoading) {
+    return (
+      <PageContainer>
+        <SectionHeader title='Rankings' subtitle='Loading…' />
+      </PageContainer>
+    );
+  }
+
+  if (members.length === 0) {
+    return (
+      <PageContainer>
+        <SectionHeader title='Rankings' subtitle='Friends League' />
+        <div
+          style={{
+            padding: "2rem",
+            textAlign: "center",
+            color: "var(--fg-secondary)",
+          }}
+        >
+          No players yet — be the first to join!
+        </div>
+      </PageContainer>
+    );
+  }
 
   return (
     <>

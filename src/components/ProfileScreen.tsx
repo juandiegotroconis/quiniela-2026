@@ -52,7 +52,7 @@ export default function ProfileScreen() {
     scorer: TopScorerSuggestion,
   ) => {
     await submitPredictions(picks, scorer);
-    navigate("/matches");
+    navigate("/rankings");
   };
 
   const handleLogout = () => {

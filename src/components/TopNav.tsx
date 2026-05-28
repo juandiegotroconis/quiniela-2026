@@ -8,7 +8,7 @@ export default function TopNav() {
 
   return (
     <header className='top-nav'>
-      <NavLink to='/matches' className='top-nav__logo'>
+      <NavLink to='/rankings' className='top-nav__logo'>
         <img
           src='/logo-black.svg'
           alt='FWC26 Quiniela Logo'
