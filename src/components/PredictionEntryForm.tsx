@@ -37,13 +37,19 @@ export default function PredictionEntryForm({
   const [topScorer, setTopScorer] = useState<TopScorerSuggestion | null>(
     initialTopScorer,
   );
+  const handleScorerChange = (scorer: TopScorerSuggestion | null) => {
+    setTopScorer(scorer);
+    setIsDirty(true);
+  };
   const [showErrors, setShowErrors] = useState(false);
   const [saving, setSaving] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
+  const [isDirty, setIsDirty] = useState(false);
 
   const updatePick = (matchId: number, pickA: string, pickB: string) => {
     setPicks((prev) => ({ ...prev, [matchId]: { pickA, pickB } }));
+    setIsDirty(true);
   };
 
   const filledCount = Object.values(picks).filter(
@@ -63,6 +69,7 @@ export default function PredictionEntryForm({
     try {
       await onSave(picks, topScorer);
       setSaveMsg("Saved!");
+      setIsDirty(false);
       setTimeout(() => setSaveMsg(null), 2500);
     } finally {
       setSaving(false);
@@ -274,7 +281,7 @@ export default function PredictionEntryForm({
           Top Scorer Prediction
           <span className='pred-form__scorer-bonus'>+15 bonus if correct</span>
         </div>
-        <TopScorerPicker value={topScorer} onChange={setTopScorer} />
+        <TopScorerPicker value={topScorer} onChange={handleScorerChange} />
       </div>
 
       {showErrors && !allFilled && (
@@ -286,13 +293,6 @@ export default function PredictionEntryForm({
 
       <div className='pred-form__submit-row'>
         <button
-          className={`pred-form__save${hasSomeFilled && !saving ? " pred-form__save--ready" : " pred-form__save--disabled"}`}
-          onClick={handleSave}
-          disabled={saving || submitting || !hasSomeFilled}
-        >
-          {saving ? "Saving…" : (saveMsg ?? "Save Progress")}
-        </button>
-        <button
           className={`pred-form__submit${allFilled ? " pred-form__submit--ready" : " pred-form__submit--disabled"}`}
           onClick={handleSubmit}
           disabled={submitting || saving}
@@ -300,6 +300,27 @@ export default function PredictionEntryForm({
           {submitting ? "Submitting…" : "Submit All"}
         </button>
       </div>
+
+      {isUpdatable && (
+        <div className={`pred-form__sticky-bar${isDirty ? " pred-form__sticky-bar--dirty" : ""}`}>
+          <span className='pred-form__sticky-status'>
+            {saveMsg
+              ? saveMsg
+              : isDirty
+                ? "You have unsaved changes"
+                : hasSomeFilled
+                  ? "All changes saved"
+                  : "No picks entered yet"}
+          </span>
+          <button
+            className={`pred-form__save${hasSomeFilled && !saving ? " pred-form__save--ready" : " pred-form__save--disabled"}`}
+            onClick={handleSave}
+            disabled={saving || submitting || !hasSomeFilled}
+          >
+            {saving ? "Saving…" : "Save Progress"}
+          </button>
+        </div>
+      )}
     </PageContainer>
   );
 }
