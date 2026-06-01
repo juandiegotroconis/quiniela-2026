@@ -114,6 +114,7 @@ function RuleRow({
 }) {
   return (
     <div className={`rules-modal__rule rules-modal__rule--${variant}`}>
+      <div className='rules-modal__rule-bar' />
       <div className='rules-modal__rule-pts'>{pts}</div>
       <div className='rules-modal__rule-content'>
         <strong className='rules-modal__rule-title'>{title}</strong>

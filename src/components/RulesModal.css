@@ -13,8 +13,12 @@
 }
 
 @keyframes rules-overlay-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* ── Bottom sheet ── */
@@ -31,8 +35,12 @@
 }
 
 @keyframes rules-sheet-in {
-  from { transform: translateY(100%); }
-  to   { transform: translateY(0); }
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
 }
 
 /* ── Header ── */
@@ -67,7 +75,9 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: background 150ms, color 150ms;
+  transition:
+    background 150ms,
+    color 150ms;
 }
 
 .rules-modal__close:hover {
@@ -136,15 +146,32 @@
   gap: 12px;
   background: var(--surface-2);
   border-radius: var(--radius-md);
-  border-left: 3px solid transparent;
-  padding: 12px 14px;
+  overflow: hidden;
+  padding: 12px 14px 12px 0;
 }
 
-.rules-modal__rule--exact  { border-color: var(--color-green); }
-.rules-modal__rule--winner { border-color: var(--color-gold); }
-.rules-modal__rule--four   { border-color: var(--color-brand); }
-.rules-modal__rule--miss   { border-color: var(--border-default); }
-.rules-modal__rule--matchup { border-color: var(--color-purple); }
+.rules-modal__rule-bar {
+  width: 6px;
+  flex-shrink: 0;
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+  opacity: 0.55;
+}
+
+.rules-modal__rule--exact .rules-modal__rule-bar {
+  background: var(--color-green);
+}
+.rules-modal__rule--winner .rules-modal__rule-bar {
+  background: var(--color-gold);
+}
+.rules-modal__rule--four .rules-modal__rule-bar {
+  background: var(--color-brand);
+}
+.rules-modal__rule--miss .rules-modal__rule-bar {
+  background: var(--border-default);
+}
+.rules-modal__rule--matchup .rules-modal__rule-bar {
+  background: var(--color-purple);
+}
 
 .rules-modal__rule-pts {
   font-family: var(--font-display);
@@ -157,11 +184,21 @@
   flex-shrink: 0;
 }
 
-.rules-modal__rule--exact  .rules-modal__rule-pts { color: var(--color-green); }
-.rules-modal__rule--winner .rules-modal__rule-pts { color: var(--color-gold); }
-.rules-modal__rule--four   .rules-modal__rule-pts { color: var(--color-brand); }
-.rules-modal__rule--miss   .rules-modal__rule-pts { color: var(--fg-tertiary); }
-.rules-modal__rule--matchup .rules-modal__rule-pts { color: var(--color-purple); }
+.rules-modal__rule--exact .rules-modal__rule-pts {
+  color: var(--color-green);
+}
+.rules-modal__rule--winner .rules-modal__rule-pts {
+  color: var(--color-gold);
+}
+.rules-modal__rule--four .rules-modal__rule-pts {
+  color: var(--color-brand);
+}
+.rules-modal__rule--miss .rules-modal__rule-pts {
+  color: var(--fg-tertiary);
+}
+.rules-modal__rule--matchup .rules-modal__rule-pts {
+  color: var(--color-purple);
+}
 
 .rules-modal__rule-content {
   display: flex;

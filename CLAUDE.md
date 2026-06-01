@@ -18,7 +18,7 @@ No test suite is configured yet.
 
 **Stack**: React Router v7 (library mode — client-side SPA, no SSR), React 19, TypeScript, Vite, pnpm.
 
-**Entry / routing** (`src/main.tsx`): the Vite entry. Mounts `AuthProvider` → `RouterProvider` with a `createBrowserRouter`. Top-level routes: `/login`, `/verify-email`, and the `/` layout route (`App`) whose children are index → redirect to `/rankings`, plus `/rankings`, `/matches`, `/groups`, `/profile`, `/player/:id`. Route files in `src/routes/` are thin wrappers that render a Screen component.
+**Entry / routing** (`src/main.tsx`): the Vite entry. Mounts `TranslationProvider` → `AuthProvider` → `RouterProvider` with a `createBrowserRouter`. Top-level routes: `/login`, `/verify-email`, and the `/` layout route (`App`) whose children are index → redirect to `/rankings`, plus `/rankings`, `/matches`, `/groups`, `/profile`, `/player/:id`. Route files in `src/routes/` are thin wrappers that render a Screen component.
 
 **App shell** (`src/App.tsx`): the `/` layout route. Wraps `DataProvider` → `AppContent`. `AppContent` redirects unauthenticated users to `/login`, renders `JoinQuinielaScreen` when `needsQuiniela`, otherwise shows `TopNav` + `PredictionsBanner` + `<Outlet />`. `PredictionsBanner` shows "Enter Predictions" when not submitted, or "Update Predictions" when submitted and `isUpdatable = true` (hidden on `/profile`).
 
@@ -45,16 +45,19 @@ No test suite is configured yet.
 
 **Helpers** (`src/lib/helpers.ts`): `calcGroupStandings(groupId, matches, userPicks)`, `groupPredictions(preds, match, myUserId)`, pick result helpers (`getPickResult`, `getResultPoints`, etc.), `getTeamColor`.
 
+**i18n** (`src/lib/translation-context.tsx`): `TranslationProvider` wraps the entire app (outermost provider). Persists chosen language to `localStorage` under key `LOCALE`. Default language is `es`. Exposes `t(key)`, `language`, `setLanguage` via `useTranslationContext`. Consumer shortcut: `import { useTranslation } from '~/hooks/useTranslation'`. Translation files are `src/locales/en.json` and `src/locales/es.json` — keys are `UPPER_SNAKE_CASE`. Always add new user-facing strings to both files.
+
 **Components**: each component has a co-located `.css` file (e.g. `TopNav.tsx` / `TopNav.css`). BEM-like class naming (`block__element--modifier`).
 
 **Styling**: dark theme only. Design tokens in `src/styles/variables.css` as CSS custom properties (`--surface-*`, `--fg-*`, `--border-*`, `--color-*`, etc.). Two fonts: `Oswald` (display/headings, `/public/fonts/`) and `Noto Sans` (body, Google Fonts). Icons via `@iconify/react`.
 
 ## Profile & predictions flow
 
-- `ProfileScreen` owns the persistent header (avatar, color picker, rank/pts, logout) via `ProfileScreen.css`. It always renders above either `PredictionEntryForm` or `ProfileReadOnly`.
+- `ProfileScreen` owns the persistent header (avatar, color picker, rank/pts, logout, language toggle) via `ProfileScreen.css`. It always renders above either `PredictionEntryForm` or `ProfileReadOnly`.
 - The form shows when `!submitted || isUpdatable`. The locked read-only view (`ProfileReadOnly`) shows only when `submitted && !isUpdatable`.
 - `PredictionEntryForm` has two actions: **Save Progress** (partial, always available) and **Submit All** (requires all 72 matches + top scorer).
 - `TopScorerPicker` searches the `players` table live (300 ms debounce) instead of a static list.
+- `RulesModal` (`src/components/RulesModal.tsx`) is a bottom-sheet overlay that displays scoring rules; opened from within the profile/prediction area. Closes on Escape or overlay click.
 
 ## Supabase schema (key tables)
 
@@ -88,6 +91,7 @@ To regenerate `players_seed.sql`: `pnpm tsx scripts/seed-players.ts` (requires `
 - **Never overwrite `src/lib/supabase.ts`** — it is auto-generated (`pnpm supabase gen types`). Use `Tables<'tablename'>` for row types.
 - Player identity uses `userId: string` (Supabase UUID) everywhere — there is no numeric `ME_ID` or `playerId`.
 - `src/vite-env.d.ts` contains `/// <reference types="vite/client" />` — required for `import.meta.env` types.
+- All user-facing strings must go through `useTranslation` — never hardcode display text. Add keys to both `src/locales/en.json` and `src/locales/es.json`.
 
 ## External data
 
