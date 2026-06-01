@@ -1,5 +1,6 @@
 import './TopScorerPicker.css';
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { useTranslation } from '~/hooks/useTranslation';
 import TeamFlag from './TeamFlag';
 import { searchPlayers } from '~/lib/queries';
 import type { PlayerResult } from '~/lib/queries';
@@ -12,6 +13,7 @@ interface Props {
 }
 
 export default function TopScorerPicker({ value, onChange, disabled }: Props) {
+  const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const [open, setOpen] = useState(false);
   const [results, setResults] = useState<PlayerResult[]>([]);
@@ -71,7 +73,7 @@ export default function TopScorerPicker({ value, onChange, disabled }: Props) {
             <span className="ts-picker__trigger-name">{value.name}</span>
           </div>
         ) : (
-          <span className="ts-picker__placeholder">Select top scorer prediction...</span>
+          <span className="ts-picker__placeholder">{t('TOP_SCORER_PLACEHOLDER')}</span>
         )}
         {!disabled && (
           <svg
@@ -94,17 +96,17 @@ export default function TopScorerPicker({ value, onChange, disabled }: Props) {
               className="ts-picker__search"
               value={search}
               onChange={e => handleSearchChange(e.target.value)}
-              placeholder="Search player name..."
+              placeholder={t('TOP_SCORER_SEARCH_PLACEHOLDER')}
               autoFocus
             />
           </div>
           <div className="ts-picker__list">
             {loading ? (
-              <div className="ts-picker__empty">Searching…</div>
+              <div className="ts-picker__empty">{t('TOP_SCORER_SEARCHING')}</div>
             ) : !search.trim() ? (
-              <div className="ts-picker__empty">Type to search players</div>
+              <div className="ts-picker__empty">{t('TOP_SCORER_TYPE_TO_SEARCH')}</div>
             ) : results.length === 0 ? (
-              <div className="ts-picker__empty">No players found</div>
+              <div className="ts-picker__empty">{t('TOP_SCORER_NO_RESULTS')}</div>
             ) : (
               results.map(p => (
                 <div

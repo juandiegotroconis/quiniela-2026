@@ -2,36 +2,38 @@ import "./TopNav.css";
 import { NavLink } from "react-router";
 import Avatar from "./Avatar";
 import { useAuth } from "~/lib/auth-context";
+import { useTranslation } from "~/hooks/useTranslation";
 export default function TopNav() {
-  const { user } = useAuth(),
-    displayName = user?.name ?? "You";
+  const { user } = useAuth();
+  const { t } = useTranslation();
+  const displayName = user?.name ?? t('PROFILE_YOU');
 
   return (
     <header className='top-nav'>
       <NavLink to='/rankings' className='top-nav__logo'>
         <img
           src='/logo-black.svg'
-          alt='FWC26 Quiniela Logo'
+          alt={t('APP_LOGO_NAV_ALT')}
           className='top-nav__logo-icon'
         />
-        <span>FWC26</span>
-        <span className='top-nav__logo-sub'>Quiniela</span>
+        <span>{t('APP_NAME')}</span>
+        <span className='top-nav__logo-sub'>{t('APP_SUBTITLE')}</span>
       </NavLink>
 
       <nav className='top-nav__nav'>
         {[
-          { to: "/rankings", label: "Rankings" },
-          { to: "/matches", label: "Matches" },
-          { to: "/groups", label: "Groups" },
-        ].map((t) => (
+          { to: "/rankings", label: t('NAV_RANKINGS') },
+          { to: "/matches", label: t('NAV_MATCHES') },
+          { to: "/groups", label: t('NAV_GROUPS') },
+        ].map((link) => (
           <NavLink
-            key={t.to}
-            to={t.to}
+            key={link.to}
+            to={link.to}
             className={({ isActive }) =>
               `top-nav__btn${isActive ? " top-nav__btn--active" : ""}`
             }
           >
-            {t.label}
+            {link.label}
           </NavLink>
         ))}
       </nav>

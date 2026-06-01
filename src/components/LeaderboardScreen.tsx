@@ -1,5 +1,6 @@
 import "./LeaderboardScreen.css";
 import { useMemo, useState, useEffect } from "react";
+import { useTranslation } from "~/hooks/useTranslation";
 import { Link } from "react-router";
 import PageContainer from "./PageContainer";
 import Wc26Banner from "./Wc26Banner";
@@ -17,6 +18,7 @@ const RANK_COLORS = ["#FFD700", "#C0C0C0", "#CD7F32"];
 export default function LeaderboardScreen() {
   const { members, membersLoading } = useData();
   const { user, quinielaId } = useAuth();
+  const { t } = useTranslation();
   const [historyMap, setHistoryMap] = useState<Record<string, number[]>>({});
 
   useEffect(() => {
@@ -55,7 +57,7 @@ export default function LeaderboardScreen() {
   if (membersLoading) {
     return (
       <PageContainer>
-        <SectionHeader title='Rankings' subtitle='Loading…' />
+        <SectionHeader title={t('RANKINGS_TITLE')} subtitle={t('RANKINGS_LOADING')} />
       </PageContainer>
     );
   }
@@ -63,7 +65,7 @@ export default function LeaderboardScreen() {
   if (members.length === 0) {
     return (
       <PageContainer>
-        <SectionHeader title='Rankings' subtitle='Friends League' />
+        <SectionHeader title={t('RANKINGS_TITLE')} subtitle={t('RANKINGS_FRIENDS_LEAGUE')} />
         <div
           style={{
             padding: "2rem",
@@ -71,7 +73,7 @@ export default function LeaderboardScreen() {
             color: "var(--fg-secondary)",
           }}
         >
-          No players yet — be the first to join!
+          {t('RANKINGS_EMPTY')}
         </div>
       </PageContainer>
     );
@@ -82,8 +84,8 @@ export default function LeaderboardScreen() {
       <Wc26Banner />
       <PageContainer>
         <SectionHeader
-          title='Rankings'
-          subtitle={`Friends League · ${sorted.length} player${sorted.length !== 1 ? "s" : ""}`}
+          title={t('RANKINGS_TITLE')}
+          subtitle={`${t('RANKINGS_FRIENDS_LEAGUE')} · ${sorted.length} ${sorted.length !== 1 ? t('RANKINGS_PLAYER_COUNT_PLURAL') : t('RANKINGS_PLAYER_COUNT_SINGULAR')}`}
         />
 
         <div className='leaderboard__podium'>
@@ -114,9 +116,9 @@ export default function LeaderboardScreen() {
             <div className='leaderboard__table-header'>
               <span>#</span>
               <span />
-              <span>Player</span>
-              <span className='leaderboard__table-header-trend'>Trend</span>
-              <span className='leaderboard__table-header-pts'>Pts</span>
+              <span>{t('RANKINGS_PLAYER_LABEL')}</span>
+              <span className='leaderboard__table-header-trend'>{t('RANKINGS_TREND_LABEL')}</span>
+              <span className='leaderboard__table-header-pts'>{t('RANKINGS_PTS_LABEL')}</span>
             </div>
 
             {rest.map((p) => {
@@ -141,7 +143,7 @@ export default function LeaderboardScreen() {
                     <span
                       className={`leaderboard__row-name${isMe ? " leaderboard__row-name--me" : ""}`}
                     >
-                      {isMe ? "You" : p.displayName}
+                      {isMe ? t('PROFILE_YOU') : p.displayName}
                     </span>
                   </div>
                   <div className='leaderboard__row-trend'>

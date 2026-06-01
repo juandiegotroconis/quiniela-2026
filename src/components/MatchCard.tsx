@@ -1,5 +1,6 @@
 import './MatchCard.css';
 import TeamFlag from './TeamFlag';
+import { useTranslation } from '~/hooks/useTranslation';
 import Badge from './Badge';
 import type { Match } from '~/lib/types';
 import type { UserPickEntry } from '~/lib/auth-context';
@@ -11,15 +12,16 @@ interface Props {
 }
 
 function MatchStatusBadge({ match }: { match: Match }) {
+  const { t } = useTranslation();
   if (match.status === 'live') {
     return (
       <Badge variant="error">
-        <span className="badge__live-dot">●</span> LIVE {match.time}
+        <span className="badge__live-dot">●</span> {t('MATCH_CARD_STATUS_LIVE')} {match.time}
       </Badge>
     );
   }
   if (match.status === 'finished') {
-    return <Badge variant="default">FT</Badge>;
+    return <Badge variant="default">{t('MATCH_CARD_STATUS_FT')}</Badge>;
   }
   return (
     <span className="match-card__time">
@@ -29,6 +31,7 @@ function MatchStatusBadge({ match }: { match: Match }) {
 }
 
 export default function MatchCard({ match, onTap, userPick }: Props) {
+  const { t } = useTranslation();
   const isLive = match.status === 'live';
   return (
     <div
@@ -40,7 +43,7 @@ export default function MatchCard({ match, onTap, userPick }: Props) {
     >
       <div className="match-card__header">
         <span className="match-card__meta">
-          Group {match.group} · {match.date}
+          {t('MATCH_CARD_GROUP_PREFIX')} {match.group} · {match.date}
         </span>
         <MatchStatusBadge match={match} />
       </div>
@@ -63,7 +66,7 @@ export default function MatchCard({ match, onTap, userPick }: Props) {
 
       {userPick && userPick.pickA !== '' && userPick.pickB !== '' && (
         <div className="match-card__pick">
-          <span className="match-card__pick-label">Your pick:</span>
+          <span className="match-card__pick-label">{t('MATCH_CARD_YOUR_PICK')}</span>
           {userPick.pickA} - {userPick.pickB}
         </div>
       )}

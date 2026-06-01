@@ -1,5 +1,8 @@
 import './MatchDetail.css';
 import { useState, useEffect, useRef } from 'react';
+import { Icon } from '@iconify/react';
+import { useTranslation } from '~/hooks/useTranslation';
+import RulesModal from './RulesModal';
 import TeamFlag from './TeamFlag';
 import Badge from './Badge';
 import PredictionGroupCard from './PredictionGroupCard';
@@ -19,22 +22,25 @@ interface Props {
 }
 
 function MatchStatusBadge({ match }: { match: Match }) {
+  const { t } = useTranslation();
   if (match.status === 'live') {
     return (
       <Badge variant="error">
-        <span className="badge__live-dot">●</span> LIVE {match.time}
+        <span className="badge__live-dot">●</span> {t('MATCH_STATUS_LIVE')} {match.time}
       </Badge>
     );
   }
-  if (match.status === 'finished') return <Badge variant="default">FT</Badge>;
+  if (match.status === 'finished') return <Badge variant="default">{t('MATCH_STATUS_FT')}</Badge>;
   return <span className="match-detail__status-time">{match.date} · {match.time}</span>;
 }
 
 export default function MatchDetail({ match, onBack, userPick }: Props) {
   const { user, quinielaId } = useAuth();
   const { members } = useData();
+  const { t } = useTranslation();
   const membersRef = useRef(members);
   const [preds, setPreds] = useState<MatchPrediction[]>([]);
+  const [showRules, setShowRules] = useState(false);
 
   useEffect(() => { membersRef.current = members; }, [members]);
 
@@ -75,7 +81,14 @@ export default function MatchDetail({ match, onBack, userPick }: Props) {
 
   return (
     <div>
-      <button className="match-detail__back" onClick={onBack}>← Back to matches</button>
+      {showRules && <RulesModal onClose={() => setShowRules(false)} />}
+
+      <div className="match-detail__back-row">
+        <button className="match-detail__back" onClick={onBack}>{t('MATCH_DETAIL_BACK')}</button>
+        <button className="match-detail__info-btn" onClick={() => setShowRules(true)} aria-label='Rules'>
+          <Icon icon='mdi:information-outline' width={20} />
+        </button>
+      </div>
 
       <div className="match-detail__score-card">
         <div className="match-detail__score-row">
@@ -103,7 +116,7 @@ export default function MatchDetail({ match, onBack, userPick }: Props) {
       {hasPick && (
         <div className="match-detail__my-pick">
           <div className="match-detail__my-pick-left">
-            <span className="match-detail__my-pick-label">Your prediction</span>
+            <span className="match-detail__my-pick-label">{t('MATCH_DETAIL_YOUR_PREDICTION')}</span>
             <span
               className="match-detail__my-pick-score"
               style={{ color: result ? resultColors[result] : 'var(--fg-primary)' }}
@@ -122,7 +135,7 @@ export default function MatchDetail({ match, onBack, userPick }: Props) {
       {groups.length > 0 && (
         <div>
           <div className="match-detail__preds-heading">
-            Predictions · {preds.length} players
+            {t('MATCH_DETAIL_PREDICTIONS_HEADING')} · {preds.length} {t('MATCH_DETAIL_PLAYERS_SUFFIX')}
           </div>
           <div className="match-detail__preds-grid">
             {groups.map(g => (
@@ -134,7 +147,7 @@ export default function MatchDetail({ match, onBack, userPick }: Props) {
 
       {groups.length === 0 && (
         <div className="match-detail__empty">
-          Predictions will be revealed once the match begins.
+          {t('MATCH_DETAIL_EMPTY')}
         </div>
       )}
     </div>

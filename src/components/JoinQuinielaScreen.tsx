@@ -7,12 +7,14 @@ import {
 } from "react";
 import { useAuth } from "~/lib/auth-context";
 import { useNavigate } from "react-router";
+import { useTranslation } from "~/hooks/useTranslation";
 
 const CODE_LENGTH = 6;
 
 export default function JoinQuinielaScreen() {
   const { joinWithCode, logout } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [digits, setDigits] = useState<string[]>(Array(CODE_LENGTH).fill(""));
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -48,7 +50,7 @@ export default function JoinQuinielaScreen() {
   const handleSubmit = async () => {
     const code = digits.join("");
     if (code.length < CODE_LENGTH) {
-      setError("Please enter all 6 digits.");
+      setError(t('JOIN_QUINIELA_ERROR_INCOMPLETE'));
       return;
     }
     setError("");
@@ -73,17 +75,16 @@ export default function JoinQuinielaScreen() {
         <div className='join-screen__logo'>
           <img
             src='/logo-black.svg'
-            alt='FIFA World Cup 2026'
+            alt={t('APP_LOGO_ALT')}
             className='join-screen__logo-img'
           />
-          <p className='join-screen__tagline'>Predict. Compete. Win.</p>
+          <p className='join-screen__tagline'>{t('TAGLINE_ALT')}</p>
         </div>
 
         <div className='join-screen__card'>
-          <h2 className='join-screen__title'>Join a Quiniela</h2>
+          <h2 className='join-screen__title'>{t('JOIN_QUINIELA_TITLE')}</h2>
           <p className='join-screen__subtitle'>
-            Enter the 6-digit code from your group organizer to access the
-            tournament.
+            {t('JOIN_QUINIELA_SUBTITLE')}
           </p>
 
           <div className='join-screen__otp'>
@@ -114,12 +115,12 @@ export default function JoinQuinielaScreen() {
             onClick={handleSubmit}
             disabled={loading}
           >
-            {loading ? "Joining…" : "Join Quiniela"}
+            {loading ? t('JOIN_QUINIELA_JOINING') : t('JOIN_QUINIELA_SUBMIT')}
           </button>
         </div>
 
         <button className='join-screen__logout' onClick={handleLogout}>
-          Sign out
+          {t('JOIN_QUINIELA_SIGN_OUT')}
         </button>
       </div>
     </div>

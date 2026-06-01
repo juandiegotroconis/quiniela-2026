@@ -1,6 +1,9 @@
 import "./PredictionEntryForm.css";
 import { useState } from "react";
+import { Icon } from "@iconify/react";
 import PageContainer from "./PageContainer";
+import RulesModal from "./RulesModal";
+import { useTranslation } from "~/hooks/useTranslation";
 import TeamFlag from "./TeamFlag";
 import TopScorerPicker from "./TopScorerPicker";
 import GroupNav from "./GroupNav";
@@ -32,6 +35,7 @@ export default function PredictionEntryForm({
   onSubmit,
 }: Props) {
   const { matches } = useData();
+  const { t } = useTranslation();
   const [picks, setPicks] =
     useState<Record<number, UserPickEntry>>(initialPicks);
   const [topScorer, setTopScorer] = useState<TopScorerSuggestion | null>(
@@ -41,6 +45,7 @@ export default function PredictionEntryForm({
     setTopScorer(scorer);
     setIsDirty(true);
   };
+  const [showRules, setShowRules] = useState(false);
   const [showErrors, setShowErrors] = useState(false);
   const [saving, setSaving] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -68,7 +73,7 @@ export default function PredictionEntryForm({
     setSaveMsg(null);
     try {
       await onSave(picks, topScorer);
-      setSaveMsg("Saved!");
+      setSaveMsg(t('PRED_FORM_SAVED'));
       setIsDirty(false);
       setTimeout(() => setSaveMsg(null), 2500);
     } finally {
@@ -96,26 +101,29 @@ export default function PredictionEntryForm({
 
   return (
     <PageContainer wide>
+      {showRules && <RulesModal onClose={() => setShowRules(false)} />}
+
       <div className='pred-form__heading'>
-        <div className='pred-form__title'>Enter Your Predictions</div>
+        <div className='pred-form__heading-row'>
+          <div className='pred-form__title'>{t('PRED_FORM_TITLE')}</div>
+          <button className='pred-form__info-btn' onClick={() => setShowRules(true)} aria-label='Rules'>
+            <Icon icon='mdi:information-outline' width={20} />
+          </button>
+        </div>
         <p className='pred-form__subtitle'>
-          Fill in your predicted score for every match and pick the tournament
-          top scorer.{" "}
-          {isUpdatable
-            ? "You can save your progress at any time and update picks while predictions are open."
-            : "Predictions are locked and can no longer be changed."}
+          {isUpdatable ? t('PRED_FORM_SUBTITLE_OPEN') : t('PRED_FORM_SUBTITLE_LOCKED')}
         </p>
       </div>
 
       <div className='pred-form__progress'>
         <div className='pred-form__progress-inner'>
           <div className='pred-form__progress-labels'>
-            <span className='pred-form__progress-label'>Progress</span>
+            <span className='pred-form__progress-label'>{t('PRED_FORM_PROGRESS_LABEL')}</span>
             <span
               className={`pred-form__progress-count${allFilled ? " pred-form__progress-count--done" : ""}`}
             >
-              {filledCount}/{totalMatches} matches
-              {topScorer ? " + top scorer" : ""}
+              {filledCount}/{totalMatches} {t('PRED_FORM_MATCHES_COUNT')}
+              {topScorer ? ` ${t('PRED_FORM_TOP_SCORER_COUNT')}` : ""}
             </span>
           </div>
           <div className='pred-form__progress-track'>
@@ -142,7 +150,7 @@ export default function PredictionEntryForm({
           return (
             <div key={g.id} id={`group-${g.id}`} className='pred-form__group'>
               <div className='pred-form__group-header'>
-                Group {g.id}
+                {t('PRED_FORM_GROUP_PREFIX')} {g.id}
                 <span className='pred-form__group-count'>
                   {filledInGroup}/{g.matches.length}
                 </span>
@@ -151,10 +159,10 @@ export default function PredictionEntryForm({
               <div className='pred-form__mini-standings'>
                 <div className='pred-form__mini-header'>
                   <span>#</span>
-                  <span>Team</span>
-                  <span className='pred-form__mini-col-center'>GD</span>
-                  <span className='pred-form__mini-col-center'>GF</span>
-                  <span className='pred-form__mini-col-pts'>Pts</span>
+                  <span>{t('PRED_FORM_MINI_HEADER_TEAM')}</span>
+                  <span className='pred-form__mini-col-center'>{t('PRED_FORM_MINI_HEADER_GD')}</span>
+                  <span className='pred-form__mini-col-center'>{t('PRED_FORM_MINI_HEADER_GF')}</span>
+                  <span className='pred-form__mini-col-pts'>{t('GROUP_TABLE_HEADER_PTS')}</span>
                 </div>
                 {standings.map((t, i) => {
                   const qualify = i < 2;
@@ -278,16 +286,15 @@ export default function PredictionEntryForm({
           >
             <path d='M7.5 21H2V9h5.5v12zm7.25-18h-5.5v18h5.5V3zM22 11h-5.5v10H22V11z' />
           </svg>
-          Top Scorer Prediction
-          <span className='pred-form__scorer-bonus'>+15 bonus if correct</span>
+          {t('PRED_FORM_TOP_SCORER_HEADING')}
+          <span className='pred-form__scorer-bonus'>{t('PRED_FORM_TOP_SCORER_BONUS')}</span>
         </div>
         <TopScorerPicker value={topScorer} onChange={handleScorerChange} />
       </div>
 
       {showErrors && !allFilled && (
         <div className='pred-form__error-msg'>
-          Please fill in all match predictions and select a top scorer before
-          submitting.
+          {t('PRED_FORM_ERROR_INCOMPLETE')}
         </div>
       )}
 
@@ -297,7 +304,7 @@ export default function PredictionEntryForm({
           onClick={handleSubmit}
           disabled={submitting || saving}
         >
-          {submitting ? "Submitting…" : "Submit All"}
+          {submitting ? t('PRED_FORM_SUBMITTING') : t('PRED_FORM_SUBMIT')}
         </button>
       </div>
 
@@ -307,17 +314,17 @@ export default function PredictionEntryForm({
             {saveMsg
               ? saveMsg
               : isDirty
-                ? "You have unsaved changes"
+                ? t('PRED_FORM_STATUS_UNSAVED')
                 : hasSomeFilled
-                  ? "All changes saved"
-                  : "No picks entered yet"}
+                  ? t('PRED_FORM_STATUS_ALL_SAVED')
+                  : t('PRED_FORM_STATUS_NO_PICKS')}
           </span>
           <button
             className={`pred-form__save${hasSomeFilled && !saving ? " pred-form__save--ready" : " pred-form__save--disabled"}`}
             onClick={handleSave}
             disabled={saving || submitting || !hasSomeFilled}
           >
-            {saving ? "Saving…" : "Save Progress"}
+            {saving ? t('PRED_FORM_SAVING') : t('PRED_FORM_SAVE')}
           </button>
         </div>
       )}

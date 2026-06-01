@@ -1,5 +1,6 @@
 import './ProfileReadOnly.css';
 import PageContainer from './PageContainer';
+import { useTranslation } from '~/hooks/useTranslation';
 import Badge from './Badge';
 import TeamFlag from './TeamFlag';
 import TopScorerPicker from './TopScorerPicker';
@@ -21,10 +22,11 @@ const RESULT_COLORS: Record<string, string> = {
 
 export default function ProfileReadOnly({ userPicks, topScorer }: Props) {
   const { matches } = useData();
+  const { t } = useTranslation();
 
   const matchdays = [1, 2, 3].map(day => ({
     day,
-    label: `Matchday ${day}`,
+    label: `${t('PROFILE_READONLY_MATCHDAY_PREFIX')} ${day}`,
     matches: matches.filter(m => m.day === day),
   }));
 
@@ -50,10 +52,10 @@ export default function ProfileReadOnly({ userPicks, topScorer }: Props) {
     : '—';
 
   const stats = [
-    { label: 'Exact scores', value: exactCount, color: 'var(--color-green)' },
-    { label: 'Correct winner', value: winnerCount, color: 'var(--color-gold)' },
-    { label: 'Missed', value: missed, color: 'var(--color-error)' },
-    { label: 'Accuracy', value: accuracy, color: 'var(--color-info)' },
+    { label: t('PROFILE_READONLY_STAT_EXACT'), value: exactCount, color: 'var(--color-green)' },
+    { label: t('PROFILE_READONLY_STAT_WINNER'), value: winnerCount, color: 'var(--color-gold)' },
+    { label: t('PROFILE_READONLY_STAT_MISSED'), value: missed, color: 'var(--color-error)' },
+    { label: t('PROFILE_READONLY_STAT_ACCURACY'), value: accuracy, color: 'var(--color-info)' },
   ];
 
   return (
@@ -74,17 +76,17 @@ export default function ProfileReadOnly({ userPicks, topScorer }: Props) {
           <svg width="18" height="18" viewBox="0 0 24 24" fill="var(--color-gold)">
             <path d="M7.5 21H2V9h5.5v12zm7.25-18h-5.5v18h5.5V3zM22 11h-5.5v10H22V11z" />
           </svg>
-          Top Scorer Prediction
+          {t('PROFILE_READONLY_TOP_SCORER_HEADING')}
         </div>
         <TopScorerPicker value={topScorer} disabled />
         <p className="profile-ro__scorer-note">
-          +15 bonus points if correct at end of tournament
+          {t('PROFILE_READONLY_TOP_SCORER_NOTE')}
         </p>
       </div>
 
       <div className="profile-ro__preds-heading">
-        Your Predictions
-        <Badge variant="default">Locked</Badge>
+        {t('PROFILE_READONLY_PREDICTIONS_HEADING')}
+        <Badge variant="default">{t('PROFILE_READONLY_LOCKED_BADGE')}</Badge>
       </div>
 
       {matchdays.map(md => (
@@ -105,7 +107,7 @@ export default function ProfileReadOnly({ userPicks, topScorer }: Props) {
                 <div key={m.id} className="profile-ro__match-row">
                   <div className="profile-ro__match-teams">
                     <TeamFlag code={m.teamA} size={20} />
-                    <span className="profile-ro__match-vs">vs</span>
+                    <span className="profile-ro__match-vs">{t('PROFILE_READONLY_VS')}</span>
                     <TeamFlag code={m.teamB} size={20} />
                   </div>
                   <div className="profile-ro__match-result">
@@ -118,7 +120,7 @@ export default function ProfileReadOnly({ userPicks, topScorer }: Props) {
                     )}
                   </div>
                   <div className="profile-ro__match-pick-wrap">
-                    <span className="profile-ro__match-pick-label">Your pick:</span>
+                    <span className="profile-ro__match-pick-label">{t('PROFILE_READONLY_YOUR_PICK')}</span>
                     <span
                       className="profile-ro__match-pick-score"
                       style={{ color: result ? RESULT_COLORS[result] : 'var(--fg-primary)' }}

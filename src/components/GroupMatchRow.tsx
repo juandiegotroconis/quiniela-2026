@@ -1,5 +1,6 @@
 import './GroupMatchRow.css';
 import TeamFlag from './TeamFlag';
+import { useTranslation } from '~/hooks/useTranslation';
 import Badge from './Badge';
 import { getPickResult, getResultVariant, getResultPoints } from '~/lib/helpers';
 import type { Match } from '~/lib/types';
@@ -17,6 +18,7 @@ const RESULT_COLORS: Record<string, string> = {
 };
 
 export default function GroupMatchRow({ match, userPick }: Props) {
+  const { t } = useTranslation();
   const isFinished = match.status === 'finished';
   const isLive = match.status === 'live';
   const hasPick = userPick && userPick.pickA !== '' && userPick.pickB !== '';
@@ -48,7 +50,7 @@ export default function GroupMatchRow({ match, userPick }: Props) {
 
       {hasPick && (
         <div className="group-match-row__pick">
-          <span className="group-match-row__pick-label">You:</span>
+          <span className="group-match-row__pick-label">{t('MATCH_DETAIL_PICK_LABEL')}</span>
           <span
             className="group-match-row__pick-score"
             style={{ color: result ? RESULT_COLORS[result] : 'var(--fg-primary)' }}

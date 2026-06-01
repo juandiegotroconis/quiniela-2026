@@ -1,10 +1,12 @@
 import "./VerifyEmailScreen.css";
 import { useLocation, useNavigate } from "react-router";
 import { Icon } from "@iconify/react";
+import { useTranslation } from "~/hooks/useTranslation";
 
 export default function VerifyEmailScreen() {
   const { state } = useLocation();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const email = (state as { email?: string } | null)?.email;
 
   return (
@@ -13,7 +15,7 @@ export default function VerifyEmailScreen() {
         <div className="verify-email__logo">
           <img
             src="/logo-black.svg"
-            alt="FIFA World Cup 2026"
+            alt={t('APP_LOGO_ALT')}
             className="verify-email__logo-img"
           />
         </div>
@@ -22,25 +24,25 @@ export default function VerifyEmailScreen() {
           <Icon icon="mdi:email-check-outline" />
         </div>
 
-        <h1 className="verify-email__title">Check your email</h1>
+        <h1 className="verify-email__title">{t('VERIFY_EMAIL_TITLE')}</h1>
 
         <p className="verify-email__body">
-          We sent a verification link to
+          {t('VERIFY_EMAIL_BODY_SENT')}
         </p>
-        <p className="verify-email__email">{email ?? "your email address"}</p>
+        <p className="verify-email__email">{email ?? t('VERIFY_EMAIL_FALLBACK_ADDRESS')}</p>
         <p className="verify-email__body">
-          Click the link in the email to activate your account, then come back to log in.
+          {t('VERIFY_EMAIL_BODY_INSTRUCTIONS')}
         </p>
 
         <button
           className="verify-email__back"
           onClick={() => navigate("/login")}
         >
-          Back to Log In
+          {t('VERIFY_EMAIL_BACK')}
         </button>
 
         <p className="verify-email__hint">
-          Can't find it? Check your spam folder.
+          {t('VERIFY_EMAIL_HINT')}
         </p>
       </div>
     </div>

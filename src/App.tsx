@@ -1,5 +1,6 @@
 import { Outlet, useNavigate, useLocation } from "react-router";
 import { useAuth } from "~/lib/auth-context";
+import { useTranslation } from "~/hooks/useTranslation";
 import { DataProvider } from "~/lib/data-context";
 import TopNav from "~/components/TopNav";
 import JoinQuinielaScreen from "~/components/JoinQuinielaScreen";
@@ -44,18 +45,19 @@ function AppContent() {
 
 function PredictionsBanner({ type }: { type: "unsent" | "updatable" }) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   return (
     <div className="predictions-banner">
       <span className="predictions-banner__text">
         {type === "unsent"
-          ? "You haven't submitted your predictions yet!"
-          : "Predictions are still open — you can update yours!"}
+          ? t('BANNER_UNSENT_TEXT')
+          : t('BANNER_UPDATABLE_TEXT')}
       </span>
       <button
         className="predictions-banner__btn"
         onClick={() => navigate("/profile")}
       >
-        {type === "unsent" ? "Enter Predictions →" : "Update Predictions →"}
+        {type === "unsent" ? t('BANNER_ENTER_PREDICTIONS') : t('BANNER_UPDATE_PREDICTIONS')}
       </button>
     </div>
   );

@@ -1,31 +1,28 @@
 import './PlayerProfile.css';
 import { useState, useEffect } from 'react';
+import { useTranslation } from '~/hooks/useTranslation';
 import { Link } from 'react-router';
 import PageContainer from './PageContainer';
 import Avatar from './Avatar';
-import Badge from './Badge';
 import PositionChange from './PositionChange';
 import Sparkline from './Sparkline';
-import TeamFlag from './TeamFlag';
-import { getPickResult, getResultVariant, getResultPoints } from '~/lib/helpers';
+import { getPickResult } from '~/lib/helpers';
 import { fetchSingleMemberHistory } from '~/lib/queries';
 import { useAuth } from '~/lib/auth-context';
 import { useData } from '~/lib/data-context';
 import type { UserPickEntry } from '~/lib/auth-context';
+import GroupPanel from './GroupPanel';
+import GroupNav from './GroupNav';
+import { GROUPS } from '~/lib/mock-data';
 
 interface Props {
   userId: string;
 }
 
-const RESULT_COLORS: Record<string, string> = {
-  exact: 'var(--color-green)',
-  winner: 'var(--color-gold)',
-  miss: 'var(--color-error)',
-};
-
 export default function PlayerProfile({ userId }: Props) {
   const { user, quinielaId, userPicks: myPicks } = useAuth();
   const { matches, getMember, getPicksForUser } = useData();
+  const { t } = useTranslation();
   const isMe = userId === user?.id;
   const [picks, setPicks] = useState<Record<number, UserPickEntry>>(isMe ? myPicks : {});
   const [memberHistory, setMemberHistory] = useState<number[]>([]);
@@ -49,19 +46,14 @@ export default function PlayerProfile({ userId }: Props) {
   if (!member) {
     return (
       <PageContainer>
-        <Link to="/rankings" className="player-profile__back">← Rankings</Link>
-        <div className="player-profile__not-found">Player not found.</div>
+        <Link to="/rankings" className="player-profile__back">{t('PLAYER_PROFILE_BACK')}</Link>
+        <div className="player-profile__not-found">{t('PLAYER_PROFILE_NOT_FOUND')}</div>
       </PageContainer>
     );
   }
 
-  const displayName = isMe ? (user?.name ?? 'You') : member.displayName;
-
-  const matchdays = [1, 2, 3].map(day => ({
-    day,
-    label: `Matchday ${day}`,
-    matches: matches.filter(m => m.day === day),
-  }));
+  const displayName = isMe ? (user?.name ?? t('PROFILE_YOU')) : member.displayName;
+  const groupIds = Object.keys(GROUPS);
 
   const finishedMatches = matches.filter(m => {
     if (m.status !== 'finished') return false;
@@ -85,15 +77,15 @@ export default function PlayerProfile({ userId }: Props) {
     : '—';
 
   const stats = [
-    { label: 'Exact scores', value: exactCount, color: 'var(--color-green)' },
-    { label: 'Correct winner', value: winnerCount, color: 'var(--color-gold)' },
-    { label: 'Missed', value: missed, color: 'var(--color-error)' },
-    { label: 'Accuracy', value: accuracy, color: 'var(--color-info)' },
+    { label: t('PLAYER_PROFILE_STAT_EXACT'), value: exactCount, color: 'var(--color-green)' },
+    { label: t('PLAYER_PROFILE_STAT_WINNER'), value: winnerCount, color: 'var(--color-gold)' },
+    { label: t('PLAYER_PROFILE_STAT_MISSED'), value: missed, color: 'var(--color-error)' },
+    { label: t('PLAYER_PROFILE_STAT_ACCURACY'), value: accuracy, color: 'var(--color-info)' },
   ];
 
   return (
     <PageContainer>
-      <Link to="/rankings" className="player-profile__back">← Rankings</Link>
+      <Link to="/rankings" className="player-profile__back">{t('PLAYER_PROFILE_BACK')}</Link>
 
       <div className="player-profile__header">
         <Avatar name={displayName} color={member.avatarColor} size={64} />
@@ -101,7 +93,7 @@ export default function PlayerProfile({ userId }: Props) {
           <div className="player-profile__name">{displayName}</div>
           <div className="player-profile__rank-row">
             <span className="player-profile__rank-label">
-              Rank <span className="player-profile__rank-num">#{member.rank}</span>
+              {t('PLAYER_PROFILE_RANK_LABEL')} <span className="player-profile__rank-num">#{member.rank}</span>
             </span>
             <PositionChange current={member.rank} previous={member.prevRank ?? member.rank} />
             <span className="player-profile__pts">{member.pts} pts</span>
@@ -123,67 +115,15 @@ export default function PlayerProfile({ userId }: Props) {
         ))}
       </div>
 
-      <div className="player-profile__preds-heading">
-        Predictions
-        <Badge variant="default">Public</Badge>
-      </div>
+      <GroupNav groups={groupIds} />
 
-      {matchdays.map(md => (
-        <div key={md.day} className="player-profile__matchday">
-          <div className="player-profile__matchday-label">{md.label}</div>
-          <div className="player-profile__match-list">
-            {md.matches.map(m => {
-              const pick = picks[m.id];
-              const hasPick = pick && pick.pickA !== '' && pick.pickB !== '';
-              const isFinished = m.status === 'finished';
-              const isLive = m.status === 'live';
-              const result = isFinished && hasPick
-                ? getPickResult(m, parseInt(String(pick!.pickA)), parseInt(String(pick!.pickB)))
-                : null;
-
-              return (
-                <div key={m.id} className="player-profile__match-row">
-                  <div className="player-profile__match-teams">
-                    <TeamFlag code={m.teamA} size={20} />
-                    <span className="player-profile__match-vs">vs</span>
-                    <TeamFlag code={m.teamB} size={20} />
-                  </div>
-                  <div className="player-profile__match-result">
-                    {isFinished || isLive ? (
-                      <span className="player-profile__match-score-actual">
-                        {m.scoreA}:{m.scoreB}
-                      </span>
-                    ) : (
-                      <span className="player-profile__match-date">{m.date}</span>
-                    )}
-                  </div>
-                  <div className="player-profile__match-pick-wrap">
-                    <span className="player-profile__match-pick-label">Pick:</span>
-                    <span
-                      className="player-profile__match-pick-score"
-                      style={{ color: result ? RESULT_COLORS[result] : 'var(--fg-primary)' }}
-                    >
-                      {hasPick ? `${pick!.pickA}:${pick!.pickB}` : '—'}
-                    </span>
-                  </div>
-                  <div className="player-profile__match-badge">
-                    {isFinished && hasPick && result && (
-                      <Badge variant={getResultVariant(result)}>
-                        +{getResultPoints(result)}
-                      </Badge>
-                    )}
-                    {isLive && (
-                      <Badge variant="error">
-                        <span className="badge__live-dot">●</span> Live
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+      <div className="player-profile__groups">
+        {groupIds.map(groupId => (
+          <div key={groupId} id={`group-${groupId}`}>
+            <GroupPanel groupId={groupId} picks={picks} />
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </PageContainer>
   );
 }

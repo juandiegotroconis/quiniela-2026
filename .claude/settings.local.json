@@ -33,7 +33,8 @@
       "Bash(mkdir -p \"c:/Users/juant/Documents/Projects/quiniela-2026/supabase/migrations\")",
       "Bash(mkdir -p \"c:/Users/juant/Documents/Projects/quiniela-2026/scripts\")",
       "Bash(echo \"Exit: $?\")",
-      "Bash(curl -s \"https://api.football-data.org/v4/competitions/WC/teams?season=2026\" -H \"X-Auth-Token: 3cb9af8b9b324b75b4af34f93e428184\")"
+      "Bash(curl -s \"https://api.football-data.org/v4/competitions/WC/teams?season=2026\" -H \"X-Auth-Token: 3cb9af8b9b324b75b4af34f93e428184\")",
+      "Bash(del \"c:\\\\Users\\\\juant\\\\Documents\\\\Projects\\\\quiniela-2026\\\\src\\\\components\\\\LanguageToggle.tsx\" \"c:\\\\Users\\\\juant\\\\Documents\\\\Projects\\\\quiniela-2026\\\\src\\\\components\\\\LanguageToggle.css\")"
     ],
     "additionalDirectories": [
       "c:\\Users\\juant\\Documents\\Projects\\quiniela-2026\\src\\routes",

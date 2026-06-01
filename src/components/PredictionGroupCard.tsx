@@ -1,5 +1,6 @@
 import './PredictionGroupCard.css';
 import Avatar from './Avatar';
+import { useTranslation } from '~/hooks/useTranslation';
 import Badge from './Badge';
 import type { PredictionGroup } from '~/lib/helpers';
 import type { Match } from '~/lib/types';
@@ -10,6 +11,7 @@ interface Props {
 }
 
 export default function PredictionGroupCard({ group, match }: Props) {
+  const { t } = useTranslation();
   const resultColors = {
     exact: 'var(--color-green-25)',
     winner: 'rgba(200,169,78,0.25)',
@@ -26,7 +28,7 @@ export default function PredictionGroupCard({ group, match }: Props) {
       className={`pred-group-card${group.hasMe ? ' pred-group-card--me' : ''}`}
       style={{ borderColor }}
     >
-      {group.hasMe && <div className="pred-group-card__your-pick">Your pick</div>}
+      {group.hasMe && <div className="pred-group-card__your-pick">{t('PRED_GROUP_CARD_YOUR_PICK')}</div>}
 
       <div className="pred-group-card__score">
         <span>{group.pickA}</span>
@@ -47,7 +49,7 @@ export default function PredictionGroupCard({ group, match }: Props) {
           <div key={p.userId} className="pred-group-card__player" title={p.displayName}>
             <Avatar name={p.displayName} color={p.avatarColor} size={28} />
             <span className={`pred-group-card__player-name${p.isMe ? ' pred-group-card__player-name--me' : ''}`}>
-              {p.isMe ? 'You' : p.displayName.split(' ')[0]}
+              {p.isMe ? t('PROFILE_YOU') : p.displayName.split(' ')[0]}
             </span>
           </div>
         ))}

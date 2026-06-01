@@ -1,5 +1,6 @@
 import './GroupTable.css';
 import TeamFlag from './TeamFlag';
+import { useTranslation } from '~/hooks/useTranslation';
 import type { TeamStanding } from '~/lib/helpers';
 
 interface Props {
@@ -12,11 +13,12 @@ const HEADERS = ['MP', 'W', 'D', 'L', 'GF', 'GA'];
 const HIDE_SM = new Set(['GF', 'GA', 'gf', 'ga']);
 
 export default function GroupTable({ standings }: Props) {
+  const { t } = useTranslation();
   return (
     <div className="group-table">
       <div className="group-table__header">
         <span>#</span>
-        <span>Team</span>
+        <span>{t('GROUP_TABLE_HEADER_TEAM')}</span>
         {HEADERS.map(h => (
           <span
             key={h}
@@ -25,7 +27,7 @@ export default function GroupTable({ standings }: Props) {
             {h}
           </span>
         ))}
-        <span className="group-table__col-center group-table__header-pts">Pts</span>
+        <span className="group-table__col-center group-table__header-pts">{t('GROUP_TABLE_HEADER_PTS')}</span>
       </div>
 
       {standings.map((t, i) => {

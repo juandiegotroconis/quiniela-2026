@@ -101,3 +101,40 @@
   box-shadow: 0 0 0 2px var(--color-brand);
   transform: scale(1.15);
 }
+
+.profile-hdr__lang-picker {
+  margin-top: 16px;
+}
+
+.profile-hdr__lang-options {
+  display: flex;
+  gap: 8px;
+}
+
+.profile-hdr__lang-opt {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default);
+  background: transparent;
+  color: var(--fg-secondary);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 150ms var(--ease-default);
+}
+
+.profile-hdr__lang-opt:hover {
+  border-color: var(--fg-tertiary);
+  color: var(--fg-primary);
+}
+
+.profile-hdr__lang-opt--active {
+  border-color: var(--color-brand);
+  color: var(--fg-primary);
+  background: var(--color-brand-08);
+  font-weight: 600;
+}

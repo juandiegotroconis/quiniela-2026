@@ -1,0 +1,1 @@
+- [i18n Infrastructure Setup](project_i18n_setup.md) — translation files location, key naming conventions, hook design, interpolation edge cases

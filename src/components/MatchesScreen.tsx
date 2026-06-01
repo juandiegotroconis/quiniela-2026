@@ -1,5 +1,6 @@
 import './MatchesScreen.css';
 import { useMemo, useState } from 'react';
+import { useTranslation } from '~/hooks/useTranslation';
 import PageContainer from './PageContainer';
 import Wc26Banner from './Wc26Banner';
 import SectionHeader from './SectionHeader';
@@ -10,12 +11,6 @@ import { useData } from '~/lib/data-context';
 import type { Match } from '~/lib/types';
 import { useAuth } from '~/lib/auth-context';
 
-const FILTER_TABS = [
-  { id: 'all', label: 'All' },
-  { id: 'live', label: 'Live' },
-  { id: 'upcoming', label: 'Upcoming' },
-  { id: 'finished', label: 'Finished' },
-];
 
 function formatDateChip(isoDate: string): string {
   const d = new Date(isoDate + 'T00:00:00Z');
@@ -34,6 +29,14 @@ export default function MatchesScreen() {
   const [selected, setSelected] = useState<Match | null>(null);
   const { userPicks } = useAuth();
   const { matches, matchesLoading } = useData();
+  const { t } = useTranslation();
+
+  const FILTER_TABS = [
+    { id: 'all', label: t('MATCHES_FILTER_ALL') },
+    { id: 'live', label: t('MATCHES_FILTER_LIVE') },
+    { id: 'upcoming', label: t('MATCHES_FILTER_UPCOMING') },
+    { id: 'finished', label: t('MATCHES_FILTER_FINISHED') },
+  ];
 
   const groups = useMemo(() => {
     const seen = new Set<string>();
@@ -76,7 +79,7 @@ export default function MatchesScreen() {
       <Wc26Banner />
       <PageContainer>
       <div className="matches-screen__header">
-        <SectionHeader title="Matches" subtitle="FIFA World Cup 2026 · Group Stage" />
+        <SectionHeader title={t('MATCHES_TITLE')} subtitle={t('MATCHES_SUBTITLE')} />
         <FilterTabs tabs={FILTER_TABS} active={tab} onChange={setTab} />
       </div>
 
@@ -85,7 +88,7 @@ export default function MatchesScreen() {
           className={`matches-screen__chip${group === 'all' ? ' matches-screen__chip--active' : ''}`}
           onClick={() => setGroup('all')}
         >
-          All Groups
+          {t('MATCHES_GROUP_ALL')}
         </button>
         {groups.map(g => (
           <button
@@ -93,7 +96,7 @@ export default function MatchesScreen() {
             className={`matches-screen__chip${group === g ? ' matches-screen__chip--active' : ''}`}
             onClick={() => setGroup(g)}
           >
-            Group {g}
+            {t('MATCHES_GROUP_PREFIX')} {g}
           </button>
         ))}
       </div>
@@ -103,7 +106,7 @@ export default function MatchesScreen() {
           className={`matches-screen__chip${date === 'all' ? ' matches-screen__chip--active' : ''}`}
           onClick={() => setDate('all')}
         >
-          All Dates
+          {t('MATCHES_DATE_ALL')}
         </button>
         {dates.map(d => (
           <button
@@ -116,10 +119,10 @@ export default function MatchesScreen() {
         ))}
       </div>
 
-      {matchesLoading && <div className="matches-screen__empty">Loading…</div>}
+      {matchesLoading && <div className="matches-screen__empty">{t('MATCHES_LOADING')}</div>}
 
       {!matchesLoading && filtered.length === 0 && (
-        <div className="matches-screen__empty">No matches in this category</div>
+        <div className="matches-screen__empty">{t('MATCHES_EMPTY')}</div>
       )}
 
       <div className="matches-screen__grid">

@@ -1,8 +1,10 @@
 import "./ProfileScreen.css";
 import { useState } from "react";
 import { useNavigate } from "react-router";
+import { Icon } from "@iconify/react";
 import { useAuth } from "~/lib/auth-context";
 import { useData } from "~/lib/data-context";
+import { useTranslation } from "~/hooks/useTranslation";
 import PageContainer from "./PageContainer";
 import Avatar from "./Avatar";
 import PositionChange from "./PositionChange";
@@ -60,22 +62,23 @@ export default function ProfileScreen() {
     navigate("/login");
   };
 
+  const { t, language, setLanguage } = useTranslation();
   const showForm = !submitted || isUpdatable;
 
   return (
     <>
       <PageContainer>
         <div className='profile-hdr'>
-          <Avatar name={user?.name ?? "You"} color={activeColor} size={64} />
+          <Avatar name={user?.name ?? t('PROFILE_YOU')} color={activeColor} size={64} />
           <div className='profile-hdr__info'>
             <div className='profile-hdr__name'>
-              {user?.name ?? "Your Profile"}
+              {user?.name ?? t('PROFILE_DEFAULT_NAME')}
             </div>
             <div className='profile-hdr__rank-row'>
               {me && (
                 <>
                   <span className='profile-hdr__rank-label'>
-                    Rank{" "}
+                    {t('PROFILE_RANK_LABEL')}{" "}
                     <span className='profile-hdr__rank-num'>
                       #{me.rank ?? "—"}
                     </span>
@@ -90,13 +93,13 @@ export default function ProfileScreen() {
             </div>
           </div>
           <button className='profile-hdr__logout' onClick={handleLogout}>
-            Log Out
+            {t('PROFILE_LOG_OUT')}
           </button>
         </div>
 
         <div className='profile-hdr__color-picker'>
           <span className='profile-hdr__color-label'>
-            Avatar color{colorSaving ? " · Saving…" : ""}
+            {colorSaving ? t('PROFILE_AVATAR_COLOR_SAVING') : t('PROFILE_AVATAR_COLOR_LABEL')}
           </span>
           <div className='profile-hdr__color-swatches'>
             {AVATAR_COLORS.map((color) => (
@@ -107,6 +110,26 @@ export default function ProfileScreen() {
                 onClick={() => handleColorChange(color)}
                 aria-label={color}
               />
+            ))}
+          </div>
+        </div>
+
+        <div className='profile-hdr__lang-picker'>
+          <span className='profile-hdr__color-label'>{t('PROFILE_LANGUAGE_LABEL')}</span>
+          <div className='profile-hdr__lang-options'>
+            {([
+              { code: 'en', flag: 'circle-flags:us', label: 'English' },
+              { code: 'es', flag: 'circle-flags:es', label: 'Español' },
+            ] as const).map(({ code, flag, label }) => (
+              <button
+                key={code}
+                className={`profile-hdr__lang-opt${language === code ? ' profile-hdr__lang-opt--active' : ''}`}
+                onClick={() => setLanguage(code)}
+                aria-pressed={language === code}
+              >
+                <Icon icon={flag} width={20} height={20} />
+                <span>{label}</span>
+              </button>
             ))}
           </div>
         </div>

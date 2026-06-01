@@ -3,6 +3,31 @@
   margin-bottom: 32px;
 }
 
+.pred-form__heading-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.pred-form__info-btn {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: var(--fg-tertiary);
+  display: flex;
+  align-items: center;
+  border-radius: var(--radius-full);
+  transition: color 150ms, background 150ms;
+  flex-shrink: 0;
+}
+
+.pred-form__info-btn:hover {
+  color: var(--color-brand);
+  background: var(--color-brand-bg);
+}
+
 .pred-form__title {
   font-family: var(--font-display);
   font-size: 30px;
