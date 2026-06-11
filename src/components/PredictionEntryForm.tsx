@@ -57,10 +57,11 @@ export default function PredictionEntryForm({
     setIsDirty(true);
   };
 
-  const filledCount = Object.values(picks).filter(
-    (p) => p.pickA !== "" && p.pickB !== "",
+  const groupStageMatches = matches.filter((m) => m.stage === "GROUP_STAGE");
+  const filledCount = groupStageMatches.filter(
+    (m) => (picks[m.id]?.pickA ?? "") !== "" && (picks[m.id]?.pickB ?? "") !== "",
   ).length;
-  const totalMatches = matches.length;
+  const totalMatches = groupStageMatches.length;
   const allFilled = filledCount === totalMatches && topScorer !== null;
   const hasSomeFilled = filledCount > 0 || topScorer !== null;
   const progress =
