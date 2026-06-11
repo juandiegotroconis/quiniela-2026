@@ -43,7 +43,7 @@ export default function GroupPanel({ groupId, picks: externalPicks }: Props) {
       <div className="group-panel__matches-heading">{t('GROUP_PANEL_MATCHES_HEADING')}</div>
       <div className="group-panel__matches">
         {groupMatches.map(m => (
-          <MatchCard key={m.id} match={m} onTap={() => setSelected(m)} />
+          <MatchCard key={m.id} match={m} onTap={() => setSelected(m)} pick={picks?.[m.id]} />
         ))}
       </div>
     </div>

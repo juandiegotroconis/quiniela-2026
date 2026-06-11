@@ -59,7 +59,14 @@
       "WebFetch(domain:en.wikipedia.org)",
       "WebFetch(domain:worldcupper.com)",
       "Bash(pnpm supabase:types)",
-      "Bash(npx eslint *)"
+      "Bash(npx eslint *)",
+      "Bash(pkill -f vite)",
+      "mcp__plugin_supabase_supabase__deploy_edge_function",
+      "mcp__plugin_supabase_supabase__get_logs",
+      "mcp__plugin_supabase_supabase__get_publishable_keys",
+      "mcp__plugin_supabase_supabase__generate_typescript_types",
+      "Bash(ls -d .claude)",
+      "Bash(find . -maxdepth 2 -iname \"*handoff*\")"
     ],
     "additionalDirectories": [
       "c:\\Users\\juant\\Documents\\Projects\\quiniela-2026\\src\\routes",

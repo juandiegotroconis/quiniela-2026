@@ -4,17 +4,28 @@ import { useTranslation } from "~/hooks/useTranslation";
 import Badge from "./Badge";
 import {
   getLiveMinute,
+  getPickResult,
   formatMatchDate,
   formatMatchTime,
   getStageLabelKey,
 } from "~/lib/helpers";
 import type { Match } from "~/lib/types";
+import type { UserPickEntry } from "~/lib/auth-context";
 import { TEAM_FULL } from "~/lib/mock-data";
 
 interface Props {
   match: Match;
   onTap: () => void;
+  pick?: UserPickEntry;
 }
+
+const PICK_RESULT_COLORS: Record<string, string> = {
+  exact: "var(--color-green)",
+  penalty_exact: "var(--color-green)",
+  half: "var(--color-info)",
+  tendency: "var(--color-gold)",
+  miss: "var(--color-error)",
+};
 
 function MatchDateLabel({ match }: { match: Match }) {
   const { t, language } = useTranslation();
@@ -51,10 +62,14 @@ function MatchTimeLabel({ match }: { match: Match }) {
   );
 }
 
-export default function MatchCard({ match, onTap }: Props) {
+export default function MatchCard({ match, onTap, pick }: Props) {
   const { t } = useTranslation();
   const isLive = match.status === "live";
   const stageLabelKey = getStageLabelKey(match.stage);
+  const hasPick = pick && pick.pickA !== "" && pick.pickB !== "";
+  const pickResult = hasPick
+    ? getPickResult(match, parseInt(String(pick.pickA)), parseInt(String(pick.pickB)))
+    : null;
   return (
     <div
       className={`match-card${isLive ? " match-card--live" : ""}`}
@@ -93,6 +108,18 @@ export default function MatchCard({ match, onTap }: Props) {
           </span>
         </div>
       </div>
+
+      {hasPick && (
+        <div className='match-card__pick'>
+          <span className='match-card__pick-label'>{t("MATCH_DETAIL_PICK_LABEL")}</span>
+          <span
+            className='match-card__pick-score'
+            style={{ color: pickResult ? PICK_RESULT_COLORS[pickResult] : "var(--fg-primary)" }}
+          >
+            {pick.pickA}:{pick.pickB}
+          </span>
+        </div>
+      )}
 
       {match.venue && (
         <div className='match-card__venue'>

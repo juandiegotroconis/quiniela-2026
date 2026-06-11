@@ -121,6 +121,7 @@ export type Database = {
           display_date: string | null
           display_time: string | null
           duration: string | null
+          fifa_match_id: string | null
           group_name: string | null
           home_team_code: string | null
           id: number
@@ -146,6 +147,7 @@ export type Database = {
           display_date?: string | null
           display_time?: string | null
           duration?: string | null
+          fifa_match_id?: string | null
           group_name?: string | null
           home_team_code?: string | null
           id: number
@@ -171,6 +173,7 @@ export type Database = {
           display_date?: string | null
           display_time?: string | null
           duration?: string | null
+          fifa_match_id?: string | null
           group_name?: string | null
           home_team_code?: string | null
           id?: number

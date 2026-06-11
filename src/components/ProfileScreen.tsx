@@ -17,7 +17,6 @@ import type { TopScorerSuggestion } from "~/lib/mock-data";
 export default function ProfileScreen() {
   const {
     user,
-    submitted,
     isUpdatable,
     userPicks,
     topScorer,
@@ -63,7 +62,7 @@ export default function ProfileScreen() {
   };
 
   const { t, language, setLanguage } = useTranslation();
-  const showForm = !submitted || isUpdatable;
+  const showForm = isUpdatable;
 
   return (
     <>

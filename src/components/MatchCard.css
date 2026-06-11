@@ -79,6 +79,29 @@
   color: var(--fg-tertiary);
 }
 
+.match-card__pick {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: -6px;
+}
+
+.match-card__pick-label {
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--fg-tertiary);
+}
+
+.match-card__pick-score {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 14px;
+}
+
 .match-card__venue {
   display: flex;
   flex-direction: column;

@@ -30,9 +30,9 @@ function AppContent() {
 
   const onProfile = pathname === "/profile";
   const bannerType: "unsent" | "updatable" | null =
-    !submitted && !onProfile ? "unsent"
-    : submitted && isUpdatable && !onProfile ? "updatable"
-    : null;
+    !isUpdatable || onProfile ? null
+    : !submitted ? "unsent"
+    : "updatable";
 
   return (
     <>
