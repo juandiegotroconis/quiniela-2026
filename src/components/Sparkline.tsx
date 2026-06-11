@@ -8,15 +8,19 @@ interface Props {
 
 export default function Sparkline({ history, width = 64, height = 22 }: Props) {
   if (!history || history.length < 2) return null;
-  const max = 15;
+  const min = Math.min(...history);
+  const max = Math.max(...history);
+  const range = max - min;
   const pts = history.map((r, i) => {
     const x = (i / (history.length - 1)) * width;
-    const y = ((r - 1) / (max - 1)) * (height - 4) + 2;
+    // Rank 1 is best, so a lower rank should plot near the top of the chart.
+    const y = range === 0 ? height / 2 : ((r - min) / range) * (height - 4) + 2;
     return [x, y] as [number, number];
   });
   const cur = history[history.length - 1];
   const prev = history[history.length - 2];
-  const c = cur < prev ? '#02B906' : cur > prev ? '#E61D25' : 'rgba(255,255,255,0.3)';
+  const c =
+    cur < prev ? 'var(--color-green)' : cur > prev ? 'var(--color-error)' : 'var(--fg-tertiary)';
   const last = pts[pts.length - 1];
   return (
     <svg className="sparkline" width={width} height={height}>

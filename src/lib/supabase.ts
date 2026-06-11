@@ -12,33 +12,67 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
+      bracket_predictions: {
+        Row: {
+          id: string
+          match_id: number
+          pred_away_team_code: string | null
+          pred_home_team_code: string | null
+          quiniela_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          match_id: number
+          pred_away_team_code?: string | null
+          pred_home_team_code?: string | null
+          quiniela_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          match_id?: number
+          pred_away_team_code?: string | null
+          pred_home_team_code?: string | null
+          quiniela_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bracket_predictions_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bracket_predictions_pred_away_team_code_fkey"
+            columns: ["pred_away_team_code"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "bracket_predictions_pred_home_team_code_fkey"
+            columns: ["pred_home_team_code"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "bracket_predictions_quiniela_id_fkey"
+            columns: ["quiniela_id"]
+            isOneToOne: false
+            referencedRelation: "quinielas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leaderboard_snapshots: {
         Row: {
           created_at: string | null
@@ -92,6 +126,7 @@ export type Database = {
           id: number
           last_synced_at: string | null
           matchday: number | null
+          minute: string | null
           score_away_et: number | null
           score_away_penalties: number | null
           score_away_regular: number | null
@@ -101,6 +136,9 @@ export type Database = {
           stage: string
           status: string
           utc_date: string
+          venue: string | null
+          venue_city: string | null
+          venue_country: string | null
           winner: string | null
         }
         Insert: {
@@ -113,6 +151,7 @@ export type Database = {
           id: number
           last_synced_at?: string | null
           matchday?: number | null
+          minute?: string | null
           score_away_et?: number | null
           score_away_penalties?: number | null
           score_away_regular?: number | null
@@ -122,6 +161,9 @@ export type Database = {
           stage?: string
           status?: string
           utc_date: string
+          venue?: string | null
+          venue_city?: string | null
+          venue_country?: string | null
           winner?: string | null
         }
         Update: {
@@ -134,6 +176,7 @@ export type Database = {
           id?: number
           last_synced_at?: string | null
           matchday?: number | null
+          minute?: string | null
           score_away_et?: number | null
           score_away_penalties?: number | null
           score_away_regular?: number | null
@@ -143,6 +186,9 @@ export type Database = {
           stage?: string
           status?: string
           utc_date?: string
+          venue?: string | null
+          venue_city?: string | null
+          venue_country?: string | null
           winner?: string | null
         }
         Relationships: [
@@ -156,6 +202,13 @@ export type Database = {
           {
             foreignKeyName: "matches_home_team_code_fkey"
             columns: ["home_team_code"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "matches_venue_country_fkey"
+            columns: ["venue_country"]
             isOneToOne: false
             referencedRelation: "teams"
             referencedColumns: ["code"]
@@ -489,6 +542,15 @@ export type Database = {
         Args: { search_columns: string[]; target_table: string }
         Returns: undefined
       }
+      bracket_bonus_points: {
+        Args: {
+          p_actual_away_team_code: string
+          p_actual_home_team_code: string
+          p_pred_away_team_code: string
+          p_pred_home_team_code: string
+        }
+        Returns: number
+      }
       get_my_quiniela_ids: { Args: never; Returns: string[] }
       immutable_unaccent: { Args: { "": string }; Returns: string }
       join_quiniela_by_code: {
@@ -509,6 +571,20 @@ export type Database = {
           p_pick_penalties_winner: string
           p_score_away_regular: number
           p_score_home_regular: number
+          p_winner: string
+        }
+        Returns: number
+      }
+      prediction_points_v2: {
+        Args: {
+          p_pick_away: number
+          p_pick_home: number
+          p_pick_penalties_winner: string
+          p_score_away_et: number
+          p_score_away_regular: number
+          p_score_home_et: number
+          p_score_home_regular: number
+          p_stage: string
           p_winner: string
         }
         Returns: number
@@ -666,9 +742,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {},
   },

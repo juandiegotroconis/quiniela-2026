@@ -49,11 +49,23 @@
   margin-bottom: 24px;
 }
 
+.match-detail__group {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--fg-tertiary);
+  margin-bottom: 8px;
+}
+
 .match-detail__score-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   gap: 28px;
+  margin-top: 14px;
 }
 
 .match-detail__team {
@@ -61,6 +73,8 @@
   flex-direction: column;
   align-items: center;
   gap: 6px;
+  flex: 1;
+  min-width: 0;
 }
 
 .match-detail__team-code {
@@ -73,6 +87,7 @@
   font-family: var(--font-body);
   font-size: 11px;
   color: var(--fg-tertiary);
+  text-align: center;
 }
 
 .match-detail__scoreline {
@@ -80,9 +95,11 @@
   font-weight: 700;
   font-size: 48px;
   line-height: 1;
+  height: 48px;
   display: flex;
   align-items: center;
   gap: 10px;
+  flex: none;
 }
 
 .match-detail__scoreline-sep {
@@ -92,13 +109,32 @@
 
 .match-detail__status {
   text-align: center;
-  margin-top: 14px;
 }
 
 .match-detail__status-time {
   font-family: var(--font-body);
   font-size: 11px;
   color: var(--fg-tertiary);
+}
+
+.match-detail__venue {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.3;
+  margin-top: 14px;
+}
+
+.match-detail__venue-name {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--fg-tertiary);
+}
+
+.match-detail__venue-city {
+  font-family: var(--font-body);
+  font-size: 10px;
+  color: var(--fg-disabled);
 }
 
 .match-detail__my-pick {

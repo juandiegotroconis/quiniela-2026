@@ -12,23 +12,6 @@ function dbStatusToUi(s: string): MatchStatus {
   return "upcoming";
 }
 
-function formatLocalDate(utcDate: string | null): string {
-  if (!utcDate) return "";
-  return new Date(utcDate).toLocaleDateString(undefined, {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  });
-}
-
-function formatLocalTime(utcDate: string | null): string {
-  if (!utcDate) return "";
-  return new Date(utcDate).toLocaleTimeString(undefined, {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
 function rowToMatch(row: Tables<"matches">): Match {
   return {
     id: row.id,
@@ -39,9 +22,15 @@ function rowToMatch(row: Tables<"matches">): Match {
     scoreA: row.score_home_regular,
     scoreB: row.score_away_regular,
     status: dbStatusToUi(row.status),
-    time: formatLocalTime(row.utc_date),
-    date: formatLocalDate(row.utc_date),
     utcDate: row.utc_date ?? "",
+    stage: row.stage,
+    scoreAEt: row.score_home_et,
+    scoreBEt: row.score_away_et,
+    winner: row.winner,
+    minute: row.minute,
+    venue: row.venue,
+    venueCity: row.venue_city,
+    venueCountry: row.venue_country,
   };
 }
 
@@ -50,13 +39,26 @@ export async function fetchMatches(): Promise<Match[]> {
   const { data, error } = await client
     .from("matches")
     .select(
-      "id, group_name, matchday, home_team_code, away_team_code, utc_date, status, score_home_regular, score_away_regular",
+      "id, group_name, matchday, home_team_code, away_team_code, utc_date, status, score_home_regular, score_away_regular, stage, score_home_et, score_away_et, winner, minute, venue, venue_city, venue_country",
     )
     .order("utc_date", { ascending: true });
   if (error) throw error;
   return (data ?? []).map((row) =>
     rowToMatch(row as unknown as Tables<"matches">),
   );
+}
+
+export async function fetchQuinielaName(
+  quinielaId: string,
+): Promise<string | null> {
+  const client = getClient();
+  const { data, error } = await client
+    .from("quinielas")
+    .select("name")
+    .eq("id", quinielaId)
+    .maybeSingle();
+  if (error) throw error;
+  return data?.name ?? null;
 }
 
 export async function fetchMembersCore(quinielaId: string): Promise<Member[]> {
@@ -92,13 +94,13 @@ export async function fetchMemberHistory(
 ): Promise<Record<string, number[]>> {
   const { data } = await getClient()
     .from("leaderboard_snapshots")
-    .select("user_id, cumulative_pts")
+    .select("user_id, rank_at_moment")
     .eq("quiniela_id", quinielaId)
-    .order("match_id", { ascending: true });
+    .order("created_at", { ascending: true });
   const map: Record<string, number[]> = {};
   for (const snap of data ?? []) {
     if (!map[snap.user_id]) map[snap.user_id] = [];
-    map[snap.user_id].push(snap.cumulative_pts);
+    map[snap.user_id].push(snap.rank_at_moment);
   }
   return map;
 }
@@ -109,11 +111,11 @@ export async function fetchSingleMemberHistory(
 ): Promise<number[]> {
   const { data } = await getClient()
     .from("leaderboard_snapshots")
-    .select("cumulative_pts")
+    .select("rank_at_moment")
     .eq("quiniela_id", quinielaId)
     .eq("user_id", userId)
-    .order("match_id", { ascending: true });
-  return (data ?? []).map((r) => r.cumulative_pts);
+    .order("created_at", { ascending: true });
+  return (data ?? []).map((r) => r.rank_at_moment);
 }
 
 export async function fetchUserPicks(
@@ -169,11 +171,11 @@ export async function checkSubmitted(
 export async function fetchMatchPredictions(
   matchId: number,
   quinielaId: string,
-): Promise<Array<{ userId: string; pickA: number; pickB: number }>> {
+): Promise<Array<{ userId: string; pickA: number; pickB: number; pickPenaltiesWinner: string | null }>> {
   const client = getClient();
   const { data, error } = await client
     .from("predictions")
-    .select("user_id, pick_home, pick_away")
+    .select("user_id, pick_home, pick_away, pick_penalties_winner")
     .eq("match_id", matchId)
     .eq("quiniela_id", quinielaId);
   if (error) throw error;
@@ -181,6 +183,7 @@ export async function fetchMatchPredictions(
     userId: row.user_id,
     pickA: row.pick_home,
     pickB: row.pick_away,
+    pickPenaltiesWinner: row.pick_penalties_winner,
   }));
 }
 

@@ -9,9 +9,15 @@ export interface Match {
   scoreA: number | null;
   scoreB: number | null;
   status: MatchStatus;
-  time: string;
-  date: string;
   utcDate: string;
+  stage: string;
+  scoreAEt: number | null;
+  scoreBEt: number | null;
+  winner: string | null;
+  minute: string | null;
+  venue: string | null;
+  venueCity: string | null;
+  venueCountry: string | null;
 }
 
 export interface Member {
@@ -35,4 +41,5 @@ export interface MatchPrediction {
   avatarColor: string;
   pickA: number;
   pickB: number;
+  pickPenaltiesWinner: string | null;
 }

@@ -14,7 +14,9 @@ export default function PredictionGroupCard({ group, match }: Props) {
   const { t } = useTranslation();
   const resultColors = {
     exact: 'var(--color-green-25)',
-    winner: 'rgba(200,169,78,0.25)',
+    penalty_exact: 'var(--color-green-25)',
+    half: 'rgba(51,221,170,0.25)',
+    tendency: 'rgba(200,169,78,0.25)',
     miss: 'rgba(255,255,255,0.06)',
   };
   const borderColor = group.hasMe
@@ -36,7 +38,7 @@ export default function PredictionGroupCard({ group, match }: Props) {
         <span>{group.pickB}</span>
       </div>
 
-      {match.status === 'finished' && group.result && (
+      {(match.status === 'finished' || match.status === 'live') && group.result && (
         <div className="pred-group-card__badge">
           <Badge variant={group.variant ?? 'default'}>
             +{group.points} {group.label}

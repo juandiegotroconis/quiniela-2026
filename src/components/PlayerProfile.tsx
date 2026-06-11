@@ -68,7 +68,7 @@ export default function PlayerProfile({ userId }: Props) {
 
   const winnerCount = finishedMatches.filter(m => {
     const p = picks[m.id];
-    return getPickResult(m, parseInt(String(p.pickA)), parseInt(String(p.pickB))) === 'winner';
+    return getPickResult(m, parseInt(String(p.pickA)), parseInt(String(p.pickB))) === 'tendency';
   }).length;
 
   const missed = finishedMatches.length - exactCount - winnerCount;

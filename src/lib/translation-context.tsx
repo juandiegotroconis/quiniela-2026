@@ -9,7 +9,7 @@ import en from "../locales/en.json";
 import es from "../locales/es.json";
 
 type Language = "en" | "es";
-type TranslationKey = keyof typeof en;
+export type TranslationKey = keyof typeof en;
 type Translations = Record<TranslationKey, string>;
 
 const STORAGE_KEY = "LOCALE";

@@ -48,7 +48,7 @@ export default function TeamFlag({ code, size = 32 }: Props) {
     );
   }
 
-  // Fallback for unmapped teams
+  // Fallback for unmapped or not-yet-determined teams
   const bg = getTeamColor(code);
   const h = Math.round(size * 0.72);
   return (
@@ -56,7 +56,7 @@ export default function TeamFlag({ code, size = 32 }: Props) {
       className={`team-flag${size < 30 ? ' team-flag--sm' : ''}`}
       style={{ width: size, height: h, background: bg }}
     >
-      {code}
+      {code || '?'}
     </div>
   );
 }

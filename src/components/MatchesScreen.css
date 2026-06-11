@@ -2,7 +2,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   flex-wrap: wrap;
   gap: 12px;
 }
@@ -21,30 +21,59 @@
   color: var(--fg-tertiary);
 }
 
-.matches-screen__filter-row {
+.matches-screen__filters-btn {
   display: flex;
+  align-items: center;
   gap: 6px;
-  overflow-x: auto;
-  scrollbar-width: none;
-  padding-bottom: 2px;
-  margin-bottom: 10px;
-}
-
-.matches-screen__filter-row::-webkit-scrollbar {
-  display: none;
-}
-
-.matches-screen__filter-row--dates {
-  margin-bottom: 20px;
-}
-
-.matches-screen__chip {
   flex-shrink: 0;
-  padding: 5px 12px;
+  padding: 8px 16px;
   border-radius: var(--radius-full);
   border: 1px solid var(--border-default);
   background: transparent;
   color: var(--fg-secondary);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 150ms var(--ease-default);
+}
+
+.matches-screen__filters-btn:hover {
+  background: var(--color-brand-08);
+  border-color: var(--color-brand);
+  color: var(--color-brand);
+}
+
+.matches-screen__filters-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: var(--radius-full);
+  background: var(--color-brand);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.matches-screen__active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.matches-screen__active-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px 5px 12px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-brand);
+  background: var(--color-brand-08);
+  color: var(--color-brand);
   font-family: var(--font-body);
   font-size: 12px;
   font-weight: 600;
@@ -53,14 +82,7 @@
   transition: all 150ms var(--ease-default);
 }
 
-.matches-screen__chip:hover {
-  background: var(--color-brand-08);
-  border-color: var(--color-brand);
-  color: var(--color-brand);
-}
-
-.matches-screen__chip--active {
+.matches-screen__active-chip:hover {
   background: var(--color-brand);
-  border-color: var(--color-brand);
   color: #fff;
 }

@@ -4,7 +4,7 @@ import { useTranslation } from '~/hooks/useTranslation';
 import Badge from './Badge';
 import TeamFlag from './TeamFlag';
 import TopScorerPicker from './TopScorerPicker';
-import { getPickResult, getResultVariant, getResultPoints } from '~/lib/helpers';
+import { getPickResult, getResultVariant, getResultPoints, getLiveMinute, formatMatchDate } from '~/lib/helpers';
 import type { TopScorerSuggestion } from '~/lib/mock-data';
 import type { UserPickEntry } from '~/lib/auth-context';
 import { useData } from '~/lib/data-context';
@@ -22,7 +22,7 @@ const RESULT_COLORS: Record<string, string> = {
 
 export default function ProfileReadOnly({ userPicks, topScorer }: Props) {
   const { matches } = useData();
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
 
   const matchdays = [1, 2, 3].map(day => ({
     day,
@@ -43,7 +43,7 @@ export default function ProfileReadOnly({ userPicks, topScorer }: Props) {
 
   const winnerCount = finishedWithPicks.filter(m => {
     const p = userPicks[m.id];
-    return getPickResult(m, parseInt(String(p.pickA)), parseInt(String(p.pickB))) === 'winner';
+    return getPickResult(m, parseInt(String(p.pickA)), parseInt(String(p.pickB))) === 'tendency';
   }).length;
 
   const missed = finishedWithPicks.length - exactCount - winnerCount;
@@ -116,7 +116,7 @@ export default function ProfileReadOnly({ userPicks, topScorer }: Props) {
                         {m.scoreA}:{m.scoreB}
                       </span>
                     ) : (
-                      <span className="profile-ro__match-date">{m.date}</span>
+                      <span className="profile-ro__match-date">{formatMatchDate(m.utcDate, language)}</span>
                     )}
                   </div>
                   <div className="profile-ro__match-pick-wrap">
@@ -136,7 +136,7 @@ export default function ProfileReadOnly({ userPicks, topScorer }: Props) {
                     )}
                     {isLive && (
                       <Badge variant="error">
-                        <span className="badge__live-dot">●</span> Live
+                        <span className="badge__live-dot">●</span> {t('MATCH_CARD_STATUS_LIVE')}{getLiveMinute(m) ? ` ${getLiveMinute(m)}` : ''}
                       </Badge>
                     )}
                   </div>

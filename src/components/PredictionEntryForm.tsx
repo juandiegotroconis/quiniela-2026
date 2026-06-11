@@ -7,8 +7,8 @@ import { useTranslation } from "~/hooks/useTranslation";
 import TeamFlag from "./TeamFlag";
 import TopScorerPicker from "./TopScorerPicker";
 import GroupNav from "./GroupNav";
-import { calcGroupStandings } from "~/lib/helpers";
-import { GROUPS } from "~/lib/mock-data";
+import { calcGroupStandings, formatMatchDate } from "~/lib/helpers";
+import { GROUPS, TEAM_FULL } from "~/lib/mock-data";
 import type { TopScorerSuggestion } from "~/lib/mock-data";
 import type { UserPickEntry } from "~/lib/auth-context";
 import { useData } from "~/lib/data-context";
@@ -35,7 +35,7 @@ export default function PredictionEntryForm({
   onSubmit,
 }: Props) {
   const { matches } = useData();
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const [picks, setPicks] =
     useState<Record<number, UserPickEntry>>(initialPicks);
   const [topScorer, setTopScorer] = useState<TopScorerSuggestion | null>(
@@ -203,68 +203,81 @@ export default function PredictionEntryForm({
                   const hasError = showErrors && isEmpty;
                   return (
                     <div key={m.id} className='pred-form__match-row'>
-                      <span className='pred-form__match-date'>{m.date}</span>
+                      <span className='pred-form__match-date'>{formatMatchDate(m.utcDate, language)}</span>
                       <div className='pred-form__match-teams'>
-                        <div className='pred-form__match-side'>
-                          <span className='pred-form__match-team-name'>
-                            {m.teamA}
-                          </span>
-                          <TeamFlag code={m.teamA} size={22} />
+                          <div className='pred-form__match-side'>
+                            <span className='pred-form__match-team-name'>
+                              {m.teamA}
+                            </span>
+                            <TeamFlag code={m.teamA} size={22} />
+                          </div>
+                          <input
+                            type='number'
+                            inputMode='numeric'
+                            min='0'
+                            max='20'
+                            className={`pred-form__match-input${hasError ? " pred-form__match-input--error" : ""}`}
+                            value={p.pickA}
+                            onChange={(e) =>
+                              updatePick(m.id, e.target.value, p.pickB)
+                            }
+                            placeholder='–'
+                          />
+                          <span className='pred-form__match-sep'>:</span>
+                          <input
+                            type='number'
+                            inputMode='numeric'
+                            min='0'
+                            max='20'
+                            className={`pred-form__match-input${hasError ? " pred-form__match-input--error" : ""}`}
+                            value={p.pickB}
+                            onChange={(e) =>
+                              updatePick(m.id, p.pickA, e.target.value)
+                            }
+                            placeholder='–'
+                          />
+                          <div className='pred-form__match-side pred-form__match-side--right'>
+                            <TeamFlag code={m.teamB} size={22} />
+                            <span className='pred-form__match-team-name'>
+                              {m.teamB}
+                            </span>
+                          </div>
                         </div>
-                        <input
-                          type='number'
-                          inputMode='numeric'
-                          min='0'
-                          max='20'
-                          className={`pred-form__match-input${hasError ? " pred-form__match-input--error" : ""}`}
-                          value={p.pickA}
-                          onChange={(e) =>
-                            updatePick(m.id, e.target.value, p.pickB)
-                          }
-                          placeholder='–'
-                        />
-                        <span className='pred-form__match-sep'>:</span>
-                        <input
-                          type='number'
-                          inputMode='numeric'
-                          min='0'
-                          max='20'
-                          className={`pred-form__match-input${hasError ? " pred-form__match-input--error" : ""}`}
-                          value={p.pickB}
-                          onChange={(e) =>
-                            updatePick(m.id, p.pickA, e.target.value)
-                          }
-                          placeholder='–'
-                        />
-                        <div className='pred-form__match-side pred-form__match-side--right'>
-                          <TeamFlag code={m.teamB} size={22} />
-                          <span className='pred-form__match-team-name'>
-                            {m.teamB}
-                          </span>
+                        <div className='pred-form__match-icon'>
+                          {!isEmpty && (
+                            <svg
+                              width='14'
+                              height='14'
+                              viewBox='0 0 24 24'
+                              fill='var(--color-green)'
+                            >
+                              <path d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z' />
+                            </svg>
+                          )}
+                          {hasError && (
+                            <svg
+                              width='14'
+                              height='14'
+                              viewBox='0 0 24 24'
+                              fill='var(--color-error)'
+                            >
+                              <path d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z' />
+                            </svg>
+                          )}
                         </div>
-                      </div>
-                      <div className='pred-form__match-icon'>
-                        {!isEmpty && (
-                          <svg
-                            width='14'
-                            height='14'
-                            viewBox='0 0 24 24'
-                            fill='var(--color-green)'
-                          >
-                            <path d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z' />
-                          </svg>
-                        )}
-                        {hasError && (
-                          <svg
-                            width='14'
-                            height='14'
-                            viewBox='0 0 24 24'
-                            fill='var(--color-error)'
-                          >
-                            <path d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z' />
-                          </svg>
-                        )}
-                      </div>
+                      {m.venue && (
+                        <div className='pred-form__match-venue'>
+                          <span className='pred-form__match-venue-name'>
+                            {m.venue}
+                          </span>
+                          {m.venueCity && (
+                            <span className='pred-form__match-venue-city'>
+                              {m.venueCity}
+                              {m.venueCountry && `, ${TEAM_FULL[m.venueCountry]}`}
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
                   );
                 })}

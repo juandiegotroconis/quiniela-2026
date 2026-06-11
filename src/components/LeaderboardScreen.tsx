@@ -11,7 +11,7 @@ import PositionChange from "./PositionChange";
 import Sparkline from "./Sparkline";
 import { useData } from "~/lib/data-context";
 import { useAuth } from "~/lib/auth-context";
-import { fetchMemberHistory } from "~/lib/queries";
+import { fetchMemberHistory, fetchQuinielaName } from "~/lib/queries";
 
 const RANK_COLORS = ["#FFD700", "#C0C0C0", "#CD7F32"];
 
@@ -20,11 +20,15 @@ export default function LeaderboardScreen() {
   const { user, quinielaId } = useAuth();
   const { t } = useTranslation();
   const [historyMap, setHistoryMap] = useState<Record<string, number[]>>({});
+  const [quinielaName, setQuinielaName] = useState<string | null>(null);
 
   useEffect(() => {
     if (!quinielaId) return;
     fetchMemberHistory(quinielaId).then(setHistoryMap).catch(console.error);
+    fetchQuinielaName(quinielaId).then(setQuinielaName).catch(console.error);
   }, [quinielaId]);
+
+  const leagueName = quinielaName ?? t('RANKINGS_FRIENDS_LEAGUE');
 
   // rank=0 means unranked (DB default); ties broken by join date (earlier = higher)
   const sorted = useMemo(() => {
@@ -65,7 +69,7 @@ export default function LeaderboardScreen() {
   if (members.length === 0) {
     return (
       <PageContainer>
-        <SectionHeader title={t('RANKINGS_TITLE')} subtitle={t('RANKINGS_FRIENDS_LEAGUE')} />
+        <SectionHeader title={t('RANKINGS_TITLE')} subtitle={leagueName} />
         <div
           style={{
             padding: "2rem",
@@ -85,7 +89,7 @@ export default function LeaderboardScreen() {
       <PageContainer>
         <SectionHeader
           title={t('RANKINGS_TITLE')}
-          subtitle={`${t('RANKINGS_FRIENDS_LEAGUE')} · ${sorted.length} ${sorted.length !== 1 ? t('RANKINGS_PLAYER_COUNT_PLURAL') : t('RANKINGS_PLAYER_COUNT_SINGULAR')}`}
+          subtitle={`${leagueName} · ${sorted.length} ${sorted.length !== 1 ? t('RANKINGS_PLAYER_COUNT_PLURAL') : t('RANKINGS_PLAYER_COUNT_SINGULAR')}`}
         />
 
         <div className='leaderboard__podium'>

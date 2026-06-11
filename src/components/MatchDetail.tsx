@@ -1,19 +1,30 @@
-import './MatchDetail.css';
-import { useState, useEffect, useRef } from 'react';
-import { Icon } from '@iconify/react';
-import { useTranslation } from '~/hooks/useTranslation';
-import RulesModal from './RulesModal';
-import TeamFlag from './TeamFlag';
-import Badge from './Badge';
-import PredictionGroupCard from './PredictionGroupCard';
-import { groupPredictions, getPickResult, getResultVariant, getResultPoints, getResultLabel } from '~/lib/helpers';
-import type { Match } from '~/lib/types';
-import { TEAM_FULL } from '~/lib/mock-data';
-import type { UserPickEntry } from '~/lib/auth-context';
-import { useAuth } from '~/lib/auth-context';
-import { useData } from '~/lib/data-context';
-import { fetchMatchPredictions } from '~/lib/queries';
-import type { MatchPrediction } from '~/lib/types';
+import "./MatchDetail.css";
+import { useState, useEffect, useRef } from "react";
+import { Icon } from "@iconify/react";
+import { useTranslation } from "~/hooks/useTranslation";
+import RulesModal from "./RulesModal";
+import TeamFlag from "./TeamFlag";
+import Badge from "./Badge";
+import PredictionGroupCard from "./PredictionGroupCard";
+import WhatIfLeaderboard from "./WhatIfLeaderboard";
+import {
+  groupPredictions,
+  getPickResult,
+  getResultVariant,
+  getResultPoints,
+  getResultLabel,
+  getLiveMinute,
+  formatMatchTime,
+  formatMatchDateTime,
+  getStageLabelKey,
+} from "~/lib/helpers";
+import type { Match } from "~/lib/types";
+import { TEAM_FULL } from "~/lib/mock-data";
+import type { UserPickEntry } from "~/lib/auth-context";
+import { useAuth } from "~/lib/auth-context";
+import { useData } from "~/lib/data-context";
+import { fetchMatchPredictions } from "~/lib/queries";
+import type { MatchPrediction } from "~/lib/types";
 
 interface Props {
   match: Match;
@@ -22,16 +33,22 @@ interface Props {
 }
 
 function MatchStatusBadge({ match }: { match: Match }) {
-  const { t } = useTranslation();
-  if (match.status === 'live') {
+  const { t, language } = useTranslation();
+  if (match.status === "live") {
     return (
-      <Badge variant="error">
-        <span className="badge__live-dot">●</span> {t('MATCH_STATUS_LIVE')} {match.time}
+      <Badge variant='error'>
+        <span className='badge__live-dot'>●</span> {t("MATCH_STATUS_LIVE")}{" "}
+        {getLiveMinute(match) ?? formatMatchTime(match.utcDate, language)}
       </Badge>
     );
   }
-  if (match.status === 'finished') return <Badge variant="default">{t('MATCH_STATUS_FT')}</Badge>;
-  return <span className="match-detail__status-time">{match.date} · {match.time}</span>;
+  if (match.status === "finished")
+    return <Badge variant='default'>{t("MATCH_STATUS_FT")}</Badge>;
+  return (
+    <span className='match-detail__status-time'>
+      {formatMatchDateTime(match.utcDate, language)}
+    </span>
+  );
 }
 
 export default function MatchDetail({ match, onBack, userPick }: Props) {
@@ -42,7 +59,9 @@ export default function MatchDetail({ match, onBack, userPick }: Props) {
   const [preds, setPreds] = useState<MatchPrediction[]>([]);
   const [showRules, setShowRules] = useState(false);
 
-  useEffect(() => { membersRef.current = members; }, [members]);
+  useEffect(() => {
+    membersRef.current = members;
+  }, [members]);
 
   useEffect(() => {
     if (!quinielaId) return;
@@ -57,6 +76,7 @@ export default function MatchDetail({ match, onBack, userPick }: Props) {
             avatarColor: m?.avatarColor ?? "#02B906",
             pickA: r.pickA,
             pickB: r.pickB,
+            pickPenaltiesWinner: r.pickPenaltiesWinner,
           };
         });
       })
@@ -65,66 +85,110 @@ export default function MatchDetail({ match, onBack, userPick }: Props) {
   }, [match.id, quinielaId]); // members intentionally excluded — membersRef stays current
 
   const groups = groupPredictions(preds, match, user?.id ?? null);
-  const isFinished = match.status === 'finished';
-  const hasPick = userPick && userPick.pickA !== '' && userPick.pickB !== '';
+  const stageLabelKey = getStageLabelKey(match.stage);
+  const isScored = match.status === "finished" || match.status === "live";
+  const hasPick = userPick && userPick.pickA !== "" && userPick.pickB !== "";
 
   let result = null;
-  if (isFinished && hasPick) {
-    result = getPickResult(match, parseInt(String(userPick!.pickA)), parseInt(String(userPick!.pickB)));
+  if (isScored && hasPick) {
+    result = getPickResult(
+      match,
+      parseInt(String(userPick!.pickA)),
+      parseInt(String(userPick!.pickB)),
+    );
   }
 
   const resultColors: Record<string, string> = {
-    exact: 'var(--color-green)',
-    winner: 'var(--color-gold)',
-    miss: 'var(--color-error)',
+    exact: "var(--color-green)",
+    penalty_exact: "var(--color-green)",
+    half: "var(--color-info)",
+    tendency: "var(--color-gold)",
+    miss: "var(--color-error)",
   };
 
   return (
     <div>
       {showRules && <RulesModal onClose={() => setShowRules(false)} />}
 
-      <div className="match-detail__back-row">
-        <button className="match-detail__back" onClick={onBack}>{t('MATCH_DETAIL_BACK')}</button>
-        <button className="match-detail__info-btn" onClick={() => setShowRules(true)} aria-label='Rules'>
+      <div className='match-detail__back-row'>
+        <button className='match-detail__back' onClick={onBack}>
+          {t("MATCH_DETAIL_BACK")}
+        </button>
+        <button
+          className='match-detail__info-btn'
+          onClick={() => setShowRules(true)}
+          aria-label='Rules'
+        >
           <Icon icon='mdi:information-outline' width={20} />
         </button>
       </div>
 
-      <div className="match-detail__score-card">
-        <div className="match-detail__score-row">
-          <div className="match-detail__team">
-            <TeamFlag code={match.teamA} size={48} />
-            <span className="match-detail__team-code">{match.teamA}</span>
-            <span className="match-detail__team-full">{TEAM_FULL[match.teamA]}</span>
-          </div>
-          <div className="match-detail__scoreline">
-            <span>{match.scoreA !== null ? match.scoreA : '–'}</span>
-            <span className="match-detail__scoreline-sep">:</span>
-            <span>{match.scoreB !== null ? match.scoreB : '–'}</span>
-          </div>
-          <div className="match-detail__team">
-            <TeamFlag code={match.teamB} size={48} />
-            <span className="match-detail__team-code">{match.teamB}</span>
-            <span className="match-detail__team-full">{TEAM_FULL[match.teamB]}</span>
-          </div>
+      <div className='match-detail__score-card'>
+        <div className='match-detail__group'>
+          {stageLabelKey
+            ? t(stageLabelKey)
+            : `${t("MATCH_CARD_GROUP_PREFIX")} ${match.group}`}
         </div>
-        <div className="match-detail__status">
+
+        <div className='match-detail__status'>
           <MatchStatusBadge match={match} />
         </div>
+
+        <div className='match-detail__score-row'>
+          <div className='match-detail__team'>
+            <TeamFlag code={match.teamA} size={48} />
+            <span className='match-detail__team-code'>
+              {match.teamA || t("TEAM_TBD")}
+            </span>
+            <span className='match-detail__team-full'>
+              {TEAM_FULL[match.teamA]}
+            </span>
+          </div>
+          <div className='match-detail__scoreline'>
+            <span>{match.scoreA !== null ? match.scoreA : "–"}</span>
+            <span className='match-detail__scoreline-sep'>:</span>
+            <span>{match.scoreB !== null ? match.scoreB : "–"}</span>
+          </div>
+          <div className='match-detail__team'>
+            <TeamFlag code={match.teamB} size={48} />
+            <span className='match-detail__team-code'>
+              {match.teamB || t("TEAM_TBD")}
+            </span>
+            <span className='match-detail__team-full'>
+              {TEAM_FULL[match.teamB]}
+            </span>
+          </div>
+        </div>
+
+        {match.venue && (
+          <div className='match-detail__venue'>
+            <span className='match-detail__venue-name'>{match.venue}</span>
+            {match.venueCity && (
+              <span className='match-detail__venue-city'>
+                {match.venueCity}
+                {match.venueCountry && `, ${TEAM_FULL[match.venueCountry]}`}
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       {hasPick && (
-        <div className="match-detail__my-pick">
-          <div className="match-detail__my-pick-left">
-            <span className="match-detail__my-pick-label">{t('MATCH_DETAIL_YOUR_PREDICTION')}</span>
+        <div className='match-detail__my-pick'>
+          <div className='match-detail__my-pick-left'>
+            <span className='match-detail__my-pick-label'>
+              {t("MATCH_DETAIL_YOUR_PREDICTION")}
+            </span>
             <span
-              className="match-detail__my-pick-score"
-              style={{ color: result ? resultColors[result] : 'var(--fg-primary)' }}
+              className='match-detail__my-pick-score'
+              style={{
+                color: result ? resultColors[result] : "var(--fg-primary)",
+              }}
             >
               {userPick!.pickA} : {userPick!.pickB}
             </span>
           </div>
-          {isFinished && result && (
+          {isScored && result && (
             <Badge variant={getResultVariant(result)}>
               +{getResultPoints(result)} {getResultLabel(result)}
             </Badge>
@@ -134,11 +198,12 @@ export default function MatchDetail({ match, onBack, userPick }: Props) {
 
       {groups.length > 0 && (
         <div>
-          <div className="match-detail__preds-heading">
-            {t('MATCH_DETAIL_PREDICTIONS_HEADING')} · {preds.length} {t('MATCH_DETAIL_PLAYERS_SUFFIX')}
+          <div className='match-detail__preds-heading'>
+            {t("MATCH_DETAIL_PREDICTIONS_HEADING")} · {preds.length}{" "}
+            {t("MATCH_DETAIL_PLAYERS_SUFFIX")}
           </div>
-          <div className="match-detail__preds-grid">
-            {groups.map(g => (
+          <div className='match-detail__preds-grid'>
+            {groups.map((g) => (
               <PredictionGroupCard key={g.key} group={g} match={match} />
             ))}
           </div>
@@ -146,9 +211,16 @@ export default function MatchDetail({ match, onBack, userPick }: Props) {
       )}
 
       {groups.length === 0 && (
-        <div className="match-detail__empty">
-          {t('MATCH_DETAIL_EMPTY')}
-        </div>
+        <div className='match-detail__empty'>{t("MATCH_DETAIL_EMPTY")}</div>
+      )}
+
+      {(match.status === "live" || match.status === "finished") && (
+        <WhatIfLeaderboard
+          match={match}
+          members={members}
+          preds={preds}
+          myUserId={user?.id ?? null}
+        />
       )}
     </div>
   );

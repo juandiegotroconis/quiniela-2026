@@ -1,11 +1,14 @@
 import './GroupPanel.css';
+import { useState } from 'react';
 import GroupTable from './GroupTable';
 import { useTranslation } from '~/hooks/useTranslation';
-import GroupMatchRow from './GroupMatchRow';
+import MatchCard from './MatchCard';
+import MatchDetail from './MatchDetail';
 import { calcGroupStandings } from '~/lib/helpers';
 import { useData } from '~/lib/data-context';
 import { useAuth } from '~/lib/auth-context';
 import type { UserPickEntry } from '~/lib/auth-context';
+import type { Match } from '~/lib/types';
 
 interface Props {
   groupId: string;
@@ -16,9 +19,20 @@ export default function GroupPanel({ groupId, picks: externalPicks }: Props) {
   const { userPicks } = useAuth();
   const { matches } = useData();
   const { t } = useTranslation();
+  const [selected, setSelected] = useState<Match | null>(null);
   const picks = externalPicks !== undefined ? externalPicks : userPicks;
   const groupMatches = matches.filter(m => m.group === groupId).sort((a, b) => a.id - b.id);
   const standings = calcGroupStandings(groupId, matches, picks);
+
+  if (selected) {
+    return (
+      <MatchDetail
+        match={selected}
+        onBack={() => setSelected(null)}
+        userPick={picks?.[selected.id]}
+      />
+    );
+  }
 
   return (
     <div className="group-panel">
@@ -26,10 +40,10 @@ export default function GroupPanel({ groupId, picks: externalPicks }: Props) {
 
       <GroupTable standings={standings} />
 
+      <div className="group-panel__matches-heading">{t('GROUP_PANEL_MATCHES_HEADING')}</div>
       <div className="group-panel__matches">
-        <div className="group-panel__matches-heading">{t('GROUP_PANEL_MATCHES_HEADING')}</div>
         {groupMatches.map(m => (
-          <GroupMatchRow key={m.id} match={m} userPick={picks?.[m.id]} />
+          <MatchCard key={m.id} match={m} onTap={() => setSelected(m)} />
         ))}
       </div>
     </div>
