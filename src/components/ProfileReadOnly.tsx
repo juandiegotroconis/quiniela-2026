@@ -16,7 +16,9 @@ interface Props {
 
 const RESULT_COLORS: Record<string, string> = {
   exact: 'var(--color-green)',
-  winner: 'var(--color-gold)',
+  penalty_exact: 'var(--color-green)',
+  tendency: 'var(--color-gold)',
+  half: 'var(--color-info)',
   miss: 'var(--color-error)',
 };
 
@@ -71,18 +73,20 @@ export default function ProfileReadOnly({ userPicks, topScorer }: Props) {
         ))}
       </div>
 
-      <div className="profile-ro__scorer">
-        <div className="profile-ro__scorer-heading">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="var(--color-gold)">
-            <path d="M7.5 21H2V9h5.5v12zm7.25-18h-5.5v18h5.5V3zM22 11h-5.5v10H22V11z" />
-          </svg>
-          {t('PROFILE_READONLY_TOP_SCORER_HEADING')}
+      {topScorer && (
+        <div className="profile-ro__scorer">
+          <div className="profile-ro__scorer-heading">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="var(--color-gold)">
+              <path d="M7.5 21H2V9h5.5v12zm7.25-18h-5.5v18h5.5V3zM22 11h-5.5v10H22V11z" />
+            </svg>
+            {t('PROFILE_READONLY_TOP_SCORER_HEADING')}
+          </div>
+          <TopScorerPicker value={topScorer} disabled />
+          <p className="profile-ro__scorer-note">
+            {t('PROFILE_READONLY_TOP_SCORER_NOTE')}
+          </p>
         </div>
-        <TopScorerPicker value={topScorer} disabled />
-        <p className="profile-ro__scorer-note">
-          {t('PROFILE_READONLY_TOP_SCORER_NOTE')}
-        </p>
-      </div>
+      )}
 
       <div className="profile-ro__preds-heading">
         {t('PROFILE_READONLY_PREDICTIONS_HEADING')}
