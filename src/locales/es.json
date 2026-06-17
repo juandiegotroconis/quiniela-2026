@@ -163,6 +163,8 @@
   "MATCHES_FILTERS_DATE": "Fecha",
   "MATCHES_FILTERS_CLEAR_ALL": "Limpiar todo",
   "MATCHES_FILTERS_DONE": "Listo",
+  "MATCHES_SORT_ASC": "Más antiguos primero",
+  "MATCHES_SORT_DESC": "Más recientes primero",
 
   "TEAM_TBD": "Por definir",
   "STAGE_LAST_32": "Dieciseisavos",
@@ -193,6 +195,8 @@
   "MATCH_DETAIL_PICK_LABEL": "Pick:",
   "MATCH_DETAIL_WHATIF_TITLE": "¿Y si terminara ahora?",
   "MATCH_DETAIL_WHATIF_SUBTITLE": "Tabla de posiciones proyectada si los puntos de este partido se aplicaran con el marcador actual.",
+  "MATCH_DETAIL_RESULT_TITLE": "Resultado del partido",
+  "MATCH_DETAIL_RESULT_SUBTITLE": "Cómo quedó la clasificación con los puntos de este partido aplicados.",
 
   "MATCH_RESULT_EXACT": "Exacto",
   "MATCH_RESULT_WINNER": "Ganador",

@@ -163,6 +163,8 @@
   "MATCHES_FILTERS_DATE": "Date",
   "MATCHES_FILTERS_CLEAR_ALL": "Clear all",
   "MATCHES_FILTERS_DONE": "Done",
+  "MATCHES_SORT_ASC": "Oldest first",
+  "MATCHES_SORT_DESC": "Newest first",
 
   "TEAM_TBD": "TBD",
   "STAGE_LAST_32": "Round of 32",
@@ -193,6 +195,8 @@
   "MATCH_DETAIL_PICK_LABEL": "Pick:",
   "MATCH_DETAIL_WHATIF_TITLE": "What if it ended now?",
   "MATCH_DETAIL_WHATIF_SUBTITLE": "Projected leaderboard if this match's points were applied with the current score.",
+  "MATCH_DETAIL_RESULT_TITLE": "Match Results",
+  "MATCH_DETAIL_RESULT_SUBTITLE": "How the standings look with this match's points applied.",
 
   "MATCH_RESULT_EXACT": "Exact",
   "MATCH_RESULT_WINNER": "Winner",

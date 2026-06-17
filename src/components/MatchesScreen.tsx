@@ -33,14 +33,15 @@ export default function MatchesScreen() {
   const [group, setGroup] = useState('all');
   const [knockoutStage, setKnockoutStage] = useState('all');
   const [date, setDate] = useState('all');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [filtersOpen, setFiltersOpen] = useState(false);
   const navigate = useNavigate();
   const { matches, matchesLoading } = useData();
   const { t, language } = useTranslation();
 
   const STATUS_OPTIONS: FilterOption[] = [
-    { id: 'default', label: t('MATCHES_FILTER_DEFAULT') },
     { id: 'all', label: t('MATCHES_FILTER_ALL') },
+    { id: 'default', label: t('MATCHES_FILTER_DEFAULT') },
     { id: 'live', label: t('MATCHES_FILTER_LIVE') },
     { id: 'upcoming', label: t('MATCHES_FILTER_UPCOMING') },
     { id: 'finished', label: t('MATCHES_FILTER_FINISHED') },
@@ -83,7 +84,7 @@ export default function MatchesScreen() {
   };
 
   const clearAllFilters = () => {
-    setTab('default');
+    setTab('all');
     setStage('group');
     setGroup('all');
     setKnockoutStage('all');
@@ -91,9 +92,9 @@ export default function MatchesScreen() {
   };
 
   const activeFilters: { key: string; label: string; onRemove: () => void }[] = [];
-  if (tab !== 'default') {
+  if (tab !== 'all') {
     const opt = STATUS_OPTIONS.find(o => o.id === tab);
-    if (opt) activeFilters.push({ key: 'status', label: opt.label, onRemove: () => setTab('default') });
+    if (opt) activeFilters.push({ key: 'status', label: opt.label, onRemove: () => setTab('all') });
   }
   if (stage === 'knockout') {
     activeFilters.push({ key: 'stage', label: t('MATCHES_STAGE_KNOCKOUT'), onRemove: () => handleStageChange('group') });
@@ -146,9 +147,12 @@ export default function MatchesScreen() {
       return true;
     })
     .sort((a, b) => {
-      const rankDiff = STATUS_RANK[a.status] - STATUS_RANK[b.status];
-      if (rankDiff !== 0) return rankDiff;
-      return a.utcDate.localeCompare(b.utcDate);
+      const dir = sortDir === 'asc' ? 1 : -1;
+      if (tab !== 'all') {
+        const rankDiff = STATUS_RANK[a.status] - STATUS_RANK[b.status];
+        if (rankDiff !== 0) return rankDiff;
+      }
+      return dir * a.utcDate.localeCompare(b.utcDate);
     });
 
   return (
@@ -157,13 +161,22 @@ export default function MatchesScreen() {
       <PageContainer>
       <div className="matches-screen__header">
         <SectionHeader title={t('MATCHES_TITLE')} subtitle={t('MATCHES_SUBTITLE')} />
-        <button className="matches-screen__filters-btn" onClick={() => setFiltersOpen(true)}>
-          <Icon icon="mdi:filter-variant" width={18} />
-          {t('MATCHES_FILTERS_BUTTON')}
-          {activeFilters.length > 0 && (
-            <span className="matches-screen__filters-badge">{activeFilters.length}</span>
-          )}
-        </button>
+        <div className="matches-screen__header-actions">
+          <button
+            className="matches-screen__sort-btn"
+            onClick={() => setSortDir(d => d === 'asc' ? 'desc' : 'asc')}
+            title={sortDir === 'asc' ? t('MATCHES_SORT_ASC') : t('MATCHES_SORT_DESC')}
+          >
+            <Icon icon={sortDir === 'asc' ? 'mdi:sort-clock-ascending-outline' : 'mdi:sort-clock-descending-outline'} width={18} />
+          </button>
+          <button className="matches-screen__filters-btn" onClick={() => setFiltersOpen(true)}>
+            <Icon icon="mdi:filter-variant" width={18} />
+            {t('MATCHES_FILTERS_BUTTON')}
+            {activeFilters.length > 0 && (
+              <span className="matches-screen__filters-badge">{activeFilters.length}</span>
+            )}
+          </button>
+        </div>
       </div>
 
       {activeFilters.length > 0 && (

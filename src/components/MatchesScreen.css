@@ -21,6 +21,33 @@
   color: var(--fg-tertiary);
 }
 
+.matches-screen__header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.matches-screen__sort-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-default);
+  background: transparent;
+  color: var(--fg-secondary);
+  cursor: pointer;
+  transition: all 150ms var(--ease-default);
+}
+
+.matches-screen__sort-btn:hover {
+  background: var(--color-brand-08);
+  border-color: var(--color-brand);
+  color: var(--color-brand);
+}
+
 .matches-screen__filters-btn {
   display: flex;
   align-items: center;

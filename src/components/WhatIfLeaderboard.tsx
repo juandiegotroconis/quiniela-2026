@@ -67,12 +67,16 @@ export default function WhatIfLeaderboard({ match, members, preds, myUserId }: P
   rows.sort((a, b) => b.projectedPts - a.projectedPts);
   rows.forEach((r, i) => { r.projectedRank = i + 1; });
 
+  const isFinished = match.status === 'finished';
+
   return (
     <div className="whatif-leaderboard">
       <div className="whatif-leaderboard__heading">
-        {t('MATCH_DETAIL_WHATIF_TITLE')}
+        {isFinished ? t('MATCH_DETAIL_RESULT_TITLE') : t('MATCH_DETAIL_WHATIF_TITLE')}
       </div>
-      <p className="whatif-leaderboard__subtitle">{t('MATCH_DETAIL_WHATIF_SUBTITLE')}</p>
+      <p className="whatif-leaderboard__subtitle">
+        {isFinished ? t('MATCH_DETAIL_RESULT_SUBTITLE') : t('MATCH_DETAIL_WHATIF_SUBTITLE')}
+      </p>
 
       <div className="whatif-leaderboard__list">
         {rows.map((r) => (
