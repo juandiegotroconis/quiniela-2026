@@ -106,6 +106,58 @@
   margin-top: 4px;
 }
 
+.player-profile__scorer {
+  background: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: 16px;
+  margin-bottom: 28px;
+}
+
+.player-profile__scorer-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fg-secondary);
+  margin-bottom: 12px;
+}
+
+.player-profile__view-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.player-profile__view-tab {
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-default);
+  background: transparent;
+  color: var(--fg-secondary);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 150ms var(--ease-default);
+}
+
+.player-profile__view-tab:hover {
+  border-color: var(--color-brand);
+  color: var(--color-brand);
+}
+
+.player-profile__view-tab--active {
+  background: var(--color-brand);
+  border-color: var(--color-brand);
+  color: #fff;
+}
+
 .player-profile__groups {
   display: flex;
   flex-direction: column;

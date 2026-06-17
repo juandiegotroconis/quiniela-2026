@@ -1,38 +1,35 @@
 import './GroupPanel.css';
-import { useState } from 'react';
+import { useNavigate } from 'react-router';
 import GroupTable from './GroupTable';
 import { useTranslation } from '~/hooks/useTranslation';
 import MatchCard from './MatchCard';
-import MatchDetail from './MatchDetail';
 import { calcGroupStandings } from '~/lib/helpers';
 import { useData } from '~/lib/data-context';
 import { useAuth } from '~/lib/auth-context';
 import type { UserPickEntry } from '~/lib/auth-context';
-import type { Match } from '~/lib/types';
 
 interface Props {
   groupId: string;
   picks?: Record<number, UserPickEntry> | null;
+  userId?: string;
+  projectWithPicks?: boolean;
 }
 
-export default function GroupPanel({ groupId, picks: externalPicks }: Props) {
+export default function GroupPanel({ groupId, picks: externalPicks, userId, projectWithPicks }: Props) {
   const { userPicks } = useAuth();
   const { matches } = useData();
   const { t } = useTranslation();
-  const [selected, setSelected] = useState<Match | null>(null);
+  const navigate = useNavigate();
   const picks = externalPicks !== undefined ? externalPicks : userPicks;
   const groupMatches = matches.filter(m => m.group === groupId).sort((a, b) => a.id - b.id);
-  const standings = calcGroupStandings(groupId, matches, picks);
+  // Real standings by default — only actual results count. Callers that
+  // explicitly want the "what-if" table (projecting a specific user's own
+  // predictions onto unplayed matches) opt in via projectWithPicks.
+  const standings = calcGroupStandings(groupId, matches, projectWithPicks ? picks : null);
 
-  if (selected) {
-    return (
-      <MatchDetail
-        match={selected}
-        onBack={() => setSelected(null)}
-        userPick={picks?.[selected.id]}
-      />
-    );
-  }
+  const goToMatch = (matchId: number) => {
+    navigate(userId ? `/matches/${matchId}?user=${userId}` : `/matches/${matchId}`);
+  };
 
   return (
     <div className="group-panel">
@@ -43,7 +40,7 @@ export default function GroupPanel({ groupId, picks: externalPicks }: Props) {
       <div className="group-panel__matches-heading">{t('GROUP_PANEL_MATCHES_HEADING')}</div>
       <div className="group-panel__matches">
         {groupMatches.map(m => (
-          <MatchCard key={m.id} match={m} onTap={() => setSelected(m)} pick={picks?.[m.id]} />
+          <MatchCard key={m.id} match={m} onTap={() => goToMatch(m.id)} pick={picks?.[m.id]} />
         ))}
       </div>
     </div>

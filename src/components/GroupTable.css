@@ -62,6 +62,13 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  text-decoration: none;
+  color: inherit;
+  min-width: 0;
+}
+
+.group-table__team:hover .group-table__team-name {
+  color: var(--color-brand);
 }
 
 .group-table__team-name {
@@ -83,6 +90,19 @@
   font-size: 15px;
   font-weight: 700;
   color: var(--fg-primary);
+}
+
+.group-table__projected {
+  color: var(--color-gold);
+  margin-left: 2px;
+}
+
+.group-table__projected-note {
+  padding: 8px 14px;
+  font-family: var(--font-body);
+  font-size: 10px;
+  color: var(--fg-tertiary);
+  border-top: 1px solid var(--border-subtle);
 }
 
 @media (max-width: 480px) {

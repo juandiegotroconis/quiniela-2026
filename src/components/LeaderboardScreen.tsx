@@ -4,8 +4,11 @@ import { useTranslation } from "~/hooks/useTranslation";
 import { Link } from "react-router";
 import PageContainer from "./PageContainer";
 import Wc26Banner from "./Wc26Banner";
+import MatchCorrectionBanner from "./MatchCorrectionBanner";
 import SectionHeader from "./SectionHeader";
 import PodiumCard from "./PodiumCard";
+import LeaderboardSkeleton from "./LeaderboardSkeleton";
+import StreakWidgets from "./StreakWidgets";
 import Avatar from "./Avatar";
 import PositionChange from "./PositionChange";
 import Sparkline from "./Sparkline";
@@ -21,6 +24,7 @@ export default function LeaderboardScreen() {
   const { t } = useTranslation();
   const [historyMap, setHistoryMap] = useState<Record<string, number[]>>({});
   const [quinielaName, setQuinielaName] = useState<string | null>(null);
+  const [tab, setTab] = useState<'standings' | 'streaks'>('standings');
 
   useEffect(() => {
     if (!quinielaId) return;
@@ -51,6 +55,23 @@ export default function LeaderboardScreen() {
   const podium = sorted.slice(0, 3);
   const rest = sorted.slice(3);
 
+  const allTimeHot = sorted.reduce<(typeof sorted)[0] | null>(
+    (best, m) => (!best || m.bestStreak > best.bestStreak ? m : best),
+    null,
+  );
+  const allTimeCold = sorted.reduce<(typeof sorted)[0] | null>(
+    (worst, m) => (!worst || m.worstStreak > worst.worstStreak ? m : worst),
+    null,
+  );
+  const currentHot = sorted.reduce<(typeof sorted)[0] | null>(
+    (best, m) => (!best || m.currentStreak > best.currentStreak ? m : best),
+    null,
+  );
+  const currentCold = sorted.reduce<(typeof sorted)[0] | null>(
+    (worst, m) => (!worst || m.currentStreak < worst.currentStreak ? m : worst),
+    null,
+  );
+
   // Podium order: 2nd (left), 1st (centre), 3rd (right) — fill from available
   const podiumSlots: ((typeof sorted)[0] | null)[] = [
     podium[1] ?? null,
@@ -62,6 +83,7 @@ export default function LeaderboardScreen() {
     return (
       <PageContainer>
         <SectionHeader title={t('RANKINGS_TITLE')} subtitle={t('RANKINGS_LOADING')} />
+        <LeaderboardSkeleton />
       </PageContainer>
     );
   }
@@ -87,77 +109,104 @@ export default function LeaderboardScreen() {
     <>
       <Wc26Banner />
       <PageContainer>
+        <MatchCorrectionBanner />
         <SectionHeader
           title={t('RANKINGS_TITLE')}
           subtitle={`${leagueName} · ${sorted.length} ${sorted.length !== 1 ? t('RANKINGS_PLAYER_COUNT_PLURAL') : t('RANKINGS_PLAYER_COUNT_SINGULAR')}`}
         />
 
-        <div className='leaderboard__podium'>
-          {podiumSlots.map((p, slotIdx) => {
-            if (!p)
-              return <div key={slotIdx} className='leaderboard__podium-link' />;
-            const isFirst = slotIdx === 1;
-            const rankColor = RANK_COLORS[p.rank - 1];
-            return (
-              <Link
-                key={p.userId}
-                to={`/player/${p.userId}`}
-                className='leaderboard__podium-link'
-              >
-                <PodiumCard
-                  player={p}
-                  rankColor={rankColor}
-                  isFirst={isFirst}
-                  isMe={p.userId === user?.id}
-                />
-              </Link>
-            );
-          })}
+        <div className='leaderboard__tabs'>
+          <button
+            className={`leaderboard__tab${tab === 'standings' ? ' leaderboard__tab--active' : ''}`}
+            onClick={() => setTab('standings')}
+          >
+            {t('RANKINGS_TAB_STANDINGS')}
+          </button>
+          <button
+            className={`leaderboard__tab${tab === 'streaks' ? ' leaderboard__tab--active' : ''}`}
+            onClick={() => setTab('streaks')}
+          >
+            {t('RANKINGS_TAB_STREAKS')}
+          </button>
         </div>
 
-        {rest.length > 0 && (
-          <div className='leaderboard__table'>
-            <div className='leaderboard__table-header'>
-              <span>#</span>
-              <span />
-              <span>{t('RANKINGS_PLAYER_LABEL')}</span>
-              <span className='leaderboard__table-header-trend'>{t('RANKINGS_TREND_LABEL')}</span>
-              <span className='leaderboard__table-header-pts'>{t('RANKINGS_PTS_LABEL')}</span>
+        {tab === 'streaks' ? (
+          <StreakWidgets
+            currentHot={currentHot}
+            currentCold={currentCold}
+            allTimeHot={allTimeHot}
+            allTimeCold={allTimeCold}
+          />
+        ) : (
+          <>
+            <div className='leaderboard__podium'>
+              {podiumSlots.map((p, slotIdx) => {
+                if (!p)
+                  return <div key={slotIdx} className='leaderboard__podium-link' />;
+                const isFirst = slotIdx === 1;
+                const rankColor = RANK_COLORS[p.rank - 1];
+                return (
+                  <Link
+                    key={p.userId}
+                    to={`/player/${p.userId}`}
+                    className='leaderboard__podium-link'
+                  >
+                    <PodiumCard
+                      player={p}
+                      rankColor={rankColor}
+                      isFirst={isFirst}
+                      isMe={p.userId === user?.id}
+                    />
+                  </Link>
+                );
+              })}
             </div>
 
-            {rest.map((p) => {
-              const isMe = p.userId === user?.id;
-              return (
-                <Link
-                  key={p.userId}
-                  to={`/player/${p.userId}`}
-                  className={`leaderboard__row${isMe ? " leaderboard__row--me" : ""}`}
-                >
-                  <span className='leaderboard__row-rank'>{p.rank}</span>
-                  <PositionChange
-                    current={p.rank}
-                    previous={p.prevRank ?? p.rank}
-                  />
-                  <div className='leaderboard__row-player'>
-                    <Avatar
-                      name={p.displayName}
-                      color={p.avatarColor}
-                      size={32}
-                    />
-                    <span
-                      className={`leaderboard__row-name${isMe ? " leaderboard__row-name--me" : ""}`}
+            {rest.length > 0 && (
+              <div className='leaderboard__table'>
+                <div className='leaderboard__table-header'>
+                  <span>#</span>
+                  <span />
+                  <span>{t('RANKINGS_PLAYER_LABEL')}</span>
+                  <span className='leaderboard__table-header-trend'>{t('RANKINGS_TREND_LABEL')}</span>
+                  <span className='leaderboard__table-header-pts'>{t('RANKINGS_PTS_LABEL')}</span>
+                </div>
+
+                {rest.map((p) => {
+                  const isMe = p.userId === user?.id;
+                  return (
+                    <Link
+                      key={p.userId}
+                      to={`/player/${p.userId}`}
+                      className={`leaderboard__row${isMe ? " leaderboard__row--me" : ""}`}
                     >
-                      {isMe ? t('PROFILE_YOU') : p.displayName}
-                    </span>
-                  </div>
-                  <div className='leaderboard__row-trend'>
-                    <Sparkline history={p.history} />
-                  </div>
-                  <span className='leaderboard__row-pts'>{p.pts}</span>
-                </Link>
-              );
-            })}
-          </div>
+                      <span className='leaderboard__row-rank'>{p.rank}</span>
+                      <PositionChange
+                        current={p.rank}
+                        previous={p.prevRank ?? p.rank}
+                      />
+                      <div className='leaderboard__row-player'>
+                        <Avatar
+                          name={p.displayName}
+                          color={p.avatarColor}
+                          size={32}
+                        />
+                        <span
+                          className={`leaderboard__row-name${isMe ? " leaderboard__row-name--me" : ""}`}
+                        >
+                          {isMe ? t('PROFILE_YOU') : p.displayName}
+                        </span>
+                      </div>
+                      <div className='leaderboard__row-trend'>
+                        <Sparkline history={p.history} />
+                      </div>
+                      <span className='leaderboard__row-pts'>{p.pts}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </>
         )}
       </PageContainer>
     </>

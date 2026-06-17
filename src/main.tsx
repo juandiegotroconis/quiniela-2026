@@ -4,6 +4,9 @@ import App from "./App";
 import LoginRoute from "./routes/login";
 import RankingsRoute from "./routes/rankings";
 import MatchesRoute from "./routes/matches";
+import MatchRoute from "./routes/match";
+import TeamRoute from "./routes/team";
+import VenueRoute from "./routes/venue";
 import GroupsRoute from "./routes/groups";
 import ProfileRoute from "./routes/profile";
 import PlayerRoute from "./routes/player";
@@ -25,6 +28,9 @@ const router = createBrowserRouter([
       { index: true, loader: () => redirect("/rankings") },
       { path: "rankings", Component: RankingsRoute },
       { path: "matches", Component: MatchesRoute },
+      { path: "matches/:id", Component: MatchRoute },
+      { path: "teams/:code", Component: TeamRoute },
+      { path: "venues/:venue", Component: VenueRoute },
       { path: "groups", Component: GroupsRoute },
       { path: "profile", Component: ProfileRoute },
       { path: "player/:id", Component: PlayerRoute },

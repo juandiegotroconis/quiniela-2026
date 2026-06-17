@@ -115,6 +115,44 @@ export type Database = {
           },
         ]
       }
+      match_corrections: {
+        Row: {
+          corrected_at: string
+          id: number
+          match_id: number
+          new_score_away: number | null
+          new_score_home: number | null
+          old_score_away: number | null
+          old_score_home: number | null
+        }
+        Insert: {
+          corrected_at?: string
+          id?: never
+          match_id: number
+          new_score_away?: number | null
+          new_score_home?: number | null
+          old_score_away?: number | null
+          old_score_home?: number | null
+        }
+        Update: {
+          corrected_at?: string
+          id?: never
+          match_id?: number
+          new_score_away?: number | null
+          new_score_home?: number | null
+          old_score_away?: number | null
+          old_score_home?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_corrections_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       matches: {
         Row: {
           away_team_code: string | null
@@ -355,7 +393,9 @@ export type Database = {
         Row: {
           accuracy: number
           avatar_color: string
+          best_streak: number
           correct_count: number
+          current_streak: number
           display_name: string
           exact_count: number
           id: string
@@ -367,12 +407,15 @@ export type Database = {
           scored_matches: number
           total_pts: number
           user_id: string | null
+          worst_streak: number
           wrong_count: number
         }
         Insert: {
           accuracy?: number
           avatar_color?: string
+          best_streak?: number
           correct_count?: number
+          current_streak?: number
           display_name: string
           exact_count?: number
           id?: string
@@ -384,12 +427,15 @@ export type Database = {
           scored_matches?: number
           total_pts?: number
           user_id?: string | null
+          worst_streak?: number
           wrong_count?: number
         }
         Update: {
           accuracy?: number
           avatar_color?: string
+          best_streak?: number
           correct_count?: number
+          current_streak?: number
           display_name?: string
           exact_count?: number
           id?: string
@@ -401,6 +447,7 @@ export type Database = {
           scored_matches?: number
           total_pts?: number
           user_id?: string | null
+          worst_streak?: number
           wrong_count?: number
         }
         Relationships: [
@@ -553,6 +600,15 @@ export type Database = {
           p_pred_home_team_code: string
         }
         Returns: number
+      }
+      compute_member_streaks: {
+        Args: { p_quiniela_id: string }
+        Returns: {
+          best_streak: number
+          current_streak: number
+          user_id: string
+          worst_streak: number
+        }[]
       }
       get_my_quiniela_ids: { Args: never; Returns: string[] }
       immutable_unaccent: { Args: { "": string }; Returns: string }

@@ -1,18 +1,18 @@
 import './MatchesScreen.css';
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router';
 import { Icon } from '@iconify/react';
 import { useTranslation } from '~/hooks/useTranslation';
 import PageContainer from './PageContainer';
 import Wc26Banner from './Wc26Banner';
 import SectionHeader from './SectionHeader';
 import MatchCard from './MatchCard';
-import MatchDetail from './MatchDetail';
+import MatchCardSkeleton from './MatchCardSkeleton';
 import MatchFiltersDrawer from './MatchFiltersDrawer';
 import type { FilterOption } from './MatchFiltersDrawer';
 import { useData } from '~/lib/data-context';
 import { getStageLabelKey, formatMatchDate, KNOCKOUT_STAGE_ORDER } from '~/lib/helpers';
-import type { Match } from '~/lib/types';
-import { useAuth } from '~/lib/auth-context';
+import type { MatchStatus } from '~/lib/types';
 
 
 function localDateKey(utcDate: string): string {
@@ -28,18 +28,18 @@ function localDateKey(utcDate: string): string {
 const WC_FINAL_DATE = '2026-07-19';
 
 export default function MatchesScreen() {
-  const [tab, setTab] = useState('all');
+  const [tab, setTab] = useState('default');
   const [stage, setStage] = useState('group');
   const [group, setGroup] = useState('all');
   const [knockoutStage, setKnockoutStage] = useState('all');
   const [date, setDate] = useState('all');
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [selected, setSelected] = useState<Match | null>(null);
-  const { userPicks } = useAuth();
+  const navigate = useNavigate();
   const { matches, matchesLoading } = useData();
   const { t, language } = useTranslation();
 
   const STATUS_OPTIONS: FilterOption[] = [
+    { id: 'default', label: t('MATCHES_FILTER_DEFAULT') },
     { id: 'all', label: t('MATCHES_FILTER_ALL') },
     { id: 'live', label: t('MATCHES_FILTER_LIVE') },
     { id: 'upcoming', label: t('MATCHES_FILTER_UPCOMING') },
@@ -83,7 +83,7 @@ export default function MatchesScreen() {
   };
 
   const clearAllFilters = () => {
-    setTab('all');
+    setTab('default');
     setStage('group');
     setGroup('all');
     setKnockoutStage('all');
@@ -91,9 +91,9 @@ export default function MatchesScreen() {
   };
 
   const activeFilters: { key: string; label: string; onRemove: () => void }[] = [];
-  if (tab !== 'all') {
+  if (tab !== 'default') {
     const opt = STATUS_OPTIONS.find(o => o.id === tab);
-    if (opt) activeFilters.push({ key: 'status', label: opt.label, onRemove: () => setTab('all') });
+    if (opt) activeFilters.push({ key: 'status', label: opt.label, onRemove: () => setTab('default') });
   }
   if (stage === 'knockout') {
     activeFilters.push({ key: 'stage', label: t('MATCHES_STAGE_KNOCKOUT'), onRemove: () => handleStageChange('group') });
@@ -119,32 +119,37 @@ export default function MatchesScreen() {
     return min || '2026-06-11';
   }, [matches]);
 
-  const filtered = matches.filter(m => {
-    if (tab === 'live' && m.status !== 'live') return false;
-    if (tab === 'upcoming' && m.status !== 'upcoming') return false;
-    if (tab === 'finished' && m.status !== 'finished') return false;
-    if (stage === 'group') {
-      if (m.stage !== 'GROUP_STAGE') return false;
-      if (group !== 'all' && m.group !== group) return false;
-    } else {
-      if (m.stage === 'GROUP_STAGE') return false;
-      if (knockoutStage !== 'all' && m.stage !== knockoutStage) return false;
-    }
-    if (date !== 'all' && localDateKey(m.utcDate) !== date) return false;
-    return true;
-  });
+  // Default tab: hide finished matches and surface live ones first, then
+  // upcoming. An explicit date filter overrides this so users can still look
+  // back at finished matches on a chosen day. "All" shows every status.
+  const hidePastByDefault = tab === 'default' && date === 'all';
 
-  if (selected) {
-    return (
-      <PageContainer>
-        <MatchDetail
-          match={selected}
-          onBack={() => setSelected(null)}
-          userPick={userPicks[selected.id]}
-        />
-      </PageContainer>
-    );
-  }
+  const STATUS_RANK: Record<MatchStatus, number> = { live: 0, upcoming: 1, finished: 2 };
+
+  const filtered = matches
+    .filter(m => {
+      if (hidePastByDefault) {
+        if (m.status === 'finished') return false;
+      } else if (tab !== 'all' && tab !== 'default') {
+        if (tab === 'live' && m.status !== 'live') return false;
+        if (tab === 'upcoming' && m.status !== 'upcoming') return false;
+        if (tab === 'finished' && m.status !== 'finished') return false;
+      }
+      if (stage === 'group') {
+        if (m.stage !== 'GROUP_STAGE') return false;
+        if (group !== 'all' && m.group !== group) return false;
+      } else {
+        if (m.stage === 'GROUP_STAGE') return false;
+        if (knockoutStage !== 'all' && m.stage !== knockoutStage) return false;
+      }
+      if (date !== 'all' && localDateKey(m.utcDate) !== date) return false;
+      return true;
+    })
+    .sort((a, b) => {
+      const rankDiff = STATUS_RANK[a.status] - STATUS_RANK[b.status];
+      if (rankDiff !== 0) return rankDiff;
+      return a.utcDate.localeCompare(b.utcDate);
+    });
 
   return (
     <>
@@ -172,16 +177,16 @@ export default function MatchesScreen() {
         </div>
       )}
 
-      {matchesLoading && <div className="matches-screen__empty">{t('MATCHES_LOADING')}</div>}
-
       {!matchesLoading && filtered.length === 0 && (
         <div className="matches-screen__empty">{t('MATCHES_EMPTY')}</div>
       )}
 
       <div className="matches-screen__grid">
-        {filtered.map(m => (
-          <MatchCard key={m.id} match={m} onTap={() => setSelected(m)} />
-        ))}
+        {matchesLoading
+          ? Array.from({ length: 6 }, (_, i) => <MatchCardSkeleton key={i} />)
+          : filtered.map(m => (
+              <MatchCard key={m.id} match={m} onTap={() => navigate(`/matches/${m.id}`)} />
+            ))}
       </div>
 
       {filtersOpen && (

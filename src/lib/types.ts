@@ -31,6 +31,9 @@ export interface Member {
   exactCount: number;
   correctCount: number;
   scoredMatches: number;
+  bestStreak: number;
+  worstStreak: number;
+  currentStreak: number;
   history: number[];
   joinedAt: string | null;
 }
@@ -42,4 +45,16 @@ export interface MatchPrediction {
   pickA: number;
   pickB: number;
   pickPenaltiesWinner: string | null;
+}
+
+export interface MatchCorrection {
+  id: number;
+  matchId: number;
+  teamA: string;
+  teamB: string;
+  oldScoreA: number | null;
+  oldScoreB: number | null;
+  newScoreA: number | null;
+  newScoreB: number | null;
+  correctedAt: string;
 }

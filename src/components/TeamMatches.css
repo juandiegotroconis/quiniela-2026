@@ -1,0 +1,50 @@
+.team-matches__back {
+  display: inline-block;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg-tertiary);
+  text-decoration: none;
+  margin-bottom: 20px;
+  transition: color 150ms;
+}
+
+.team-matches__back:hover {
+  color: var(--fg-primary);
+}
+
+.team-matches__header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.team-matches__name {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.team-matches__subtitle {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--fg-tertiary);
+  margin-top: -16px;
+  margin-bottom: 24px;
+}
+
+.team-matches__empty {
+  text-align: center;
+  padding: 40px 0;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--fg-tertiary);
+}
+
+.team-matches__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}

@@ -1,19 +1,27 @@
-// sync-live-matches — invoked by pg_cron (every 2 min, 16:00–06:58 UTC).
+// sync-live-matches — invoked by pg_cron (every minute, 16:00–06:58 UTC).
 // Syncs live/just-finished matches from FIFA's live API (primary), falling
 // back to football-data.org when FIFA is unreachable, has no match id, or
 // returns a status we can't map. football-data's free tier proved unreliable
 // on day 1 (2026-06-11: the MEX-RSA opener was stuck on TIMED at minute 33',
 // then a later partial response reset the already-live row), so every write —
-// from either source — goes through two safeguards that stop a stale source
-// from rewinding a row:
+// from either source — goes through three safeguards:
 //   1. STATUS_RANK guard: a source reporting a status behind what the row
 //      already has is stale, and its write is skipped entirely.
 //   2. Null pruning: null score/winner/duration values are dropped from the
 //      payload, so a source that omits data another tick already stored can
 //      never wipe it. `minute` is the exception — cleared explicitly when a
 //      match finishes, kept (not overwritten) during half-time breaks.
-// The trg_match_finished trigger on `matches` handles the leaderboard refresh
-// when a match transitions to FINISHED, so this function only writes rows.
+//   3. FINISHED recheck window: a source can flag a match FINISHED a beat
+//      before its score reflects a very-late goal (observed 2026-06-16:
+//      IRQ-NOR posted FINISHED 1-3, corrected to 1-4 a tick later) — a row
+//      stays a candidate for RECHECK_WINDOW_MS after its FINISHED write so a
+//      correction can still land, then is excluded from polling for good.
+//      Each such correction is logged to `match_corrections` (logCorrection)
+//      so the frontend can show a "this result was corrected" banner.
+// The trg_match_finished trigger on `matches` calls refresh_quiniela_leaderboard
+// whenever a match transitions to FINISHED *or* its score/winner/duration
+// changes while already FINISHED (the latter covers a recheck-window
+// correction), so this function only writes rows.
 //
 // ── FIFA → our schema translation ──────────────────────────────────────────
 // Our columns use football-data.org vocabulary (what scoring.ts and the
@@ -58,6 +66,9 @@ const FIFA_HEADERS = {
   Origin: 'https://www.fifa.com',
 };
 const DAY_MS = 24 * 60 * 60 * 1000;
+// How long a match stays a candidate after being marked FINISHED, to catch
+// a source correcting its score a tick or two behind the final whistle.
+const RECHECK_WINDOW_MS = 5 * 60 * 1000;
 
 // TIMED < live < FINISHED. A source reporting a lower rank than the row
 // already has is stale and must never downgrade it.
@@ -88,6 +99,15 @@ type Candidate = {
   status: string;
   utc_date: string;
   fifa_match_id: string | null;
+  score_home_regular: number | null;
+  score_away_regular: number | null;
+  score_home_et: number | null;
+  score_away_et: number | null;
+  score_home_penalties: number | null;
+  score_away_penalties: number | null;
+  winner: string | null;
+  duration: string | null;
+  last_synced_at: string | null;
 };
 
 type FifaTeamLive = { IdTeam: string | null; Score: number | null } | null;
@@ -130,6 +150,31 @@ type FifaOutcome = {
   error?: string;
 };
 
+// Logs a safeguard-3 correction for the frontend's "result corrected" banner
+// (match_corrections, read by fetchRecentMatchCorrections). Best-effort —
+// a logging failure shouldn't fail the sync itself.
+async function logCorrection(
+  supabase: SupabaseClient,
+  matchId: number,
+  oldHome: number | null,
+  oldAway: number | null,
+  newHome: number | null,
+  newAway: number | null,
+  now: Date,
+): Promise<void> {
+  const { error } = await supabase.from('match_corrections').insert({
+    match_id: matchId,
+    old_score_home: oldHome,
+    old_score_away: oldAway,
+    new_score_home: newHome,
+    new_score_away: newAway,
+    corrected_at: now.toISOString(),
+  });
+  if (error) {
+    console.log(`match ${matchId}: failed to log correction: ${error.message}`);
+  }
+}
+
 async function syncFromFifa(
   supabase: SupabaseClient,
   candidate: Candidate,
@@ -171,10 +216,6 @@ async function syncFromFifa(
     return { outcome: 'fallback' };
   }
   const live = status === 'IN_PLAY' || status === 'PAUSED';
-  if (!live && status === candidate.status) {
-    console.log(`match ${candidate.id}: FIFA status unchanged (${status}), skipping`);
-    return { outcome: 'skipped' };
-  }
 
   const home = f.HomeTeam?.Score ?? null;
   const away = f.AwayTeam?.Score ?? null;
@@ -202,6 +243,40 @@ async function syncFromFifa(
   // MatchTime carries the clock with a trailing apostrophe ("46'"); ours
   // stores it bare ("46"). Empty during breaks → pruned, last value kept.
   const minute = live ? f.MatchTime?.replace(/'/g, '') || null : null;
+  const penaltiesHome = pastRegular ? f.HomeTeamPenaltyScore : null;
+  const penaltiesAway = pastRegular ? f.AwayTeamPenaltyScore : null;
+
+  let isCorrection = false;
+  let storedHome: number | null = null;
+  let storedAway: number | null = null;
+  if (!live && status === candidate.status) {
+    if (status !== 'FINISHED') {
+      console.log(`match ${candidate.id}: FIFA status unchanged (${status}), skipping`);
+      return { outcome: 'skipped' };
+    }
+    // Safeguard 3: already FINISHED — only a candidate because it's inside
+    // RECHECK_WINDOW_MS. Skip unless FIFA's score/result actually changed
+    // since our last write (e.g. a stoppage-time goal landing a beat behind
+    // the FINISHED flag).
+    storedHome = pastRegular ? candidate.score_home_et : candidate.score_home_regular;
+    storedAway = pastRegular ? candidate.score_away_et : candidate.score_away_regular;
+    const unchanged =
+      home === storedHome &&
+      away === storedAway &&
+      winner === candidate.winner &&
+      duration === candidate.duration &&
+      penaltiesHome === candidate.score_home_penalties &&
+      penaltiesAway === candidate.score_away_penalties;
+    if (unchanged) {
+      console.log(`match ${candidate.id}: FIFA FINISHED recheck unchanged, skipping`);
+      return { outcome: 'skipped' };
+    }
+    isCorrection = true;
+    console.log(
+      `match ${candidate.id}: FIFA FINISHED recheck found a correction ` +
+        `(${storedHome}-${storedAway} -> ${home}-${away}), updating`,
+    );
+  }
 
   console.log(
     `match ${candidate.id}: FIFA ${candidate.status} -> ${status}, ` +
@@ -216,8 +291,8 @@ async function syncFromFifa(
         ...(pastRegular
           ? { score_home_et: home, score_away_et: away }
           : { score_home_regular: home, score_away_regular: away }),
-        score_home_penalties: pastRegular ? f.HomeTeamPenaltyScore : null,
-        score_away_penalties: pastRegular ? f.AwayTeamPenaltyScore : null,
+        score_home_penalties: penaltiesHome,
+        score_away_penalties: penaltiesAway,
         duration,
         winner,
         minute,
@@ -228,6 +303,9 @@ async function syncFromFifa(
     .eq('id', candidate.id);
   if (error) {
     return { outcome: 'skipped', error: `match ${candidate.id}: ${error.message}` };
+  }
+  if (isCorrection) {
+    await logCorrection(supabase, candidate.id, storedHome, storedAway, home, away, now);
   }
   return { outcome: 'updated' };
 }
@@ -251,13 +329,6 @@ async function syncFromFd(
     return { updated: false };
   }
   const live = m.status === 'IN_PLAY' || m.status === 'PAUSED';
-  if (!live && m.status === candidate.status) {
-    console.log(`match ${candidate.id}: football-data status unchanged (${m.status}), skipping`);
-    return { updated: false };
-  }
-  console.log(
-    `match ${candidate.id}: football-data ${candidate.status} -> ${m.status}, minute=${m.minute ?? 'null'}`,
-  );
 
   const s = m.score;
   // fullTime is the running score while live and the final score (incl.
@@ -265,21 +336,58 @@ async function syncFromFd(
   // was played.
   const regular = s.regularTime ?? s.fullTime;
   const hasEt = s.duration && s.duration !== 'REGULAR';
+  const homeRegular = regular?.home ?? null;
+  const awayRegular = regular?.away ?? null;
+  const homeEt = hasEt ? s.fullTime?.home ?? null : null;
+  const awayEt = hasEt ? s.fullTime?.away ?? null : null;
+  const penaltiesHome = s.penalties?.home ?? null;
+  const penaltiesAway = s.penalties?.away ?? null;
+  // football-data has flapped a premature winner on a live match; only trust
+  // it once the match is actually over.
+  const winner = m.status === 'FINISHED' ? s.winner : null;
+
+  let isCorrection = false;
+  if (!live && m.status === candidate.status) {
+    if (m.status !== 'FINISHED') {
+      console.log(`match ${candidate.id}: football-data status unchanged (${m.status}), skipping`);
+      return { updated: false };
+    }
+    // Safeguard 3: already FINISHED — only a candidate because it's inside
+    // RECHECK_WINDOW_MS. Skip unless football-data's score/result changed.
+    const unchanged =
+      homeRegular === candidate.score_home_regular &&
+      awayRegular === candidate.score_away_regular &&
+      homeEt === candidate.score_home_et &&
+      awayEt === candidate.score_away_et &&
+      winner === candidate.winner &&
+      s.duration === candidate.duration &&
+      penaltiesHome === candidate.score_home_penalties &&
+      penaltiesAway === candidate.score_away_penalties;
+    if (unchanged) {
+      console.log(`match ${candidate.id}: football-data FINISHED recheck unchanged, skipping`);
+      return { updated: false };
+    }
+    isCorrection = true;
+    console.log(`match ${candidate.id}: football-data FINISHED recheck found a correction, updating`);
+  }
+
+  console.log(
+    `match ${candidate.id}: football-data ${candidate.status} -> ${m.status}, minute=${m.minute ?? 'null'}`,
+  );
+
   const { error } = await supabase
     .from('matches')
     .update({
       status: m.status,
       ...pruneNulls({
-        score_home_regular: regular?.home,
-        score_away_regular: regular?.away,
-        score_home_et: hasEt ? s.fullTime?.home : null,
-        score_away_et: hasEt ? s.fullTime?.away : null,
-        score_home_penalties: s.penalties?.home,
-        score_away_penalties: s.penalties?.away,
+        score_home_regular: homeRegular,
+        score_away_regular: awayRegular,
+        score_home_et: homeEt,
+        score_away_et: awayEt,
+        score_home_penalties: penaltiesHome,
+        score_away_penalties: penaltiesAway,
         duration: s.duration,
-        // football-data has flapped a premature winner on a live match;
-        // only trust it once the match is actually over.
-        winner: m.status === 'FINISHED' ? s.winner : null,
+        winner,
         minute: live ? m.minute : null,
       }),
       ...(m.status === 'FINISHED' ? { minute: null } : {}),
@@ -288,6 +396,13 @@ async function syncFromFd(
     .eq('id', candidate.id);
   if (error) {
     return { updated: false, error: `match ${candidate.id}: ${error.message}` };
+  }
+  if (isCorrection) {
+    const oldHome = candidate.score_home_et ?? candidate.score_home_regular;
+    const oldAway = candidate.score_away_et ?? candidate.score_away_regular;
+    const newHome = hasEt ? homeEt : homeRegular;
+    const newAway = hasEt ? awayEt : awayRegular;
+    await logCorrection(supabase, candidate.id, oldHome, oldAway, newHome, newAway, now);
   }
   return { updated: true };
 }
@@ -300,11 +415,17 @@ Deno.serve(async () => {
 
   const now = new Date();
   // Matches that kicked off in the last 6h (2-min lookahead for ones about to
-  // start) and aren't recorded as finished. Empty set = no API call at all.
+  // start), excluding ones that have been FINISHED for more than
+  // RECHECK_WINDOW_MS (safeguard 3 above). Empty set = no API call at all.
+  const recheckCutoff = new Date(now.getTime() - RECHECK_WINDOW_MS).toISOString();
   const { data: candidates, error: candidatesError } = await supabase
     .from('matches')
-    .select('id, status, utc_date, fifa_match_id')
-    .neq('status', 'FINISHED')
+    .select(
+      'id, status, utc_date, fifa_match_id, score_home_regular, score_away_regular, ' +
+        'score_home_et, score_away_et, score_home_penalties, score_away_penalties, ' +
+        'winner, duration, last_synced_at',
+    )
+    .or(`status.neq.FINISHED,last_synced_at.gte.${recheckCutoff}`)
     .lte('utc_date', new Date(now.getTime() + 2 * 60 * 1000).toISOString())
     .gte('utc_date', new Date(now.getTime() - 6 * 60 * 60 * 1000).toISOString());
 

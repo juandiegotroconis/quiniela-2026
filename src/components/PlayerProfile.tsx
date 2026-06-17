@@ -7,25 +7,30 @@ import Avatar from './Avatar';
 import PositionChange from './PositionChange';
 import Sparkline from './Sparkline';
 import { getPickResult } from '~/lib/helpers';
-import { fetchSingleMemberHistory } from '~/lib/queries';
+import { fetchSingleMemberHistory, fetchUserTopScorer } from '~/lib/queries';
 import { useAuth } from '~/lib/auth-context';
 import { useData } from '~/lib/data-context';
 import type { UserPickEntry } from '~/lib/auth-context';
 import GroupPanel from './GroupPanel';
 import GroupNav from './GroupNav';
+import TopScorerPicker from './TopScorerPicker';
+import PlayerProfileSkeleton from './PlayerProfileSkeleton';
 import { GROUPS } from '~/lib/mock-data';
+import type { TopScorerSuggestion } from '~/lib/mock-data';
 
 interface Props {
   userId: string;
 }
 
 export default function PlayerProfile({ userId }: Props) {
-  const { user, quinielaId, userPicks: myPicks } = useAuth();
-  const { matches, getMember, getPicksForUser } = useData();
+  const { user, quinielaId, userPicks: myPicks, topScorer: myTopScorer } = useAuth();
+  const { matches, membersLoading, getMember, getPicksForUser } = useData();
   const { t } = useTranslation();
   const isMe = userId === user?.id;
   const [picks, setPicks] = useState<Record<number, UserPickEntry>>(isMe ? myPicks : {});
   const [memberHistory, setMemberHistory] = useState<number[]>([]);
+  const [topScorer, setTopScorer] = useState<TopScorerSuggestion | null>(isMe ? myTopScorer : null);
+  const [standingsView, setStandingsView] = useState<'real' | 'predicted'>('real');
 
   const member = getMember(userId);
 
@@ -43,7 +48,24 @@ export default function PlayerProfile({ userId }: Props) {
     fetchSingleMemberHistory(userId, quinielaId).then(setMemberHistory).catch(console.error);
   }, [userId, quinielaId]);
 
+  useEffect(() => {
+    if (isMe) {
+      setTopScorer(myTopScorer);
+      return;
+    }
+    if (!quinielaId) return;
+    fetchUserTopScorer(userId, quinielaId).then(setTopScorer).catch(console.error);
+  }, [userId, quinielaId, isMe, myTopScorer]);
+
   if (!member) {
+    if (membersLoading) {
+      return (
+        <PageContainer>
+          <Link to="/rankings" className="player-profile__back">{t('PLAYER_PROFILE_BACK')}</Link>
+          <PlayerProfileSkeleton />
+        </PageContainer>
+      );
+    }
     return (
       <PageContainer>
         <Link to="/rankings" className="player-profile__back">{t('PLAYER_PROFILE_BACK')}</Link>
@@ -115,12 +137,44 @@ export default function PlayerProfile({ userId }: Props) {
         ))}
       </div>
 
+      {topScorer && (
+        <div className="player-profile__scorer">
+          <div className="player-profile__scorer-heading">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="var(--color-gold)">
+              <path d="M7.5 21H2V9h5.5v12zm7.25-18h-5.5v18h5.5V3zM22 11h-5.5v10H22V11z" />
+            </svg>
+            {t('PROFILE_READONLY_TOP_SCORER_HEADING')}
+          </div>
+          <TopScorerPicker value={topScorer} disabled />
+        </div>
+      )}
+
+      <div className="player-profile__view-tabs">
+        <button
+          className={`player-profile__view-tab${standingsView === 'real' ? ' player-profile__view-tab--active' : ''}`}
+          onClick={() => setStandingsView('real')}
+        >
+          {t('PLAYER_PROFILE_VIEW_REAL')}
+        </button>
+        <button
+          className={`player-profile__view-tab${standingsView === 'predicted' ? ' player-profile__view-tab--active' : ''}`}
+          onClick={() => setStandingsView('predicted')}
+        >
+          {t('PLAYER_PROFILE_VIEW_PREDICTED')}
+        </button>
+      </div>
+
       <GroupNav groups={groupIds} />
 
       <div className="player-profile__groups">
         {groupIds.map(groupId => (
           <div key={groupId} id={`group-${groupId}`}>
-            <GroupPanel groupId={groupId} picks={picks} />
+            <GroupPanel
+              groupId={groupId}
+              picks={picks}
+              userId={userId}
+              projectWithPicks={standingsView === 'predicted'}
+            />
           </div>
         ))}
       </div>

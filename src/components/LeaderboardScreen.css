@@ -1,3 +1,33 @@
+.leaderboard__tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.leaderboard__tab {
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-default);
+  background: transparent;
+  color: var(--fg-secondary);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 150ms var(--ease-default);
+}
+
+.leaderboard__tab:hover {
+  border-color: var(--color-brand);
+  color: var(--color-brand);
+}
+
+.leaderboard__tab--active {
+  background: var(--color-brand);
+  border-color: var(--color-brand);
+  color: #fff;
+}
+
 .leaderboard__podium {
   display: flex;
   justify-content: center;

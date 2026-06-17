@@ -145,10 +145,12 @@
 
 .match-filters-drawer__date-input {
   padding: 6px 14px;
+  min-width: 132px;
   border-radius: var(--radius-full);
   border: 1px solid var(--border-default);
   background: transparent;
   color: var(--fg-secondary);
+  -webkit-text-fill-color: var(--fg-secondary);
   font-family: var(--font-body);
   font-size: 13px;
   font-weight: 600;
@@ -167,6 +169,7 @@
   background: var(--color-brand);
   border-color: var(--color-brand);
   color: #fff;
+  -webkit-text-fill-color: #fff;
 }
 
 /* ── Footer ── */

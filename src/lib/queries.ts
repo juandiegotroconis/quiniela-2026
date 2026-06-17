@@ -1,6 +1,6 @@
 import { getClient } from "./client";
 import type { Database, Tables } from "./supabase";
-import type { Match, MatchStatus, Member } from "./types";
+import type { Match, MatchCorrection, MatchStatus, Member } from "./types";
 import type { UserPickEntry } from "./auth-context";
 import type { TopScorerSuggestion } from "./mock-data";
 
@@ -48,6 +48,34 @@ export async function fetchMatches(): Promise<Match[]> {
   );
 }
 
+const CORRECTION_ALERT_WINDOW_MS = 12 * 60 * 60 * 1000;
+
+export async function fetchRecentMatchCorrections(): Promise<
+  MatchCorrection[]
+> {
+  const cutoff = new Date(Date.now() - CORRECTION_ALERT_WINDOW_MS).toISOString();
+  const client = getClient();
+  const { data, error } = await client
+    .from("match_corrections")
+    .select(
+      "id, match_id, old_score_home, old_score_away, new_score_home, new_score_away, corrected_at, matches(home_team_code, away_team_code)",
+    )
+    .gte("corrected_at", cutoff)
+    .order("corrected_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []).map((row) => ({
+    id: row.id,
+    matchId: row.match_id,
+    teamA: row.matches?.home_team_code ?? "",
+    teamB: row.matches?.away_team_code ?? "",
+    oldScoreA: row.old_score_home,
+    oldScoreB: row.old_score_away,
+    newScoreA: row.new_score_home,
+    newScoreB: row.new_score_away,
+    correctedAt: row.corrected_at,
+  }));
+}
+
 export async function fetchQuinielaName(
   quinielaId: string,
 ): Promise<string | null> {
@@ -66,7 +94,7 @@ export async function fetchMembersCore(quinielaId: string): Promise<Member[]> {
   const { data, error } = await client
     .from("quiniela_members")
     .select(
-      "user_id, display_name, avatar_color, total_pts, rank, prev_rank, rank_change, exact_count, correct_count, scored_matches, joined_at",
+      "user_id, display_name, avatar_color, total_pts, rank, prev_rank, rank_change, exact_count, correct_count, scored_matches, best_streak, worst_streak, current_streak, joined_at",
     )
     .eq("quiniela_id", quinielaId)
     .order("rank", { ascending: true, nullsFirst: false });
@@ -83,6 +111,9 @@ export async function fetchMembersCore(quinielaId: string): Promise<Member[]> {
       exactCount: row.exact_count,
       correctCount: row.correct_count,
       scoredMatches: row.scored_matches,
+      bestStreak: row.best_streak,
+      worstStreak: row.worst_streak,
+      currentStreak: row.current_streak,
       history: [],
       joinedAt: row.joined_at,
     }),

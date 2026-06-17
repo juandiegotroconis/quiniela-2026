@@ -66,7 +66,8 @@
       "mcp__plugin_supabase_supabase__get_publishable_keys",
       "mcp__plugin_supabase_supabase__generate_typescript_types",
       "Bash(ls -d .claude)",
-      "Bash(find . -maxdepth 2 -iname \"*handoff*\")"
+      "Bash(find . -maxdepth 2 -iname \"*handoff*\")",
+      "Bash(npx supabase *)"
     ],
     "additionalDirectories": [
       "c:\\Users\\juant\\Documents\\Projects\\quiniela-2026\\src\\routes",

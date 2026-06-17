@@ -1,11 +1,13 @@
 import "./MatchDetail.css";
 import { useState, useEffect, useRef } from "react";
+import { Link } from "react-router";
 import { Icon } from "@iconify/react";
 import { useTranslation } from "~/hooks/useTranslation";
 import RulesModal from "./RulesModal";
 import TeamFlag from "./TeamFlag";
 import Badge from "./Badge";
 import PredictionGroupCard from "./PredictionGroupCard";
+import PredictionGroupCardSkeleton from "./PredictionGroupCardSkeleton";
 import WhatIfLeaderboard from "./WhatIfLeaderboard";
 import {
   groupPredictions,
@@ -57,6 +59,7 @@ export default function MatchDetail({ match, onBack, userPick }: Props) {
   const { t } = useTranslation();
   const membersRef = useRef(members);
   const [preds, setPreds] = useState<MatchPrediction[]>([]);
+  const [predsLoading, setPredsLoading] = useState(true);
   const [showRules, setShowRules] = useState(false);
 
   useEffect(() => {
@@ -65,6 +68,7 @@ export default function MatchDetail({ match, onBack, userPick }: Props) {
 
   useEffect(() => {
     if (!quinielaId) return;
+    setPredsLoading(true);
     fetchMatchPredictions(match.id, quinielaId)
       .then((raw) => {
         const memberMap = new Map(membersRef.current.map((m) => [m.userId, m]));
@@ -81,7 +85,8 @@ export default function MatchDetail({ match, onBack, userPick }: Props) {
         });
       })
       .then(setPreds)
-      .catch(console.error);
+      .catch(console.error)
+      .finally(() => setPredsLoading(false));
   }, [match.id, quinielaId]); // members intentionally excluded — membersRef stays current
 
   const groups = groupPredictions(preds, match, user?.id ?? null);
@@ -135,33 +140,43 @@ export default function MatchDetail({ match, onBack, userPick }: Props) {
         </div>
 
         <div className='match-detail__score-row'>
-          <div className='match-detail__team'>
-            <TeamFlag code={match.teamA} size={48} />
-            <span className='match-detail__team-code'>
-              {match.teamA || t("TEAM_TBD")}
-            </span>
-            <span className='match-detail__team-full'>
-              {TEAM_FULL[match.teamA]}
-            </span>
-          </div>
+          {match.teamA ? (
+            <Link to={`/teams/${match.teamA}`} className='match-detail__team'>
+              <TeamFlag code={match.teamA} size={48} />
+              <span className='match-detail__team-code'>{match.teamA}</span>
+              <span className='match-detail__team-full'>
+                {TEAM_FULL[match.teamA]}
+              </span>
+            </Link>
+          ) : (
+            <div className='match-detail__team'>
+              <TeamFlag code={match.teamA} size={48} />
+              <span className='match-detail__team-code'>{t("TEAM_TBD")}</span>
+            </div>
+          )}
           <div className='match-detail__scoreline'>
             <span>{match.scoreA !== null ? match.scoreA : "–"}</span>
             <span className='match-detail__scoreline-sep'>:</span>
             <span>{match.scoreB !== null ? match.scoreB : "–"}</span>
           </div>
-          <div className='match-detail__team'>
-            <TeamFlag code={match.teamB} size={48} />
-            <span className='match-detail__team-code'>
-              {match.teamB || t("TEAM_TBD")}
-            </span>
-            <span className='match-detail__team-full'>
-              {TEAM_FULL[match.teamB]}
-            </span>
-          </div>
+          {match.teamB ? (
+            <Link to={`/teams/${match.teamB}`} className='match-detail__team'>
+              <TeamFlag code={match.teamB} size={48} />
+              <span className='match-detail__team-code'>{match.teamB}</span>
+              <span className='match-detail__team-full'>
+                {TEAM_FULL[match.teamB]}
+              </span>
+            </Link>
+          ) : (
+            <div className='match-detail__team'>
+              <TeamFlag code={match.teamB} size={48} />
+              <span className='match-detail__team-code'>{t("TEAM_TBD")}</span>
+            </div>
+          )}
         </div>
 
         {match.venue && (
-          <div className='match-detail__venue'>
+          <Link to={`/venues/${encodeURIComponent(match.venue)}`} className='match-detail__venue'>
             <span className='match-detail__venue-name'>{match.venue}</span>
             {match.venueCity && (
               <span className='match-detail__venue-city'>
@@ -169,7 +184,7 @@ export default function MatchDetail({ match, onBack, userPick }: Props) {
                 {match.venueCountry && `, ${TEAM_FULL[match.venueCountry]}`}
               </span>
             )}
-          </div>
+          </Link>
         )}
       </div>
 
@@ -196,7 +211,20 @@ export default function MatchDetail({ match, onBack, userPick }: Props) {
         </div>
       )}
 
-      {groups.length > 0 && (
+      {predsLoading && (
+        <div>
+          <div className='match-detail__preds-heading'>
+            {t("MATCH_DETAIL_PREDICTIONS_HEADING")}
+          </div>
+          <div className='match-detail__preds-grid'>
+            {Array.from({ length: 4 }, (_, i) => (
+              <PredictionGroupCardSkeleton key={i} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {!predsLoading && groups.length > 0 && (
         <div>
           <div className='match-detail__preds-heading'>
             {t("MATCH_DETAIL_PREDICTIONS_HEADING")} · {preds.length}{" "}
@@ -210,7 +238,7 @@ export default function MatchDetail({ match, onBack, userPick }: Props) {
         </div>
       )}
 
-      {groups.length === 0 && (
+      {!predsLoading && groups.length === 0 && (
         <div className='match-detail__empty'>{t("MATCH_DETAIL_EMPTY")}</div>
       )}
 
