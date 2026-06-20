@@ -14,6 +14,7 @@ import VerifyEmailRoute from "./routes/verify-email";
 import ResetPasswordRoute from "./routes/reset-password";
 import { AuthProvider } from "./lib/auth-context";
 import { TranslationProvider } from "./lib/translation-context";
+import { ThemeProvider } from "./lib/theme-context";
 import "./styles/variables.css";
 import "./styles/global.css";
 
@@ -39,9 +40,11 @@ const router = createBrowserRouter([
 ]);
 
 createRoot(document.getElementById("root")!).render(
-  <TranslationProvider>
-    <AuthProvider>
-      <RouterProvider router={router} />
-    </AuthProvider>
-  </TranslationProvider>,
+  <ThemeProvider>
+    <TranslationProvider>
+      <AuthProvider>
+        <RouterProvider router={router} />
+      </AuthProvider>
+    </TranslationProvider>
+  </ThemeProvider>,
 );

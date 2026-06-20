@@ -40,7 +40,16 @@ export default function PlayerProfile({ userId }: Props) {
       return;
     }
     if (!quinielaId) return;
-    getPicksForUser(userId, quinielaId).then(setPicks).catch(console.error);
+    setPicks({});
+    let cancelled = false;
+    getPicksForUser(userId, quinielaId)
+      .then((p) => {
+        if (!cancelled) setPicks(p);
+      })
+      .catch(console.error);
+    return () => {
+      cancelled = true;
+    };
   }, [userId, quinielaId, isMe, myPicks, getPicksForUser]);
 
   useEffect(() => {

@@ -67,7 +67,9 @@
       "mcp__plugin_supabase_supabase__generate_typescript_types",
       "Bash(ls -d .claude)",
       "Bash(find . -maxdepth 2 -iname \"*handoff*\")",
-      "Bash(npx supabase *)"
+      "Bash(npx supabase *)",
+      "Bash(find / -iname \"*chromium-cli*\" -not -path \"*/node_modules/*\" 2>/dev/null | head -50)",
+      "Read(//c//**)"
     ],
     "additionalDirectories": [
       "c:\\Users\\juant\\Documents\\Projects\\quiniela-2026\\src\\routes",

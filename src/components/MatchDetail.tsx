@@ -69,6 +69,7 @@ export default function MatchDetail({ match, onBack, userPick }: Props) {
   useEffect(() => {
     if (!quinielaId) return;
     setPredsLoading(true);
+    let cancelled = false;
     fetchMatchPredictions(match.id, quinielaId)
       .then((raw) => {
         const memberMap = new Map(membersRef.current.map((m) => [m.userId, m]));
@@ -84,9 +85,16 @@ export default function MatchDetail({ match, onBack, userPick }: Props) {
           };
         });
       })
-      .then(setPreds)
+      .then((mapped) => {
+        if (!cancelled) setPreds(mapped);
+      })
       .catch(console.error)
-      .finally(() => setPredsLoading(false));
+      .finally(() => {
+        if (!cancelled) setPredsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [match.id, quinielaId]); // members intentionally excluded — membersRef stays current
 
   const groups = groupPredictions(preds, match, user?.id ?? null);

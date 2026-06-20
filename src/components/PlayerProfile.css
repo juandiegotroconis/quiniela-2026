@@ -147,7 +147,7 @@
   transition: all 150ms var(--ease-default);
 }
 
-.player-profile__view-tab:hover {
+.player-profile__view-tab:hover:not(.player-profile__view-tab--active) {
   border-color: var(--color-brand);
   color: var(--color-brand);
 }

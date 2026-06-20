@@ -17,7 +17,7 @@
   transition: all 150ms var(--ease-default);
 }
 
-.leaderboard__tab:hover {
+.leaderboard__tab:hover:not(.leaderboard__tab--active) {
   border-color: var(--color-brand);
   color: var(--color-brand);
 }

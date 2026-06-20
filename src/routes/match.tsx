@@ -26,7 +26,16 @@ export default function MatchRoute() {
       setOtherPicks(null);
       return;
     }
-    getPicksForUser(asUserId, quinielaId).then(setOtherPicks).catch(console.error);
+    setOtherPicks(null);
+    let cancelled = false;
+    getPicksForUser(asUserId, quinielaId)
+      .then((picks) => {
+        if (!cancelled) setOtherPicks(picks);
+      })
+      .catch(console.error);
+    return () => {
+      cancelled = true;
+    };
   }, [viewingOther, asUserId, quinielaId, getPicksForUser]);
 
   if (matchesLoading) {

@@ -131,7 +131,7 @@
   transition: all 150ms var(--ease-default);
 }
 
-.match-filters-drawer__option:hover {
+.match-filters-drawer__option:hover:not(.match-filters-drawer__option--active) {
   background: var(--color-brand-08);
   border-color: var(--color-brand);
   color: var(--color-brand);
@@ -159,7 +159,7 @@
   transition: all 150ms var(--ease-default);
 }
 
-.match-filters-drawer__date-input:hover {
+.match-filters-drawer__date-input:hover:not(.match-filters-drawer__date-input--active) {
   background: var(--color-brand-08);
   border-color: var(--color-brand);
   color: var(--color-brand);

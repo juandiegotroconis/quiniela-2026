@@ -5,6 +5,7 @@ import { Icon } from "@iconify/react";
 import { useAuth } from "~/lib/auth-context";
 import { useData } from "~/lib/data-context";
 import { useTranslation } from "~/hooks/useTranslation";
+import { useTheme } from "~/hooks/useTheme";
 import PageContainer from "./PageContainer";
 import Avatar from "./Avatar";
 import PositionChange from "./PositionChange";
@@ -62,6 +63,7 @@ export default function ProfileScreen() {
   };
 
   const { t, language, setLanguage } = useTranslation();
+  const { theme, setTheme } = useTheme();
   const showForm = isUpdatable;
 
   return (
@@ -127,6 +129,26 @@ export default function ProfileScreen() {
                 aria-pressed={language === code}
               >
                 <Icon icon={flag} width={20} height={20} />
+                <span>{label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className='profile-hdr__theme-picker'>
+          <span className='profile-hdr__color-label'>{t('PROFILE_THEME_LABEL')}</span>
+          <div className='profile-hdr__theme-options'>
+            {([
+              { value: 'light', icon: 'mdi:white-balance-sunny', label: t('PROFILE_THEME_LIGHT') },
+              { value: 'dark', icon: 'mdi:weather-night', label: t('PROFILE_THEME_DARK') },
+            ] as const).map(({ value, icon, label }) => (
+              <button
+                key={value}
+                className={`profile-hdr__theme-opt${theme === value ? ' profile-hdr__theme-opt--active' : ''}`}
+                onClick={() => setTheme(value)}
+                aria-pressed={theme === value}
+              >
+                <Icon icon={icon} width={20} height={20} />
                 <span>{label}</span>
               </button>
             ))}

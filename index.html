@@ -47,6 +47,19 @@
     <meta name="msapplication-TileImage" content="/ms-icon-144x144.png" />
     <meta name="theme-color" content="#ffffff" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem("THEME");
+          var theme = stored === "dark" ? "dark" : "light";
+          document.documentElement.dataset.theme = theme;
+          if (theme === "dark") {
+            var meta = document.querySelector('meta[name="theme-color"]');
+            if (meta) meta.setAttribute("content", "#0b0e14");
+          }
+        } catch (e) {}
+      })();
+    </script>
     <title>FWC26 Quiniela</title>
     <meta
       name="description"

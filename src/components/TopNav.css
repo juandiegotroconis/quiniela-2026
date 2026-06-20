@@ -13,6 +13,12 @@
   z-index: 100;
 }
 
+:root[data-theme="dark"] .top-nav {
+  background: rgba(18, 21, 29, 0.65);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
+}
+
 .top-nav__logo {
   font-family: var(--font-display);
   font-size: 24px;

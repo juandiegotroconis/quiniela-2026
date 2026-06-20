@@ -153,6 +153,70 @@
   --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* ── Dark Theme ──
+   Charcoal-navy surfaces (not pure black) that step up in lightness for
+   elevation, off-white text, and brand/status colors re-tuned for contrast
+   against dark backgrounds. */
+:root[data-theme="dark"] {
+  /* Primary brand — brightened FIFA Blue for contrast on dark surfaces */
+  --color-brand: #4d8dff;
+  --color-brand-bg: rgba(77, 141, 255, 0.16);
+
+  /* Success / correct picks */
+  --color-green: #2ee65c;
+  --color-green-light: #5cef85;
+  --color-green-dark: #1fae46;
+
+  /* Rankings / podium — Gold */
+  --color-gold: #e0bd6b;
+  --color-gold-light: #f0d896;
+  --color-gold-dark: #b3924f;
+
+  /* Status */
+  --color-success: #2ee65c;
+  --color-error: #ff5d5d;
+  --color-warning: #f0dd55;
+  --color-info: #45e0c2;
+  --color-success-bg: rgba(46, 230, 92, 0.16);
+  --color-error-bg: rgba(255, 93, 93, 0.16);
+  --color-warning-bg: rgba(240, 221, 85, 0.16);
+  --color-info-bg: rgba(69, 224, 194, 0.16);
+
+  /* Pre-computed alpha variants used by multiple components */
+  --color-green-04: rgba(46, 230, 92, 0.04);
+  --color-green-06: rgba(46, 230, 92, 0.06);
+  --color-green-10: rgba(46, 230, 92, 0.1);
+  --color-green-15: rgba(46, 230, 92, 0.15);
+  --color-green-25: rgba(46, 230, 92, 0.25);
+  --color-brand-06: rgba(77, 141, 255, 0.06);
+  --color-brand-08: rgba(77, 141, 255, 0.08);
+  --color-brand-15: rgba(77, 141, 255, 0.15);
+  --color-brand-25: rgba(77, 141, 255, 0.25);
+
+  /* Surfaces — deep navy-charcoal, each step a touch lighter for elevation */
+  --surface-0: #0b0e14;
+  --surface-1: #12151d;
+  --surface-2: #181c26;
+  --surface-3: #20242f;
+  --surface-4: #2a2f3c;
+
+  /* Borders — light-on-dark alpha */
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-default: rgba(255, 255, 255, 0.14);
+  --border-strong: rgba(255, 255, 255, 0.26);
+
+  /* Foreground — off-white, never pure white */
+  --fg-primary: #eef1f6;
+  --fg-secondary: rgba(238, 241, 246, 0.64);
+  --fg-tertiary: rgba(238, 241, 246, 0.42);
+  --fg-disabled: rgba(238, 241, 246, 0.24);
+
+  /* Shadows need more contrast against dark surfaces */
+  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.32);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
 /* ── Quiniela Variants ── */
 body[data-variant="women"] {
   /* Primary — deep purple (table headers, buttons, active states) */
@@ -173,6 +237,26 @@ body[data-variant="women"] {
   --border-subtle:  rgba(139, 53, 200, 0.08);
   --border-default: rgba(139, 53, 200, 0.18);
   --border-strong:  rgba(139, 53, 200, 0.35);
+}
+
+/* Dark theme × women variant — purple-tinted dark surfaces instead of the
+   light pink ones above */
+:root[data-theme="dark"] body[data-variant="women"] {
+  --color-brand:    #c08bea;
+  --color-brand-bg: rgba(192, 139, 234, 0.18);
+  --color-brand-06: rgba(192, 139, 234, 0.06);
+  --color-brand-08: rgba(192, 139, 234, 0.08);
+  --color-brand-15: rgba(192, 139, 234, 0.15);
+  --color-brand-25: rgba(192, 139, 234, 0.25);
+
+  --surface-1: #181420;
+  --surface-2: #1f1828;
+  --surface-3: #281f33;
+  --surface-4: #332940;
+
+  --border-subtle:  rgba(192, 139, 234, 0.10);
+  --border-default: rgba(192, 139, 234, 0.18);
+  --border-strong:  rgba(192, 139, 234, 0.32);
 }
 
 /* ── Animations ── */
