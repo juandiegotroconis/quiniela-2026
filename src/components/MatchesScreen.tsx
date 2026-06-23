@@ -149,7 +149,12 @@ export default function MatchesScreen() {
     return new Set(candidates.slice(0, RECENT_FINISHED_LIMIT).map(m => m.id));
   }, [matches, hidePastByDefault, stage, group, knockoutStage]);
 
-  const STATUS_RANK: Record<MatchStatus, number> = { live: 0, upcoming: 1, finished: 2 };
+  // On the default tab, the only finished matches ever shown are the ones the
+  // user explicitly revealed via "Load previous matches" — surface those above
+  // live/upcoming instead of the usual live > upcoming > finished order.
+  const STATUS_RANK: Record<MatchStatus, number> = hidePastByDefault
+    ? { finished: 0, live: 1, upcoming: 2 }
+    : { live: 0, upcoming: 1, finished: 2 };
 
   const filtered = matches
     .filter(m => {

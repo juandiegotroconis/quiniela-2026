@@ -79,7 +79,7 @@ export default function MatchPickList({ matches, picks, pickLabelKey = 'PROFILE_
                     )}
                     {isLive && (
                       <Badge variant="error">
-                        <span className="badge__live-dot">●</span> {t('MATCH_CARD_STATUS_LIVE')}{m.isHalftime ? ` ${t('MATCH_CARD_STATUS_HT')}` : getLiveMinute(m) ? ` ${getLiveMinute(m)}` : ''}
+                        {t('MATCH_CARD_STATUS_LIVE')}{m.isHalftime ? ` ${t('MATCH_CARD_STATUS_HT')}` : getLiveMinute(m) ? ` ${getLiveMinute(m)}` : ''}
                       </Badge>
                     )}
                   </div>

@@ -3,16 +3,18 @@ import { NavLink } from "react-router";
 import Avatar from "./Avatar";
 import { useAuth } from "~/lib/auth-context";
 import { useTranslation } from "~/hooks/useTranslation";
+import { useLogo } from "~/hooks/useLogo";
 export default function TopNav() {
   const { user } = useAuth();
   const { t } = useTranslation();
+  const logoSrc = useLogo();
   const displayName = user?.name ?? t('PROFILE_YOU');
 
   return (
     <header className='top-nav'>
       <NavLink to='/rankings' className='top-nav__logo'>
         <img
-          src='/logo-black.svg'
+          src={logoSrc}
           alt={t('APP_LOGO_NAV_ALT')}
           className='top-nav__logo-icon'
         />

@@ -9,6 +9,7 @@ import Badge from "./Badge";
 import PredictionGroupCard from "./PredictionGroupCard";
 import PredictionGroupCardSkeleton from "./PredictionGroupCardSkeleton";
 import WhatIfLeaderboard from "./WhatIfLeaderboard";
+import MatchEventTimeline from "./MatchEventTimeline";
 import {
   groupPredictions,
   getPickResult,
@@ -18,15 +19,15 @@ import {
   formatMatchTime,
   formatMatchDateTime,
   getStageLabelKey,
+  getLiveMinute,
 } from "~/lib/helpers";
 import type { Match } from "~/lib/types";
 import { TEAM_FULL } from "~/lib/mock-data";
 import type { UserPickEntry } from "~/lib/auth-context";
 import { useAuth } from "~/lib/auth-context";
 import { useData } from "~/lib/data-context";
-import { fetchMatchPredictions } from "~/lib/queries";
-import { useLiveClock } from "~/lib/use-match-clock";
-import type { MatchPrediction } from "~/lib/types";
+import { fetchMatchPredictions, fetchMatchEvents } from "~/lib/queries";
+import type { MatchPrediction, MatchEvent } from "~/lib/types";
 
 interface Props {
   match: Match;
@@ -36,14 +37,17 @@ interface Props {
 
 function MatchStatusBadge({ match }: { match: Match }) {
   const { t, language } = useTranslation();
-  const liveClock = useLiveClock(match);
+  const liveMinute = getLiveMinute(match);
   if (match.status === "live") {
     return (
-      <Badge variant='error'>
-        <span className='badge__live-dot'>●</span> {t("MATCH_STATUS_LIVE")}{" "}
+      <Badge
+        variant='error'
+        className={!match.isHalftime && liveMinute ? "badge--live-pulse" : undefined}
+      >
+        {t("MATCH_STATUS_LIVE")}{" "}
         {match.isHalftime
           ? t("MATCH_STATUS_HT")
-          : liveClock ?? formatMatchTime(match.utcDate, language)}
+          : liveMinute ?? formatMatchTime(match.utcDate, language)}
       </Badge>
     );
   }
@@ -66,6 +70,7 @@ export default function MatchDetail({ match: matchProp, onBack, userPick }: Prop
   const membersRef = useRef(members);
   const [preds, setPreds] = useState<MatchPrediction[]>([]);
   const [predsLoading, setPredsLoading] = useState(true);
+  const [events, setEvents] = useState<MatchEvent[]>([]);
   const [showRules, setShowRules] = useState(false);
   const [scoreFlash, setScoreFlash] = useState(false);
   const prevScoreRef = useRef(`${match.scoreA}:${match.scoreB}`);
@@ -114,6 +119,33 @@ export default function MatchDetail({ match: matchProp, onBack, userPick }: Prop
       cancelled = true;
     };
   }, [match.id, quinielaId]); // members intentionally excluded — membersRef stays current
+
+  // Fetch the event feed for live/finished matches; refetch whenever the live
+  // score/minute/status changes (realtime pushes those via DataProvider), so a
+  // new goal/card/sub appears without leaving the screen.
+  useEffect(() => {
+    if (match.status !== "live" && match.status !== "finished") {
+      setEvents([]);
+      return;
+    }
+    let cancelled = false;
+    fetchMatchEvents(match.id)
+      .then((data) => {
+        if (!cancelled) setEvents(data);
+      })
+      .catch(console.error);
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    match.id,
+    match.status,
+    match.scoreA,
+    match.scoreB,
+    match.scoreAEt,
+    match.scoreBEt,
+    match.minute,
+  ]);
 
   const groups = groupPredictions(preds, match, user?.id ?? null);
   const stageLabelKey = getStageLabelKey(match.stage);
@@ -217,6 +249,8 @@ export default function MatchDetail({ match: matchProp, onBack, userPick }: Prop
           </Link>
         )}
       </div>
+
+      <MatchEventTimeline match={match} events={events} />
 
       {hasPick && (
         <div className='match-detail__my-pick'>

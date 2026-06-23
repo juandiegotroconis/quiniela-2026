@@ -15,7 +15,10 @@ import {
   submitAllPredictions,
   savePredictions as querySavePredictions,
   fetchUserMembershipInfo,
+  fetchUserQuinielas,
+  setActiveQuiniela as querySetActiveQuiniela,
   updateAvatarColor as queryUpdateAvatarColor,
+  type UserQuiniela,
 } from "./queries";
 import { AVATAR_COLORS, type TopScorerSuggestion } from "./mock-data";
 
@@ -52,6 +55,8 @@ interface AuthContextValue {
   forgotPassword: (email: string) => Promise<string | null>;
   resetPassword: (newPassword: string) => Promise<string | null>;
   joinWithCode: (code: string) => Promise<string | null>;
+  listUserQuinielas: () => Promise<UserQuiniela[]>;
+  switchQuiniela: (quinielaId: string) => Promise<string | null>;
   signInWithPasskey: () => Promise<string | null>;
   registerPasskey: () => Promise<string | null>;
   listPasskeys: () => Promise<PasskeyListItem[]>;
@@ -110,7 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             .update({ avatar_color: metaColor })
             .eq("id", userId);
         }
-        const membership = await fetchUserMembershipInfo(userId);
+        const membership = await fetchUserMembershipInfo();
         if (!mounted) return;
         if (!membership) {
           setNeedsQuiniela(true);
@@ -290,6 +295,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const listUserQuinielas = async (): Promise<UserQuiniela[]> => {
+    return fetchUserQuinielas();
+  };
+
+  const switchQuiniela = async (
+    newQuinielaId: string,
+  ): Promise<string | null> => {
+    if (!user) return "Not authenticated";
+    try {
+      const membership = await querySetActiveQuiniela(newQuinielaId);
+      const [sub, picks, scorer] = await Promise.all([
+        checkSubmitted(user.id, membership.quinielaId),
+        fetchUserPicks(user.id, membership.quinielaId),
+        fetchUserTopScorer(user.id, membership.quinielaId),
+      ]);
+      setQuinielId(membership.quinielaId);
+      setSubmitted(sub);
+      setUserPicks(picks);
+      setTopScorer(scorer);
+      setIsUpdatable(membership.isUpdatable);
+      setQuinielaVariant(membership.variant);
+      setUser((prev) =>
+        prev ? { ...prev, avatarColor: membership.avatarColor } : prev,
+      );
+      return null;
+    } catch (e: unknown) {
+      return e instanceof Error ? e.message : "Failed to switch quiniela";
+    }
+  };
+
   const savePredictions = async (
     picks: Record<number, UserPickEntry>,
     scorer: TopScorerSuggestion | null,
@@ -351,6 +386,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         forgotPassword,
         resetPassword,
         joinWithCode,
+        listUserQuinielas,
+        switchQuiniela,
         signInWithPasskey,
         registerPasskey,
         listPasskeys,

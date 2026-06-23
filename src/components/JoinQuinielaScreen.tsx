@@ -8,6 +8,7 @@ import {
 import { useAuth } from "~/lib/auth-context";
 import { useNavigate } from "react-router";
 import { useTranslation } from "~/hooks/useTranslation";
+import { useLogo } from "~/hooks/useLogo";
 
 const CODE_LENGTH = 6;
 
@@ -15,6 +16,7 @@ export default function JoinQuinielaScreen() {
   const { joinWithCode, logout } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const logoSrc = useLogo();
   const [digits, setDigits] = useState<string[]>(Array(CODE_LENGTH).fill(""));
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -74,7 +76,7 @@ export default function JoinQuinielaScreen() {
       <div className='join-screen__inner'>
         <div className='join-screen__logo'>
           <img
-            src='/logo-black.svg'
+            src={logoSrc}
             alt={t('APP_LOGO_ALT')}
             className='join-screen__logo-img'
           />

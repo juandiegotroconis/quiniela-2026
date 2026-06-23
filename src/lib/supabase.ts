@@ -153,6 +153,66 @@ export type Database = {
           },
         ]
       }
+      match_events: {
+        Row: {
+          away_goals: number | null
+          fifa_event_id: string
+          home_goals: number | null
+          id: number
+          match_id: number
+          minute: string | null
+          period: number | null
+          player_name: string | null
+          secondary_name: string | null
+          sort_order: number
+          team_code: string | null
+          type: string
+        }
+        Insert: {
+          away_goals?: number | null
+          fifa_event_id: string
+          home_goals?: number | null
+          id?: never
+          match_id: number
+          minute?: string | null
+          period?: number | null
+          player_name?: string | null
+          secondary_name?: string | null
+          sort_order?: number
+          team_code?: string | null
+          type: string
+        }
+        Update: {
+          away_goals?: number | null
+          fifa_event_id?: string
+          home_goals?: number | null
+          id?: never
+          match_id?: number
+          minute?: string | null
+          period?: number | null
+          player_name?: string | null
+          secondary_name?: string | null
+          sort_order?: number
+          team_code?: string | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_events_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_events_team_code_fkey"
+            columns: ["team_code"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
       matches: {
         Row: {
           away_team_code: string | null
@@ -370,24 +430,35 @@ export type Database = {
       }
       profiles: {
         Row: {
+          active_quiniela_id: string | null
           avatar_color: string
           created_at: string | null
           display_name: string
           id: string
         }
         Insert: {
+          active_quiniela_id?: string | null
           avatar_color?: string
           created_at?: string | null
           display_name: string
           id: string
         }
         Update: {
+          active_quiniela_id?: string | null
           avatar_color?: string
           created_at?: string | null
           display_name?: string
           id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_active_quiniela_id_fkey"
+            columns: ["active_quiniela_id"]
+            isOneToOne: false
+            referencedRelation: "quinielas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       quiniela_members: {
         Row: {
@@ -649,6 +720,15 @@ export type Database = {
           worst_streak: number
         }[]
       }
+      get_active_membership: {
+        Args: never
+        Returns: {
+          avatar_color: string
+          is_updatable: boolean
+          quiniela_id: string
+          variant: string
+        }[]
+      }
       get_my_quiniela_ids: { Args: never; Returns: string[] }
       immutable_unaccent: { Args: { "": string }; Returns: string }
       join_quiniela_by_code: {
@@ -706,6 +786,15 @@ export type Database = {
           name: string
           position: string
           team_code: string
+        }[]
+      }
+      set_active_quiniela: {
+        Args: { p_quiniela_id: string }
+        Returns: {
+          avatar_color: string
+          is_updatable: boolean
+          quiniela_id: string
+          variant: string
         }[]
       }
       setup_search: {

@@ -7,8 +7,8 @@ import {
   formatMatchDate,
   formatMatchTime,
   getStageLabelKey,
+  getLiveMinute,
 } from "~/lib/helpers";
-import { useLiveClock } from "~/lib/use-match-clock";
 import type { Match } from "~/lib/types";
 import type { UserPickEntry } from "~/lib/auth-context";
 import { TEAM_FULL } from "~/lib/mock-data";
@@ -31,8 +31,8 @@ function MatchDateLabel({ match }: { match: Match }) {
   const { t, language } = useTranslation();
   if (match.status === "live") {
     return (
-      <Badge variant='error'>
-        <span className='badge__live-dot'>●</span> {t("MATCH_CARD_STATUS_LIVE")}
+      <Badge variant='error' className='badge--live-pulse'>
+        {t("MATCH_CARD_STATUS_LIVE")}
       </Badge>
     );
   }
@@ -48,13 +48,17 @@ function MatchDateLabel({ match }: { match: Match }) {
 
 function MatchTimeLabel({ match }: { match: Match }) {
   const { t, language } = useTranslation();
-  const liveClock = useLiveClock(match);
+  const liveMinute = getLiveMinute(match);
   if (match.status === "live") {
-    return (
+    return !match.isHalftime && liveMinute ? (
+      <Badge variant='error' className='badge--live-pulse'>
+        {liveMinute}
+      </Badge>
+    ) : (
       <span className='match-card__time'>
         {match.isHalftime
           ? t("MATCH_CARD_STATUS_HT")
-          : liveClock ?? formatMatchTime(match.utcDate, language)}
+          : formatMatchTime(match.utcDate, language)}
       </span>
     );
   }

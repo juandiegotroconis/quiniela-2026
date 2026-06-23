@@ -5,6 +5,7 @@ import { Icon } from "@iconify/react";
 import { useAuth } from "~/lib/auth-context";
 import { useNavigate } from "react-router";
 import { useTranslation } from "~/hooks/useTranslation";
+import { useLogo } from "~/hooks/useLogo";
 
 export default function ResetPasswordScreen() {
   const [password, setPassword] = useState("");
@@ -16,6 +17,7 @@ export default function ResetPasswordScreen() {
   const { resetPassword, isPasswordRecovery } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const logoSrc = useLogo();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,7 +43,7 @@ export default function ResetPasswordScreen() {
         <div className='auth-screen__stripe' />
         <div className='auth-screen__content'>
         <div className='auth-screen__logo'>
-          <img src='/logo-black.svg' alt={t('APP_LOGO_ALT')} className='auth-screen__logo-img' />
+          <img src={logoSrc} alt={t('APP_LOGO_ALT')} className='auth-screen__logo-img' />
           <p className='auth-screen__tagline'>{t('TAGLINE')}</p>
         </div>
 

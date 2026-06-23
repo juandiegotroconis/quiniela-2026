@@ -15,6 +15,7 @@ import ProfileReadOnly from "./ProfileReadOnly";
 import { AVATAR_COLORS } from "~/lib/mock-data";
 import type { UserPickEntry } from "~/lib/auth-context";
 import type { TopScorerSuggestion } from "~/lib/mock-data";
+import type { UserQuiniela } from "~/lib/queries";
 
 const passkeysSupported =
   typeof window !== "undefined" && "PublicKeyCredential" in window;
@@ -22,6 +23,7 @@ const passkeysSupported =
 export default function ProfileScreen() {
   const {
     user,
+    quinielaId,
     isUpdatable,
     userPicks,
     topScorer,
@@ -32,6 +34,8 @@ export default function ProfileScreen() {
     registerPasskey,
     listPasskeys,
     deletePasskey,
+    listUserQuinielas,
+    switchQuiniela,
   } = useAuth();
   const { getMember } = useData();
   const navigate = useNavigate();
@@ -45,6 +49,27 @@ export default function ProfileScreen() {
   const [passkeys, setPasskeys] = useState<PasskeyListItem[]>([]);
   const [passkeyBusy, setPasskeyBusy] = useState(false);
   const [passkeyError, setPasskeyError] = useState("");
+  const [quinielas, setQuinielas] = useState<UserQuiniela[] | null>(null);
+  const [quinielaSwitching, setQuinielaSwitching] = useState(false);
+  const [quinielaError, setQuinielaError] = useState("");
+
+  useEffect(() => {
+    if (!settingsOpen || quinielas !== null) return;
+    listUserQuinielas()
+      .then(setQuinielas)
+      .catch((e: unknown) =>
+        setQuinielaError(e instanceof Error ? e.message : String(e)),
+      );
+  }, [settingsOpen, quinielas, listUserQuinielas]);
+
+  const handleSwitchQuiniela = async (id: string) => {
+    if (id === quinielaId) return;
+    setQuinielaError("");
+    setQuinielaSwitching(true);
+    const err = await switchQuiniela(id);
+    setQuinielaSwitching(false);
+    if (err) setQuinielaError(err);
+  };
 
   const refreshPasskeys = useCallback(async () => {
     try {
@@ -252,6 +277,32 @@ export default function ProfileScreen() {
                   ))}
                 </div>
               </div>
+
+              {quinielas && quinielas.length > 1 && (
+                <div className='profile-hdr__quiniela-picker'>
+                  <span className='profile-hdr__color-label'>
+                    {t("PROFILE_QUINIELA_LABEL")}
+                  </span>
+                  <div className='profile-hdr__quiniela-options'>
+                    {quinielas.map((q) => (
+                      <button
+                        key={q.id}
+                        className={`profile-hdr__quiniela-opt${quinielaId === q.id ? " profile-hdr__quiniela-opt--active" : ""}`}
+                        onClick={() => handleSwitchQuiniela(q.id)}
+                        disabled={quinielaSwitching}
+                        aria-pressed={quinielaId === q.id}
+                      >
+                        {q.name}
+                      </button>
+                    ))}
+                  </div>
+                  {quinielaError && (
+                    <div className='profile-hdr__passkey-error'>
+                      {quinielaError}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {passkeysSupported && (
                 <div className='profile-hdr__passkeys'>

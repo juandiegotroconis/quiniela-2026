@@ -35,6 +35,12 @@
   color: var(--fg-tertiary);
 }
 
-.badge__live-dot {
-  animation: livePulse 1.5s infinite;
+.badge--live-pulse {
+  animation: liveChipPulse 2.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .badge--live-pulse {
+    animation: none;
+  }
 }

@@ -3,6 +3,8 @@ import type { Database, Tables } from "./supabase";
 import type {
   Match,
   MatchCorrection,
+  MatchEvent,
+  MatchEventType,
   MatchStatus,
   Member,
   TopScorer,
@@ -82,6 +84,37 @@ export async function fetchRecentMatchCorrections(): Promise<
     newScoreB: row.new_score_away,
     correctedAt: row.corrected_at,
   }));
+}
+
+export function rowToMatchEvent(row: Tables<"match_events">): MatchEvent {
+  return {
+    id: row.id,
+    matchId: row.match_id,
+    type: row.type as MatchEventType,
+    teamCode: row.team_code,
+    playerName: row.player_name,
+    secondaryName: row.secondary_name,
+    minute: row.minute,
+    period: row.period,
+    homeGoals: row.home_goals,
+    awayGoals: row.away_goals,
+    sortOrder: row.sort_order,
+  };
+}
+
+// Goal/card/substitution feed for a match, oldest-first (see match_events,
+// populated by the sync-live-matches Edge Function from FIFA's timeline API).
+export async function fetchMatchEvents(matchId: number): Promise<MatchEvent[]> {
+  const client = getClient();
+  const { data, error } = await client
+    .from("match_events")
+    .select(
+      "id, match_id, fifa_event_id, type, team_code, player_name, secondary_name, minute, period, home_goals, away_goals, sort_order",
+    )
+    .eq("match_id", matchId)
+    .order("sort_order", { ascending: true });
+  if (error) throw error;
+  return (data ?? []).map(rowToMatchEvent);
 }
 
 export async function fetchQuinielaName(
@@ -271,22 +304,47 @@ export interface MembershipInfo {
   variant: string | null;
 }
 
-export async function fetchUserMembershipInfo(
-  userId: string,
-): Promise<MembershipInfo | null> {
-  const { data } = await getClient()
-    .from("quiniela_members")
-    .select("quiniela_id, avatar_color, quinielas(is_updatable, variant)")
-    .eq("user_id", userId)
-    .limit(1)
-    .maybeSingle();
-  if (!data) return null;
-  const row = data;
+export async function fetchUserMembershipInfo(): Promise<MembershipInfo | null> {
+  const { data, error } = await getClient().rpc("get_active_membership");
+  if (error) throw error;
+  const row = data?.[0];
+  if (!row) return null;
   return {
-    quinielaId: row.quiniela_id ?? "",
-    avatarColor: row.avatar_color ?? null,
-    isUpdatable: row.quinielas?.is_updatable ?? true,
-    variant: row.quinielas?.variant ?? null,
+    quinielaId: row.quiniela_id,
+    avatarColor: row.avatar_color,
+    isUpdatable: row.is_updatable,
+    variant: row.variant,
+  };
+}
+
+export interface UserQuiniela {
+  id: string;
+  name: string;
+}
+
+export async function fetchUserQuinielas(): Promise<UserQuiniela[]> {
+  const { data, error } = await getClient()
+    .from("quinielas")
+    .select("id, name")
+    .order("name");
+  if (error) throw error;
+  return (data ?? []).map((row) => ({ id: row.id, name: row.name }));
+}
+
+export async function setActiveQuiniela(
+  quinielaId: string,
+): Promise<MembershipInfo> {
+  const { data, error } = await getClient().rpc("set_active_quiniela", {
+    p_quiniela_id: quinielaId,
+  });
+  if (error) throw error;
+  const row = data?.[0];
+  if (!row) throw new Error("Failed to switch quiniela");
+  return {
+    quinielaId: row.quiniela_id,
+    avatarColor: row.avatar_color,
+    isUpdatable: row.is_updatable,
+    variant: row.variant,
   };
 }
 

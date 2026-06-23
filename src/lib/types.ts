@@ -68,6 +68,29 @@ export interface TopScorerPick {
   playerTeam: string;
 }
 
+export type MatchEventType =
+  | 'goal'
+  | 'own_goal'
+  | 'yellow'
+  | 'red'
+  | 'substitution';
+
+export interface MatchEvent {
+  id: number;
+  matchId: number;
+  type: MatchEventType;
+  teamCode: string | null;
+  // Scorer / booked player / player coming on (sub).
+  playerName: string | null;
+  // Assist (goal) or player going off (sub).
+  secondaryName: string | null;
+  minute: string | null;
+  period: number | null;
+  homeGoals: number | null;
+  awayGoals: number | null;
+  sortOrder: number;
+}
+
 export interface MatchCorrection {
   id: number;
   matchId: number;

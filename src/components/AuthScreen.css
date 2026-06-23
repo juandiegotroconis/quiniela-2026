@@ -74,38 +74,6 @@
   text-transform: uppercase;
 }
 
-/* ── Mode toggle ── */
-.auth-screen__toggle {
-  display: flex;
-  background: rgba(0, 0, 0, 0.05);
-  border-radius: 11px;
-  padding: 3px;
-  gap: 2px;
-  margin-bottom: 24px;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-.auth-screen__toggle-btn {
-  flex: 1;
-  padding: 11px 8px;
-  border-radius: 9px;
-  background: transparent;
-  color: var(--fg-tertiary);
-  border: none;
-  font-family: var(--font-display);
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: all 220ms cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.auth-screen__toggle-btn--active {
-  background: var(--color-brand);
-  color: #fff;
-}
-
 /* ── Form ── */
 .auth-screen__form {
   display: flex;
@@ -231,25 +199,55 @@
   gap: 8px;
   padding: 14px;
   border-radius: 10px;
-  border: 1px solid var(--border-default);
-  background: transparent;
-  color: var(--fg-primary);
+  border: 1px solid var(--color-brand-25);
+  background: var(--color-brand-bg);
+  color: var(--color-brand);
   font-family: var(--font-body);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   width: 100%;
-  margin-top: 10px;
-  transition: border-color 150ms, opacity 200ms;
+  transition: border-color 150ms, background 150ms, opacity 200ms;
 }
 
 .auth-screen__passkey-btn:hover:not(:disabled) {
-  border-color: var(--fg-secondary);
+  border-color: var(--color-brand);
+  background: var(--color-brand-15);
 }
 
 .auth-screen__passkey-btn:disabled {
   opacity: 0.45;
   cursor: not-allowed;
+}
+
+.auth-screen__passkey-icon {
+  color: var(--color-brand);
+}
+
+/* ── Divider ── */
+.auth-screen__divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 18px 0;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--fg-tertiary);
+}
+
+.auth-screen__divider::before,
+.auth-screen__divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border-default);
+}
+
+.auth-screen__divider span {
+  padding: 0 12px;
 }
 
 /* ── Footer ── */
@@ -364,11 +362,6 @@
     0 24px 72px rgba(0, 0, 0, 0.45),
     0 2px 0 rgba(255, 255, 255, 0.06) inset,
     0 -1px 0 rgba(0, 0, 0, 0.2) inset;
-}
-
-:root[data-theme="dark"] .auth-screen__toggle {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 :root[data-theme="dark"] .auth-screen__input {

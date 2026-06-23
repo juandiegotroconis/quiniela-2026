@@ -85,7 +85,11 @@
       "Bash(grep -ril \"passkey\" b/)",
       "Bash(xargs grep -l \"passkey\" -i)",
       "Bash(cat src/components/PageContainer.tsx)",
-      "Bash(cat src/components/PageContainer.css)"
+      "Bash(cat src/components/PageContainer.css)",
+      "Bash(xargs grep -l \"signInWithPasskey\")",
+      "Bash(xargs grep -ln \"signInWithPasskey\\\\|PasskeyAuthCredentials\\\\|mediation\")",
+      "Bash(npx pnpm *)",
+      "Bash(deno check *)"
     ],
     "additionalDirectories": [
       "c:\\Users\\juant\\Documents\\Projects\\quiniela-2026\\src\\routes",

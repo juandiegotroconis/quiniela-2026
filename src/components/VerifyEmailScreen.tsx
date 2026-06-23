@@ -2,11 +2,13 @@ import "./VerifyEmailScreen.css";
 import { useLocation, useNavigate } from "react-router";
 import { Icon } from "@iconify/react";
 import { useTranslation } from "~/hooks/useTranslation";
+import { useLogo } from "~/hooks/useLogo";
 
 export default function VerifyEmailScreen() {
   const { state } = useLocation();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const logoSrc = useLogo();
   const email = (state as { email?: string } | null)?.email;
 
   return (
@@ -14,7 +16,7 @@ export default function VerifyEmailScreen() {
       <div className="verify-email__inner">
         <div className="verify-email__logo">
           <img
-            src="/logo-black.svg"
+            src={logoSrc}
             alt={t('APP_LOGO_ALT')}
             className="verify-email__logo-img"
           />
