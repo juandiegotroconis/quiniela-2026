@@ -108,6 +108,32 @@ a.match-detail__team:hover {
   align-items: center;
   gap: 10px;
   flex: none;
+  border-radius: var(--radius-md, 8px);
+}
+
+.match-detail__scoreline--flash {
+  animation: match-detail-score-flash 1.2s ease-out;
+}
+
+@keyframes match-detail-score-flash {
+  0% {
+    color: var(--color-green);
+    transform: scale(1.18);
+  }
+  30% {
+    color: var(--color-green);
+    transform: scale(1.18);
+  }
+  100% {
+    color: inherit;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .match-detail__scoreline--flash {
+    animation: none;
+  }
 }
 
 .match-detail__scoreline-sep {

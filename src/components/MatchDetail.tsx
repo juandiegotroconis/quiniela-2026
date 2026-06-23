@@ -26,6 +26,7 @@ import type { UserPickEntry } from "~/lib/auth-context";
 import { useAuth } from "~/lib/auth-context";
 import { useData } from "~/lib/data-context";
 import { fetchMatchPredictions } from "~/lib/queries";
+import { useLiveMatch } from "~/lib/use-live-match";
 import type { MatchPrediction } from "~/lib/types";
 
 interface Props {
@@ -53,7 +54,8 @@ function MatchStatusBadge({ match }: { match: Match }) {
   );
 }
 
-export default function MatchDetail({ match, onBack, userPick }: Props) {
+export default function MatchDetail({ match: matchProp, onBack, userPick }: Props) {
+  const match = useLiveMatch(matchProp);
   const { user, quinielaId } = useAuth();
   const { members } = useData();
   const { t } = useTranslation();
@@ -61,10 +63,22 @@ export default function MatchDetail({ match, onBack, userPick }: Props) {
   const [preds, setPreds] = useState<MatchPrediction[]>([]);
   const [predsLoading, setPredsLoading] = useState(true);
   const [showRules, setShowRules] = useState(false);
+  const [scoreFlash, setScoreFlash] = useState(false);
+  const prevScoreRef = useRef(`${match.scoreA}:${match.scoreB}`);
 
   useEffect(() => {
     membersRef.current = members;
   }, [members]);
+
+  // Brief highlight when the live score changes.
+  useEffect(() => {
+    const key = `${match.scoreA}:${match.scoreB}`;
+    if (prevScoreRef.current === key) return;
+    prevScoreRef.current = key;
+    setScoreFlash(true);
+    const timer = setTimeout(() => setScoreFlash(false), 1200);
+    return () => clearTimeout(timer);
+  }, [match.scoreA, match.scoreB]);
 
   useEffect(() => {
     if (!quinielaId) return;
@@ -162,7 +176,11 @@ export default function MatchDetail({ match, onBack, userPick }: Props) {
               <span className='match-detail__team-code'>{t("TEAM_TBD")}</span>
             </div>
           )}
-          <div className='match-detail__scoreline'>
+          <div
+            className={`match-detail__scoreline${
+              scoreFlash ? " match-detail__scoreline--flash" : ""
+            }`}
+          >
             <span>{match.scoreA !== null ? match.scoreA : "–"}</span>
             <span className='match-detail__scoreline-sep'>:</span>
             <span>{match.scoreB !== null ? match.scoreB : "–"}</span>
