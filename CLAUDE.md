@@ -84,6 +84,7 @@ No test suite is configured yet.
 - **`leaderboard_snapshots`**: `user_id`, `quiniela_id`, `match_id`, `cumulative_pts`, `rank_at_moment`, `created_at`. `rank_at_moment` drives the `Sparkline` rank-history chart (read via `fetchMemberHistory`/`fetchSingleMemberHistory`, ordered by `created_at`).
 - **`players`**: `id`, `fd_id` (football-data.org player ID, unique), `name`, `team_code`, `position`, `shirt_number`. Seeded via `scripts/seed-players.ts`. RLS: public read.
 - **`teams`**: `code`, `name`, `color`, `fd_id`, `group_id`, `iso2`.
+- **`top_scorers`**: `fifa_person_id` (PK), `rank`, `name` (eng), `name_es` (spa), `team_code` (app code; FIFA `URU` aliased to `URY`), `goals`, `assists`, `minutes_played`, `image_url`, `updated_at`. The Golden Boot board, refreshed by the `sync-top-scorers` Edge Function from FIFA's gameday API (see "Top scorers (Golden Boot) sync"). RLS: public read; service-role-only writes.
 
 `refresh_quiniela_leaderboard(quiniela_id, match_id?)` (Postgres function) recomputes `quiniela_members` stats and rank via `ROW_NUMBER()` (tiebreak: `total_pts` → `exact_count` → `correct_count` → `joined_at`, so ranks are always unique, no ties), and inserts a `leaderboard_snapshots` row when `match_id` is given.
 
@@ -106,6 +107,8 @@ SQL files live in `supabase/migrations/`. Apply them in the Supabase SQL editor 
 12. `20260612_add_fifa_match_id_knockout.sql` — populates `fifa_match_id` for the 32 knockout matches (joined on exact `utc_date`; FIFA's calendar has null team placeholders for these, but the 32 kickoff times are a unique bijection).
 13. `20260617_cron_every_minute.sql` — (already applied via CLI) reschedules both `sync-live-matches-*` cron jobs from `*/2` to `* 16-23 * * *` / `* 0-6 * * *` (every minute), reconciling the migration history with a schedule change that had been made directly against the live DB.
 14. `20260617_finished_match_correction_trigger.sql` — (already applied via CLI) widens `on_match_finished()` to also call `refresh_quiniela_leaderboard` when a `FINISHED` match's score/winner/duration changes (not just on the transition into `FINISHED`) — needed because `sync-live-matches` now corrects a `FINISHED` match's score within a grace window (see Live score sync below) without changing `status`, which the original trigger condition ignored.
+15. `20260622_top_scorers.sql` — (applied via CLI) creates the `top_scorers` table (Golden Boot board) + public-read RLS (service-role writes only). See "Top scorers (Golden Boot) sync".
+16. `20260622_sync_top_scorers_cron.sql` — (applied via CLI) registers two pg_cron jobs (`sync-top-scorers-evening` / `-overnight`, `*/30 16-23 * * *` & `*/30 0-6 * * *`) POSTing to the `sync-top-scorers` Edge Function; reuses the existing `project_url`/`anon_key` Vault secrets.
 
 To regenerate `players_seed.sql`: `pnpm tsx scripts/seed-players.ts` (requires `SUPABASE_SERVICE_ROLE_KEY` in `.env.local`; takes ~5 min due to API rate limits).
 
@@ -131,6 +134,14 @@ The `sync-live-matches` Edge Function (`supabase/functions/sync-live-matches/ind
 5. Leaderboard refresh is **not** called here — the `trg_match_finished` trigger on `matches` (`on_match_finished()`) calls `refresh_quiniela_leaderboard(quiniela_id, match_id)` whenever a match transitions to `FINISHED`, **or** its score/winner/duration changes while already `FINISHED` (the latter covers a safeguard-(d) correction landing inside the recheck window; see migration 14).
 
 The football-data API key lives in the `FOOTBALL_DATA_KEY` Edge Function secret (never in the repo or DB). The Vault holds only `project_url` and `anon_key` for the cron jobs' `net.http_post` call.
+
+## Top scorers (Golden Boot) sync
+
+The `sync-top-scorers` Edge Function (`supabase/functions/sync-top-scorers/index.ts`, `verify_jwt` on) refreshes the `top_scorers` table from **FIFA's gameday API** (`gameday-prod.fifa.mangodev.co.uk/1-0/stories`, the `gcp_top_scorer` story). This is the **only** source — the unauthenticated `api.fifa.com/api/v3` statistics routes used by `sync-live-matches` are deprecated/empty for stats (they return `null`). A **single** request returns the whole top-50 board: one story whose `actors[]` array holds 50 players, each tagged with rank (`number`), `stats:goals`, `stats:assists`, minutes, `team:abbreviation`, `staff:image`, and `_externalSportsPersonId`. Only the **anchored** `:page:1` query form works — the `:page:(.*)` wildcard is rejected (403/429); `page:1` already contains the full board. The function aliases FIFA's `URU` → app `URY` (mirroring migration 11) and prunes anyone who drops off the board. Two pg_cron jobs (migration 16) run it **every 30 min, 16:00–06:58 UTC**; it early-exits (no FIFA call) unless a match is live or finished within the last 35 min (just over the cron interval, so a just-finished match is still caught on the next tick), so off-window/idle ticks are free.
+
+**Auth**: gameday requires an **anonymous Bearer token** (403 without it) that expires every ~22h. The function mints a fresh one each run via an **unauthenticated GET** to `https://cxm-api.fifa.com/fifaplusweb/api/external/gameDay/token` (no cookie/key — just the browser-like `FIFA_HEADERS`), which returns `{"token":"eyJ…"}` — exactly what fifa.com's stats widget does on load. **No manual token maintenance.** (The mint endpoint was found via a HAR capture of the stats page; it lives in a lazy JS chunk so it isn't visible in the main bundles.)
+
+Read side: `fetchTopScorers()` (public read) + `fetchTopScorerPicks(quinielaId)` in `queries.ts`; the **"Top Scorers" tab** in `LeaderboardScreen` (alongside Standings/Streaks) renders `TopScorersTab`, which matches each ranked scorer to the members who picked them via **accent-insensitive name (NFD-normalized) + team code** — predictions store `player_name`/`player_team`, FIFA gives `name.eng`/`team:abbreviation`. Players a member picked who aren't in the top 50 simply don't appear.
 
 ## External data
 

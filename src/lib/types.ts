@@ -47,6 +47,24 @@ export interface MatchPrediction {
   pickPenaltiesWinner: string | null;
 }
 
+export interface TopScorer {
+  fifaPersonId: string;
+  rank: number;
+  name: string;
+  nameEs: string | null;
+  teamCode: string;
+  goals: number;
+  assists: number;
+  minutesPlayed: number | null;
+  imageUrl: string | null;
+}
+
+export interface TopScorerPick {
+  userId: string;
+  playerName: string;
+  playerTeam: string;
+}
+
 export interface MatchCorrection {
   id: number;
   matchId: number;

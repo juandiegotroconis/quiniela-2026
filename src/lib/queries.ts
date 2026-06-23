@@ -1,6 +1,13 @@
 import { getClient } from "./client";
 import type { Database, Tables } from "./supabase";
-import type { Match, MatchCorrection, MatchStatus, Member } from "./types";
+import type {
+  Match,
+  MatchCorrection,
+  MatchStatus,
+  Member,
+  TopScorer,
+  TopScorerPick,
+} from "./types";
 import type { UserPickEntry } from "./auth-context";
 import type { TopScorerSuggestion } from "./mock-data";
 
@@ -12,7 +19,7 @@ function dbStatusToUi(s: string): MatchStatus {
   return "upcoming";
 }
 
-function rowToMatch(row: Tables<"matches">): Match {
+export function rowToMatch(row: Tables<"matches">): Match {
   return {
     id: row.id,
     group: row.group_name ?? "",
@@ -183,6 +190,44 @@ export async function fetchUserTopScorer(
     .maybeSingle();
   if (!data) return null;
   return { name: data.player_name, team: data.player_team ?? "" };
+}
+
+export async function fetchTopScorers(): Promise<TopScorer[]> {
+  const client = getClient();
+  const { data, error } = await client
+    .from("top_scorers")
+    .select(
+      "fifa_person_id, rank, name, name_es, team_code, goals, assists, minutes_played, image_url",
+    )
+    .order("rank", { ascending: true });
+  if (error) throw error;
+  return (data ?? []).map((row) => ({
+    fifaPersonId: row.fifa_person_id,
+    rank: row.rank,
+    name: row.name,
+    nameEs: row.name_es,
+    teamCode: row.team_code,
+    goals: row.goals,
+    assists: row.assists,
+    minutesPlayed: row.minutes_played,
+    imageUrl: row.image_url,
+  }));
+}
+
+export async function fetchTopScorerPicks(
+  quinielaId: string,
+): Promise<TopScorerPick[]> {
+  const client = getClient();
+  const { data, error } = await client
+    .from("top_scorer_predictions")
+    .select("user_id, player_name, player_team")
+    .eq("quiniela_id", quinielaId);
+  if (error) throw error;
+  return (data ?? []).map((row) => ({
+    userId: row.user_id,
+    playerName: row.player_name,
+    playerTeam: row.player_team ?? "",
+  }));
 }
 
 export async function checkSubmitted(

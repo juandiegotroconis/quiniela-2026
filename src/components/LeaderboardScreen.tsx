@@ -9,12 +9,19 @@ import SectionHeader from "./SectionHeader";
 import PodiumCard from "./PodiumCard";
 import LeaderboardSkeleton from "./LeaderboardSkeleton";
 import StreakWidgets from "./StreakWidgets";
+import TopScorersTab from "./TopScorersTab";
 import Avatar from "./Avatar";
 import PositionChange from "./PositionChange";
 import Sparkline from "./Sparkline";
 import { useData } from "~/lib/data-context";
 import { useAuth } from "~/lib/auth-context";
-import { fetchMemberHistory, fetchQuinielaName } from "~/lib/queries";
+import {
+  fetchMemberHistory,
+  fetchQuinielaName,
+  fetchTopScorers,
+  fetchTopScorerPicks,
+} from "~/lib/queries";
+import type { TopScorer, TopScorerPick } from "~/lib/types";
 
 const RANK_COLORS = ["#FFD700", "#C0C0C0", "#CD7F32"];
 
@@ -24,12 +31,23 @@ export default function LeaderboardScreen() {
   const { t } = useTranslation();
   const [historyMap, setHistoryMap] = useState<Record<string, number[]>>({});
   const [quinielaName, setQuinielaName] = useState<string | null>(null);
-  const [tab, setTab] = useState<'standings' | 'streaks'>('standings');
+  const [tab, setTab] = useState<'standings' | 'streaks' | 'topscorers'>('standings');
+  const [topScorers, setTopScorers] = useState<TopScorer[]>([]);
+  const [topScorerPicks, setTopScorerPicks] = useState<TopScorerPick[]>([]);
+  const [topScorersLoading, setTopScorersLoading] = useState(true);
 
   useEffect(() => {
     if (!quinielaId) return;
     fetchMemberHistory(quinielaId).then(setHistoryMap).catch(console.error);
     fetchQuinielaName(quinielaId).then(setQuinielaName).catch(console.error);
+    setTopScorersLoading(true);
+    Promise.all([fetchTopScorers(), fetchTopScorerPicks(quinielaId)])
+      .then(([scorers, picks]) => {
+        setTopScorers(scorers);
+        setTopScorerPicks(picks);
+      })
+      .catch(console.error)
+      .finally(() => setTopScorersLoading(false));
   }, [quinielaId]);
 
   const leagueName = quinielaName ?? t('RANKINGS_FRIENDS_LEAGUE');
@@ -128,9 +146,22 @@ export default function LeaderboardScreen() {
           >
             {t('RANKINGS_TAB_STREAKS')}
           </button>
+          <button
+            className={`leaderboard__tab${tab === 'topscorers' ? ' leaderboard__tab--active' : ''}`}
+            onClick={() => setTab('topscorers')}
+          >
+            {t('RANKINGS_TAB_TOP_SCORERS')}
+          </button>
         </div>
 
-        {tab === 'streaks' ? (
+        {tab === 'topscorers' ? (
+          <TopScorersTab
+            scorers={topScorers}
+            picks={topScorerPicks}
+            members={members}
+            loading={topScorersLoading}
+          />
+        ) : tab === 'streaks' ? (
           <StreakWidgets
             currentHot={currentHot}
             currentCold={currentCold}

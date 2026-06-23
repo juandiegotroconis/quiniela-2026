@@ -583,6 +583,45 @@ export type Database = {
           },
         ]
       }
+      top_scorers: {
+        Row: {
+          assists: number
+          fifa_person_id: string
+          goals: number
+          image_url: string | null
+          minutes_played: number | null
+          name: string
+          name_es: string | null
+          rank: number
+          team_code: string
+          updated_at: string
+        }
+        Insert: {
+          assists?: number
+          fifa_person_id: string
+          goals?: number
+          image_url?: string | null
+          minutes_played?: number | null
+          name: string
+          name_es?: string | null
+          rank: number
+          team_code: string
+          updated_at?: string
+        }
+        Update: {
+          assists?: number
+          fifa_person_id?: string
+          goals?: number
+          image_url?: string | null
+          minutes_played?: number | null
+          name?: string
+          name_es?: string | null
+          rank?: number
+          team_code?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

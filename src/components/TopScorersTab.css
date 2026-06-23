@@ -1,0 +1,104 @@
+.top-scorers {
+  background: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+.top-scorers__row {
+  display: grid;
+  grid-template-columns: 28px 28px 1fr auto 44px;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.top-scorers__row:last-child {
+  border-bottom: none;
+}
+
+.top-scorers__rank {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--fg-tertiary);
+  text-align: center;
+}
+
+.top-scorers__player {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.top-scorers__name {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.top-scorers__team {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fg-tertiary);
+  letter-spacing: 0.04em;
+}
+
+.top-scorers__pickers {
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+  padding-left: 8px;
+}
+
+.top-scorers__picker {
+  margin-right: -8px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--surface-2);
+  transition: transform 150ms var(--ease-default);
+}
+
+.top-scorers__picker:hover {
+  transform: translateY(-2px);
+  z-index: 1;
+}
+
+.top-scorers__no-pickers {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--fg-tertiary);
+  font-style: italic;
+}
+
+.top-scorers__goals {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-green);
+}
+
+.top-scorers__goals-label {
+  font-family: var(--font-body);
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--fg-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.top-scorers__empty {
+  padding: 2rem;
+  text-align: center;
+  color: var(--fg-secondary);
+  font-family: var(--font-body);
+}
