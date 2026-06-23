@@ -15,6 +15,9 @@ export interface Match {
   scoreBEt: number | null;
   winner: string | null;
   minute: string | null;
+  // True at half-time (DB status PAUSED): match is live but on a break, so the
+  // UI shows "Half time" instead of the lingering last in-play minute.
+  isHalftime: boolean;
   venue: string | null;
   venueCity: string | null;
   venueCountry: string | null;

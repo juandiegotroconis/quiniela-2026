@@ -113,3 +113,28 @@
   background: var(--color-brand);
   color: #fff;
 }
+
+.matches-screen__load-prev-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 16px;
+  border-radius: var(--radius-md);
+  border: 1px dashed var(--border-default);
+  background: transparent;
+  color: var(--fg-secondary);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 150ms var(--ease-default);
+}
+
+.matches-screen__load-prev-btn:hover {
+  background: var(--color-brand-08);
+  border-color: var(--color-brand);
+  color: var(--color-brand);
+}

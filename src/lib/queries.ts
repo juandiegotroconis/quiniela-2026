@@ -35,6 +35,7 @@ export function rowToMatch(row: Tables<"matches">): Match {
     scoreBEt: row.score_away_et,
     winner: row.winner,
     minute: row.minute,
+    isHalftime: row.status === "PAUSED",
     venue: row.venue,
     venueCity: row.venue_city,
     venueCountry: row.venue_country,

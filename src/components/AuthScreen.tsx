@@ -14,9 +14,24 @@ export default function AuthScreen() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [forgotSent, setForgotSent] = useState(false);
-  const { login, signup, forgotPassword } = useAuth();
+  const [passkeyLoading, setPasskeyLoading] = useState(false);
+  const { login, signup, forgotPassword, signInWithPasskey } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const passkeysSupported =
+    typeof window !== "undefined" && "PublicKeyCredential" in window;
+
+  const handlePasskeyLogin = async () => {
+    setError("");
+    setPasskeyLoading(true);
+    const err = await signInWithPasskey();
+    setPasskeyLoading(false);
+    if (err) {
+      setError(err);
+      return;
+    }
+    navigate("/rankings");
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -237,6 +252,20 @@ export default function AuthScreen() {
                       : t('AUTH_CREATE_ACCOUNT')}
                 </button>
               </form>
+
+              {mode === "login" && passkeysSupported && (
+                <button
+                  type='button'
+                  className='auth-screen__passkey-btn'
+                  onClick={handlePasskeyLogin}
+                  disabled={passkeyLoading}
+                >
+                  <Icon icon='mdi:fingerprint' width={18} height={18} />
+                  {passkeyLoading
+                    ? t('AUTH_PLEASE_WAIT')
+                    : t('AUTH_LOG_IN_WITH_PASSKEY')}
+                </button>
+              )}
 
               {mode === "login" && (
                 <div className='auth-screen__footer'>

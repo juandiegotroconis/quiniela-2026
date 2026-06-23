@@ -6,6 +6,7 @@ import {
   useRef,
   type ReactNode,
 } from "react";
+import type { PasskeyListItem } from "@supabase/supabase-js";
 import { getClient } from "./client";
 import {
   fetchUserPicks,
@@ -51,6 +52,10 @@ interface AuthContextValue {
   forgotPassword: (email: string) => Promise<string | null>;
   resetPassword: (newPassword: string) => Promise<string | null>;
   joinWithCode: (code: string) => Promise<string | null>;
+  signInWithPasskey: () => Promise<string | null>;
+  registerPasskey: () => Promise<string | null>;
+  listPasskeys: () => Promise<PasskeyListItem[]>;
+  deletePasskey: (passkeyId: string) => Promise<string | null>;
   savePredictions: (
     picks: Record<number, UserPickEntry>,
     scorer: TopScorerSuggestion | null,
@@ -237,6 +242,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return error ? error.message : null;
   };
 
+  const signInWithPasskey = async (): Promise<string | null> => {
+    const { error } = await getClient().auth.signInWithPasskey();
+    return error ? error.message : null;
+  };
+
+  const registerPasskey = async (): Promise<string | null> => {
+    const { error } = await getClient().auth.registerPasskey();
+    return error ? error.message : null;
+  };
+
+  const listPasskeys = async (): Promise<PasskeyListItem[]> => {
+    const { data, error } = await getClient().auth.passkey.list();
+    if (error) throw error;
+    return data;
+  };
+
+  const deletePasskey = async (passkeyId: string): Promise<string | null> => {
+    const { error } = await getClient().auth.passkey.delete({ passkeyId });
+    return error ? error.message : null;
+  };
+
   const joinWithCode = async (code: string): Promise<string | null> => {
     if (!user) return "Not authenticated";
     try {
@@ -325,6 +351,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         forgotPassword,
         resetPassword,
         joinWithCode,
+        signInWithPasskey,
+        registerPasskey,
+        listPasskeys,
+        deletePasskey,
         savePredictions,
         submitPredictions,
         updateAvatarColor,

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 import { getClient } from "./client";
 import { rowToMatch } from "./queries";
 import type { Match } from "./types";
@@ -20,35 +20,36 @@ function shouldSubscribe(match: Match): boolean {
 }
 
 /**
- * Subscribes to Supabase Realtime UPDATE events for a single match row while it
- * is live (or about to kick off) and returns the freshest `Match`. Falls back to
- * the seed `match` for finished / far-future matches without opening a channel.
+ * Opens a *single* shared Realtime channel for the whole `matches` table (no
+ * per-row filter) and routes every UPDATE through `onUpdate`. Mounted once at
+ * the app level (DataProvider), so every screen shares one connection and a
+ * live score stays consistent everywhere. The channel is only opened while at
+ * least one match is live or within the pre-kickoff window, and torn down when
+ * nothing is active — no idle connections on quiet days.
  */
-export function useLiveMatch(match: Match): Match {
-  const [liveMatch, setLiveMatch] = useState<Match>(match);
-
-  // Re-seed when the upstream match prop changes (e.g. DataProvider refetch or
-  // navigating to a different match id).
+export function useLiveMatches(
+  matches: Match[],
+  onUpdate: (match: Match) => void,
+): void {
+  const onUpdateRef = useRef(onUpdate);
   useEffect(() => {
-    setLiveMatch(match);
-  }, [match]);
+    onUpdateRef.current = onUpdate;
+  }, [onUpdate]);
+
+  // Only keep a channel open when something is actually live / about to start.
+  const active = matches.some(shouldSubscribe);
 
   useEffect(() => {
-    if (!shouldSubscribe(match)) return;
+    if (!active) return;
 
     const client = getClient();
     const channel = client
-      .channel(`match-${match.id}`)
+      .channel("matches-live")
       .on(
         "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "matches",
-          filter: `id=eq.${match.id}`,
-        },
+        { event: "UPDATE", schema: "public", table: "matches" },
         (payload) => {
-          setLiveMatch(rowToMatch(payload.new as Tables<"matches">));
+          onUpdateRef.current(rowToMatch(payload.new as Tables<"matches">));
         },
       )
       .subscribe();
@@ -56,9 +57,5 @@ export function useLiveMatch(match: Match): Match {
     return () => {
       client.removeChannel(channel);
     };
-    // Re-subscribe when the match id changes, or when status flips into a
-    // subscribe-worthy state (upcoming -> live) so a match opened early connects.
-  }, [match.id, match.status]);
-
-  return liveMatch;
+  }, [active]);
 }

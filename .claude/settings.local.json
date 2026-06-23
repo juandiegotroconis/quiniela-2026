@@ -69,11 +69,28 @@
       "Bash(find . -maxdepth 2 -iname \"*handoff*\")",
       "Bash(npx supabase *)",
       "Bash(find / -iname \"*chromium-cli*\" -not -path \"*/node_modules/*\" 2>/dev/null | head -50)",
-      "Read(//c//**)"
+      "Read(//c//**)",
+      "Bash(curl -s --compressed \"https://gameday-prod.fifa.mangodev.co.uk/1-0/stories?query=\\(and%20resourceStatus==\\\\`urn:gd:resourceStatus:active\\\\`%20_externalId~\\\\`urn:gd:story:classification:gcp_top_scorer:competitionId:285023:goals:rank_asc:page:\\(.*\\)\\\\$\\\\`\\)&skip=0&limit=30&sort=tags.name==urn:gd:tag:story:fifa:column_number:asc\" \\\\ *)",
+      "Bash(grep -oiE \"\\(access_token|bearer|anonymous|client_id|grant_type|token_endpoint\\)[\\\\\"'a-z0-9 _:=-]{0,40}\" pstats.html)",
+      "Bash(echo \"select tablename from pg_publication_tables where pubname='supabase_realtime' and schemaname='public' and tablename='matches';\" > /tmp/q.sql && npx supabase db query --linked -f /tmp/q.sql 2>&1 | grep -A3 rows)",
+      "Bash(git checkout *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "PowerShell(npx supabase db query --linked \"select id, fifa_match_id, status, utc_date, minute from matches where status in \\('IN_PLAY','PAUSED'\\) or \\(utc_date between now\\(\\) - interval '3 hours' and now\\(\\) + interval '30 minutes'\\) order by utc_date limit 10\" 2>&1)",
+      "Bash(cat > *)",
+      "Bash(npm view *)",
+      "Bash(mkdir a *)",
+      "Bash(tar xf *)",
+      "Bash(grep -ril \"passkey\" a/)",
+      "Bash(grep -ril \"passkey\" b/)",
+      "Bash(xargs grep -l \"passkey\" -i)",
+      "Bash(cat src/components/PageContainer.tsx)",
+      "Bash(cat src/components/PageContainer.css)"
     ],
     "additionalDirectories": [
       "c:\\Users\\juant\\Documents\\Projects\\quiniela-2026\\src\\routes",
-      "C:\\Users\\juant\\Documents\\Projects\\quiniela-2026\\.claude\\skills"
+      "C:\\Users\\juant\\Documents\\Projects\\quiniela-2026\\.claude\\skills",
+      "\\tmp"
     ]
   }
 }

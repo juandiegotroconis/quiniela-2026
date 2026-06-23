@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useRef, useCallback, type ReactNode } from 'react';
 import { fetchMatches, fetchMembersCore, fetchUserPicks } from './queries';
 import { useAuth } from './auth-context';
+import { useLiveMatches } from './use-live-match';
 import type { Match, Member } from './types';
 import type { UserPickEntry } from './auth-context';
 
@@ -12,6 +13,7 @@ interface DataContextValue {
   refreshMembers: () => Promise<void>;
   getMember: (userId: string) => Member | undefined;
   getPicksForUser: (userId: string, quinielaId: string) => Promise<Record<number, UserPickEntry>>;
+  updateMatch: (match: Match) => void;
 }
 
 const DataContext = createContext<DataContextValue | null>(null);
@@ -55,6 +57,24 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const getMember = (userId: string) => members.find(m => m.userId === userId);
 
+  // Merge a freshly-updated match (e.g. from a Realtime UPDATE) into the global
+  // list so navigating back to the schedule shows the latest score/minute.
+  const updateMatch = useCallback((updated: Match) => {
+    setMatches(prev => {
+      const idx = prev.findIndex(m => m.id === updated.id);
+      if (idx === -1) return prev;
+      const next = prev.slice();
+      next[idx] = updated;
+      return next;
+    });
+  }, []);
+
+  // One app-wide Realtime channel for live match updates, opened only while a
+  // match is live or near kickoff. Centralizing it here means a single channel
+  // per user across every screen (list, detail, anywhere), with no
+  // teardown/re-subscribe churn when navigating between them.
+  useLiveMatches(matches, updateMatch);
+
   const refreshMembers = async () => {
     if (quinielaId) await loadMembers(quinielaId);
   };
@@ -68,7 +88,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <DataContext.Provider value={{ matches, matchesLoading, members, membersLoading, refreshMembers, getMember, getPicksForUser }}>
+    <DataContext.Provider value={{ matches, matchesLoading, members, membersLoading, refreshMembers, getMember, getPicksForUser, updateMatch }}>
       {children}
     </DataContext.Provider>
   );

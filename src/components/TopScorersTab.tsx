@@ -1,6 +1,7 @@
 import './TopScorersTab.css';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
+import { Icon } from '@iconify/react';
 import { useTranslation } from '~/hooks/useTranslation';
 import { useAuth } from '~/lib/auth-context';
 import TeamFlag from './TeamFlag';
@@ -28,6 +29,7 @@ function normalizeName(s: string): string {
 export default function TopScorersTab({ scorers, picks, members, loading }: Props) {
   const { t, language } = useTranslation();
   const { user } = useAuth();
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   const memberById = useMemo(() => {
     const m: Record<string, Member> = {};
@@ -62,38 +64,74 @@ export default function TopScorersTab({ scorers, picks, members, loading }: Prop
         const displayName = language === 'es' && s.nameEs ? s.nameEs : s.name;
         const key = `${normalizeName(s.name)}|${s.teamCode.toLowerCase()}`;
         const pickers = pickersByKey[key] ?? [];
+        const isExpanded = expanded[s.fifaPersonId] ?? false;
         return (
-          <div key={s.fifaPersonId} className="top-scorers__row">
-            <span className="top-scorers__rank">{s.rank}</span>
-            <TeamFlag code={s.teamCode} size={28} />
-            <div className="top-scorers__player">
-              <span className="top-scorers__name">{displayName}</span>
-              <span className="top-scorers__team">{s.teamCode}</span>
-            </div>
+          <div key={s.fifaPersonId} className="top-scorers__item">
+            <div className="top-scorers__row">
+              <span className="top-scorers__rank">{s.rank}</span>
+              <TeamFlag code={s.teamCode} size={28} />
+              <div className="top-scorers__player">
+                <span className="top-scorers__name">{displayName}</span>
+                <span className="top-scorers__team">{s.teamCode}</span>
+              </div>
 
-            <div className="top-scorers__pickers">
               {pickers.length === 0 ? (
                 <span className="top-scorers__no-pickers">
                   {t('TOP_SCORERS_NO_PICKERS')}
                 </span>
               ) : (
-                pickers.map((m) => (
+                <button
+                  type="button"
+                  className="top-scorers__pickers"
+                  aria-expanded={isExpanded}
+                  onClick={() =>
+                    setExpanded((prev) => ({
+                      ...prev,
+                      [s.fifaPersonId]: !prev[s.fifaPersonId],
+                    }))
+                  }
+                >
+                  <span className="top-scorers__avatars">
+                    {pickers.slice(0, 4).map((m) => (
+                      <span key={m.userId} className="top-scorers__avatar">
+                        <Avatar name={m.displayName} color={m.avatarColor} size={24} />
+                      </span>
+                    ))}
+                  </span>
+                  <span className="top-scorers__pickers-count">
+                    {pickers.length}
+                    <Icon
+                      icon="mdi:chevron-down"
+                      className="top-scorers__chevron"
+                      width={16}
+                      height={16}
+                    />
+                  </span>
+                </button>
+              )}
+
+              <span className="top-scorers__goals">
+                {s.goals}
+                <span className="top-scorers__goals-label">{t('TOP_SCORERS_GOALS')}</span>
+              </span>
+            </div>
+
+            {isExpanded && pickers.length > 0 && (
+              <div className="top-scorers__pickers-list">
+                {pickers.map((m) => (
                   <Link
                     key={m.userId}
                     to={`/player/${m.userId}`}
-                    className="top-scorers__picker"
-                    title={m.userId === user?.id ? t('PROFILE_YOU') : m.displayName}
+                    className="top-scorers__picker-chip"
                   >
-                    <Avatar name={m.displayName} color={m.avatarColor} size={24} />
+                    <Avatar name={m.displayName} color={m.avatarColor} size={20} />
+                    <span className="top-scorers__picker-name">
+                      {m.userId === user?.id ? t('PROFILE_YOU') : m.displayName}
+                    </span>
                   </Link>
-                ))
-              )}
-            </div>
-
-            <span className="top-scorers__goals">
-              {s.goals}
-              <span className="top-scorers__goals-label">{t('TOP_SCORERS_GOALS')}</span>
-            </span>
+                ))}
+              </div>
+            )}
           </div>
         );
       })}

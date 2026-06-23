@@ -27,6 +27,10 @@ function localDateKey(utcDate: string): string {
 // Last day of the WC2026 tournament (the final) — upper bound for the date filter.
 const WC_FINAL_DATE = '2026-07-19';
 
+// How many of the most recently finished matches "Load previous matches"
+// reveals on the default tab — keeps it to recent results, not the full history.
+const RECENT_FINISHED_LIMIT = 6;
+
 export default function MatchesScreen() {
   const [tab, setTab] = useState('default');
   const [stage, setStage] = useState('group');
@@ -35,6 +39,7 @@ export default function MatchesScreen() {
   const [date, setDate] = useState('all');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [showRecentFinished, setShowRecentFinished] = useState(false);
   const navigate = useNavigate();
   const { matches, matchesLoading } = useData();
   const { t, language } = useTranslation();
@@ -125,12 +130,31 @@ export default function MatchesScreen() {
   // back at finished matches on a chosen day. "All" shows every status.
   const hidePastByDefault = tab === 'default' && date === 'all';
 
+  // Among matches hidden by hidePastByDefault, the most recent finished ones —
+  // shown when the user taps "Load previous matches" instead of unhiding all history.
+  const recentFinishedIds = useMemo(() => {
+    if (!hidePastByDefault) return new Set<number>();
+    const candidates = matches.filter(m => {
+      if (m.status !== 'finished') return false;
+      if (stage === 'group') {
+        if (m.stage !== 'GROUP_STAGE') return false;
+        if (group !== 'all' && m.group !== group) return false;
+      } else {
+        if (m.stage === 'GROUP_STAGE') return false;
+        if (knockoutStage !== 'all' && m.stage !== knockoutStage) return false;
+      }
+      return true;
+    });
+    candidates.sort((a, b) => b.utcDate.localeCompare(a.utcDate));
+    return new Set(candidates.slice(0, RECENT_FINISHED_LIMIT).map(m => m.id));
+  }, [matches, hidePastByDefault, stage, group, knockoutStage]);
+
   const STATUS_RANK: Record<MatchStatus, number> = { live: 0, upcoming: 1, finished: 2 };
 
   const filtered = matches
     .filter(m => {
       if (hidePastByDefault) {
-        if (m.status === 'finished') return false;
+        if (m.status === 'finished' && !(showRecentFinished && recentFinishedIds.has(m.id))) return false;
       } else if (tab !== 'all' && tab !== 'default') {
         if (tab === 'live' && m.status !== 'live') return false;
         if (tab === 'upcoming' && m.status !== 'upcoming') return false;
@@ -188,6 +212,16 @@ export default function MatchesScreen() {
             </button>
           ))}
         </div>
+      )}
+
+      {hidePastByDefault && !showRecentFinished && recentFinishedIds.size > 0 && (
+        <button
+          className="matches-screen__load-prev-btn"
+          onClick={() => setShowRecentFinished(true)}
+        >
+          <Icon icon="mdi:history" width={16} />
+          {t('MATCHES_LOAD_PREVIOUS')}
+        </button>
       )}
 
       {!matchesLoading && filtered.length === 0 && (

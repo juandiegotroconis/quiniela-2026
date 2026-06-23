@@ -223,6 +223,35 @@
   cursor: not-allowed;
 }
 
+/* ── Passkey button ── */
+.auth-screen__passkey-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border-default);
+  background: transparent;
+  color: var(--fg-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 10px;
+  transition: border-color 150ms, opacity 200ms;
+}
+
+.auth-screen__passkey-btn:hover:not(:disabled) {
+  border-color: var(--fg-secondary);
+}
+
+.auth-screen__passkey-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 /* ── Footer ── */
 .auth-screen__footer {
   text-align: center;

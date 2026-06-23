@@ -15,7 +15,6 @@ import {
   getResultVariant,
   getResultPoints,
   getResultLabel,
-  getLiveMinute,
   formatMatchTime,
   formatMatchDateTime,
   getStageLabelKey,
@@ -26,7 +25,7 @@ import type { UserPickEntry } from "~/lib/auth-context";
 import { useAuth } from "~/lib/auth-context";
 import { useData } from "~/lib/data-context";
 import { fetchMatchPredictions } from "~/lib/queries";
-import { useLiveMatch } from "~/lib/use-live-match";
+import { useLiveClock } from "~/lib/use-match-clock";
 import type { MatchPrediction } from "~/lib/types";
 
 interface Props {
@@ -37,11 +36,14 @@ interface Props {
 
 function MatchStatusBadge({ match }: { match: Match }) {
   const { t, language } = useTranslation();
+  const liveClock = useLiveClock(match);
   if (match.status === "live") {
     return (
       <Badge variant='error'>
         <span className='badge__live-dot'>●</span> {t("MATCH_STATUS_LIVE")}{" "}
-        {getLiveMinute(match) ?? formatMatchTime(match.utcDate, language)}
+        {match.isHalftime
+          ? t("MATCH_STATUS_HT")
+          : liveClock ?? formatMatchTime(match.utcDate, language)}
       </Badge>
     );
   }
@@ -55,9 +57,11 @@ function MatchStatusBadge({ match }: { match: Match }) {
 }
 
 export default function MatchDetail({ match: matchProp, onBack, userPick }: Props) {
-  const match = useLiveMatch(matchProp);
   const { user, quinielaId } = useAuth();
   const { members } = useData();
+  // The match is kept live by the app-wide subscription in DataProvider; it
+  // arrives here (via the match route reading global state) already updated.
+  const match = matchProp;
   const { t } = useTranslation();
   const membersRef = useRef(members);
   const [preds, setPreds] = useState<MatchPrediction[]>([]);

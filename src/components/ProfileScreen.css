@@ -44,6 +44,14 @@
   color: var(--color-brand);
 }
 
+.profile-hdr__streak {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg-secondary);
+  white-space: nowrap;
+}
+
 .profile-hdr__logout {
   background: transparent;
   border: 1px solid var(--border-default);
@@ -60,6 +68,51 @@
 .profile-hdr__logout:hover {
   color: var(--fg-primary);
   border-color: var(--fg-secondary);
+}
+
+.profile-hdr__settings {
+  margin-bottom: 4px;
+}
+
+.profile-hdr__settings-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default);
+  background: transparent;
+  color: var(--fg-secondary);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: all 150ms var(--ease-default);
+}
+
+.profile-hdr__settings-toggle:hover {
+  border-color: var(--fg-tertiary);
+  color: var(--fg-primary);
+}
+
+.profile-hdr__settings-chevron {
+  margin-left: auto;
+  transition: transform 150ms var(--ease-default);
+}
+
+.profile-hdr__settings-body {
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--surface-1);
+}
+
+.profile-hdr__settings-body > * + * {
+  margin-top: 16px;
 }
 
 .profile-hdr__color-picker {
@@ -102,10 +155,6 @@
   transform: scale(1.15);
 }
 
-.profile-hdr__theme-picker {
-  margin-top: 16px;
-}
-
 .profile-hdr__theme-options {
   display: flex;
   gap: 8px;
@@ -139,9 +188,6 @@
   font-weight: 600;
 }
 
-.profile-hdr__lang-picker {
-  margin-top: 16px;
-}
 
 .profile-hdr__lang-options {
   display: flex;
@@ -174,4 +220,82 @@
   color: var(--fg-primary);
   background: var(--color-brand-08);
   font-weight: 600;
+}
+
+
+.profile-hdr__passkey-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  list-style: none;
+  margin: 0 0 10px;
+  padding: 0;
+}
+
+.profile-hdr__passkey-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default);
+  color: var(--fg-secondary);
+}
+
+.profile-hdr__passkey-name {
+  flex: 1;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--fg-primary);
+}
+
+.profile-hdr__passkey-remove {
+  background: transparent;
+  border: none;
+  color: var(--fg-tertiary);
+  cursor: pointer;
+  display: flex;
+  padding: 2px;
+  transition: color 150ms;
+}
+
+.profile-hdr__passkey-remove:hover {
+  color: var(--color-error);
+}
+
+.profile-hdr__passkey-error {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--color-error);
+  margin-bottom: 10px;
+}
+
+.profile-hdr__passkey-add {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default);
+  background: transparent;
+  color: var(--fg-secondary);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 150ms var(--ease-default);
+}
+
+.profile-hdr__passkey-add-icon {
+  color: var(--color-brand);
+}
+
+.profile-hdr__passkey-add:hover:not(:disabled) {
+  border-color: var(--fg-tertiary);
+  color: var(--fg-primary);
+}
+
+.profile-hdr__passkey-add:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }

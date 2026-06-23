@@ -2,9 +2,9 @@ import './ProfileReadOnly.css';
 import PageContainer from './PageContainer';
 import { useTranslation } from '~/hooks/useTranslation';
 import Badge from './Badge';
-import TeamFlag from './TeamFlag';
 import TopScorerPicker from './TopScorerPicker';
-import { getPickResult, getResultVariant, getResultPoints, getLiveMinute, formatMatchDate } from '~/lib/helpers';
+import MatchPickList from './MatchPickList';
+import { getPickResult } from '~/lib/helpers';
 import type { TopScorerSuggestion } from '~/lib/mock-data';
 import type { UserPickEntry } from '~/lib/auth-context';
 import { useData } from '~/lib/data-context';
@@ -14,23 +14,9 @@ interface Props {
   topScorer: TopScorerSuggestion | null;
 }
 
-const RESULT_COLORS: Record<string, string> = {
-  exact: 'var(--color-green)',
-  penalty_exact: 'var(--color-green)',
-  tendency: 'var(--color-gold)',
-  half: 'var(--color-info)',
-  miss: 'var(--color-error)',
-};
-
 export default function ProfileReadOnly({ userPicks, topScorer }: Props) {
   const { matches } = useData();
-  const { t, language } = useTranslation();
-
-  const matchdays = [1, 2, 3].map(day => ({
-    day,
-    label: `${t('PROFILE_READONLY_MATCHDAY_PREFIX')} ${day}`,
-    matches: matches.filter(m => m.day === day),
-  }));
+  const { t } = useTranslation();
 
   const finishedWithPicks = matches.filter(m => {
     if (m.status !== 'finished') return false;
@@ -93,63 +79,7 @@ export default function ProfileReadOnly({ userPicks, topScorer }: Props) {
         <Badge variant="default">{t('PROFILE_READONLY_LOCKED_BADGE')}</Badge>
       </div>
 
-      {matchdays.map(md => (
-        <div key={md.day} className="profile-ro__matchday">
-          <div className="profile-ro__matchday-label">{md.label}</div>
-          <div className="profile-ro__match-list">
-            {md.matches.map(m => {
-              const pick = userPicks[m.id];
-              const hasPick = pick && pick.pickA !== '' && pick.pickB !== '';
-              const isFinished = m.status === 'finished';
-              const isLive = m.status === 'live';
-              let result = null;
-              if (isFinished && hasPick) {
-                result = getPickResult(m, parseInt(String(pick.pickA)), parseInt(String(pick.pickB)));
-              }
-
-              return (
-                <div key={m.id} className="profile-ro__match-row">
-                  <div className="profile-ro__match-teams">
-                    <TeamFlag code={m.teamA} size={20} />
-                    <span className="profile-ro__match-vs">{t('PROFILE_READONLY_VS')}</span>
-                    <TeamFlag code={m.teamB} size={20} />
-                  </div>
-                  <div className="profile-ro__match-result">
-                    {isFinished || isLive ? (
-                      <span className="profile-ro__match-score-actual">
-                        {m.scoreA}:{m.scoreB}
-                      </span>
-                    ) : (
-                      <span className="profile-ro__match-date">{formatMatchDate(m.utcDate, language)}</span>
-                    )}
-                  </div>
-                  <div className="profile-ro__match-pick-wrap">
-                    <span className="profile-ro__match-pick-label">{t('PROFILE_READONLY_YOUR_PICK')}</span>
-                    <span
-                      className="profile-ro__match-pick-score"
-                      style={{ color: result ? RESULT_COLORS[result] : 'var(--fg-primary)' }}
-                    >
-                      {hasPick ? `${pick.pickA}:${pick.pickB}` : '—'}
-                    </span>
-                  </div>
-                  <div className="profile-ro__match-badge">
-                    {isFinished && hasPick && result && (
-                      <Badge variant={getResultVariant(result)}>
-                        +{getResultPoints(result)}
-                      </Badge>
-                    )}
-                    {isLive && (
-                      <Badge variant="error">
-                        <span className="badge__live-dot">●</span> {t('MATCH_CARD_STATUS_LIVE')}{getLiveMinute(m) ? ` ${getLiveMinute(m)}` : ''}
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      ))}
+      <MatchPickList matches={matches} picks={userPicks} />
     </PageContainer>
   );
 }

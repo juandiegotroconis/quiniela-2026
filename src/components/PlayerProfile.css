@@ -72,6 +72,14 @@
   color: var(--color-green);
 }
 
+.player-profile__streak {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg-secondary);
+  white-space: nowrap;
+}
+
 .player-profile__sparkline {
   margin-top: 10px;
 }

@@ -3,12 +3,12 @@ import TeamFlag from "./TeamFlag";
 import { useTranslation } from "~/hooks/useTranslation";
 import Badge from "./Badge";
 import {
-  getLiveMinute,
   getPickResult,
   formatMatchDate,
   formatMatchTime,
   getStageLabelKey,
 } from "~/lib/helpers";
+import { useLiveClock } from "~/lib/use-match-clock";
 import type { Match } from "~/lib/types";
 import type { UserPickEntry } from "~/lib/auth-context";
 import { TEAM_FULL } from "~/lib/mock-data";
@@ -47,11 +47,14 @@ function MatchDateLabel({ match }: { match: Match }) {
 }
 
 function MatchTimeLabel({ match }: { match: Match }) {
-  const { language } = useTranslation();
+  const { t, language } = useTranslation();
+  const liveClock = useLiveClock(match);
   if (match.status === "live") {
     return (
       <span className='match-card__time'>
-        {getLiveMinute(match) ?? formatMatchTime(match.utcDate, language)}
+        {match.isHalftime
+          ? t("MATCH_CARD_STATUS_HT")
+          : liveClock ?? formatMatchTime(match.utcDate, language)}
       </span>
     );
   }

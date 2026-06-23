@@ -6,6 +6,7 @@ import PageContainer from './PageContainer';
 import Avatar from './Avatar';
 import PositionChange from './PositionChange';
 import Sparkline from './Sparkline';
+import MatchPickList from './MatchPickList';
 import { getPickResult } from '~/lib/helpers';
 import { fetchSingleMemberHistory, fetchUserTopScorer } from '~/lib/queries';
 import { useAuth } from '~/lib/auth-context';
@@ -31,6 +32,7 @@ export default function PlayerProfile({ userId }: Props) {
   const [memberHistory, setMemberHistory] = useState<number[]>([]);
   const [topScorer, setTopScorer] = useState<TopScorerSuggestion | null>(isMe ? myTopScorer : null);
   const [standingsView, setStandingsView] = useState<'real' | 'predicted'>('real');
+  const [mainView, setMainView] = useState<'matches' | 'groups'>('matches');
 
   const member = getMember(userId);
 
@@ -128,6 +130,11 @@ export default function PlayerProfile({ userId }: Props) {
             </span>
             <PositionChange current={member.rank} previous={member.prevRank ?? member.rank} />
             <span className="player-profile__pts">{member.pts} pts</span>
+            {member.currentStreak !== 0 && (
+              <span className="player-profile__streak">
+                {member.currentStreak > 0 ? '🔥' : '🥶'} {Math.abs(member.currentStreak)} {t('RANKINGS_STREAK_IN_A_ROW')}
+              </span>
+            )}
           </div>
           <div className="player-profile__sparkline">
             <Sparkline history={memberHistory} />
@@ -160,33 +167,58 @@ export default function PlayerProfile({ userId }: Props) {
 
       <div className="player-profile__view-tabs">
         <button
-          className={`player-profile__view-tab${standingsView === 'real' ? ' player-profile__view-tab--active' : ''}`}
-          onClick={() => setStandingsView('real')}
+          className={`player-profile__view-tab${mainView === 'matches' ? ' player-profile__view-tab--active' : ''}`}
+          onClick={() => setMainView('matches')}
         >
-          {t('PLAYER_PROFILE_VIEW_REAL')}
+          {t('PLAYER_PROFILE_MAIN_TAB_MATCHES')}
         </button>
         <button
-          className={`player-profile__view-tab${standingsView === 'predicted' ? ' player-profile__view-tab--active' : ''}`}
-          onClick={() => setStandingsView('predicted')}
+          className={`player-profile__view-tab${mainView === 'groups' ? ' player-profile__view-tab--active' : ''}`}
+          onClick={() => setMainView('groups')}
         >
-          {t('PLAYER_PROFILE_VIEW_PREDICTED')}
+          {t('PLAYER_PROFILE_MAIN_TAB_GROUPS')}
         </button>
       </div>
 
-      <GroupNav groups={groupIds} />
-
-      <div className="player-profile__groups">
-        {groupIds.map(groupId => (
-          <div key={groupId} id={`group-${groupId}`}>
-            <GroupPanel
-              groupId={groupId}
-              picks={picks}
-              userId={userId}
-              projectWithPicks={standingsView === 'predicted'}
-            />
+      {mainView === 'matches' ? (
+        <MatchPickList
+          matches={matches}
+          picks={picks}
+          pickLabelKey={isMe ? 'PROFILE_READONLY_YOUR_PICK' : 'MATCH_PICK_LIST_PICK_LABEL'}
+        />
+      ) : (
+        <>
+          <div className="player-profile__view-tabs">
+            <button
+              className={`player-profile__view-tab${standingsView === 'real' ? ' player-profile__view-tab--active' : ''}`}
+              onClick={() => setStandingsView('real')}
+            >
+              {t('PLAYER_PROFILE_VIEW_REAL')}
+            </button>
+            <button
+              className={`player-profile__view-tab${standingsView === 'predicted' ? ' player-profile__view-tab--active' : ''}`}
+              onClick={() => setStandingsView('predicted')}
+            >
+              {t('PLAYER_PROFILE_VIEW_PREDICTED')}
+            </button>
           </div>
-        ))}
-      </div>
+
+          <GroupNav groups={groupIds} />
+
+          <div className="player-profile__groups">
+            {groupIds.map(groupId => (
+              <div key={groupId} id={`group-${groupId}`}>
+                <GroupPanel
+                  groupId={groupId}
+                  picks={picks}
+                  userId={userId}
+                  projectWithPicks={standingsView === 'predicted'}
+                />
+              </div>
+            ))}
+          </div>
+        </>
+      )}
     </PageContainer>
   );
 }
