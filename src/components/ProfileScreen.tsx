@@ -13,6 +13,8 @@ import PositionChange from "./PositionChange";
 import PredictionEntryForm from "./PredictionEntryForm";
 import ProfileReadOnly from "./ProfileReadOnly";
 import { AVATAR_COLORS } from "~/lib/mock-data";
+import { isKnockoutEntryOpen } from "~/lib/helpers";
+import { useNowTick } from "~/hooks/useNowTick";
 import type { BracketPickEntry, UserPickEntry } from "~/lib/auth-context";
 import type { TopScorerSuggestion } from "~/lib/mock-data";
 import type { UserQuiniela } from "~/lib/queries";
@@ -39,9 +41,13 @@ export default function ProfileScreen() {
     listUserQuinielas,
     switchQuiniela,
   } = useAuth();
-  const { getMember } = useData();
+  const { getMember, matches } = useData();
   const navigate = useNavigate();
   const me = user ? getMember(user.id) : undefined;
+  const now = useNowTick();
+  // Knockout predictions open per knockout_mode + deadline, independent of
+  // is_updatable (which only governs group-stage entry now).
+  const knockoutOpen = isKnockoutEntryOpen(matches, knockoutMode, now);
 
   const [activeColor, setActiveColor] = useState(
     me?.avatarColor ?? AVATAR_COLORS[0],
@@ -139,7 +145,7 @@ export default function ProfileScreen() {
 
   const { t, language, setLanguage } = useTranslation();
   const { theme, setTheme } = useTheme();
-  const showForm = isUpdatable;
+  const showForm = isUpdatable || knockoutOpen;
 
   return (
     <>

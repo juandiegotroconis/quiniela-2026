@@ -88,6 +88,10 @@
   "BANNER_UPDATABLE_TEXT": "Las predicciones siguen abiertas — ¡aún puedes actualizar las tuyas!",
   "BANNER_ENTER_PREDICTIONS": "Ingresar predicciones →",
   "BANNER_UPDATE_PREDICTIONS": "Actualizar predicciones →",
+  "BANNER_KNOCKOUT_ONESHOT_TEXT": "Las predicciones de eliminatorias están abiertas — completa tu llave antes del {deadline}",
+  "BANNER_KNOCKOUT_STAGE_TEXT": "Las predicciones de {stage} están abiertas — envíalas antes del {deadline}",
+  "BANNER_KNOCKOUT_FALLBACK_STAGE": "Eliminatorias",
+  "BANNER_KNOCKOUT_BTN": "Ingresar eliminatorias →",
 
   "PRED_FORM_TITLE": "Ingresa tus predicciones",
   "PRED_FORM_SUBTITLE_OPEN": "Completa el marcador que predices para cada partido y elige al máximo goleador del torneo. Puedes guardar tu progreso en cualquier momento y actualizar tus picks mientras las predicciones estén abiertas.",
@@ -106,6 +110,7 @@
   "PRED_FORM_BRACKET_PROMPT": "Adivina el cruce",
   "PRED_FORM_BRACKET_HOME_PLACEHOLDER": "Equipo local",
   "PRED_FORM_BRACKET_AWAY_PLACEHOLDER": "Equipo visitante",
+  "PRED_FORM_BRACKET_PENDING": "Elige la ronda anterior para definir este cruce",
   "PRED_FORM_ERROR_INCOMPLETE": "Por favor completa todas las predicciones de partidos y selecciona un máximo goleador antes de enviar.",
   "PRED_FORM_SUBMIT": "Enviar todo",
   "PRED_FORM_SUBMITTING": "Enviando…",
@@ -115,6 +120,7 @@
   "PRED_FORM_STATUS_UNSAVED": "Tienes cambios sin guardar",
   "PRED_FORM_STATUS_ALL_SAVED": "Todos los cambios guardados",
   "PRED_FORM_STATUS_NO_PICKS": "Aún no has ingresado picks",
+  "PRED_FORM_STAGE_LOCKED": "Bloqueado",
 
   "PROFILE_READONLY_STAT_EXACT": "Marcadores exactos",
   "PROFILE_READONLY_STAT_WINNER": "Ganador correcto",
@@ -211,6 +217,7 @@
   "MATCH_CARD_STATUS_LIVE": "EN VIVO",
   "MATCH_CARD_STATUS_FT": "FT",
   "MATCH_CARD_STATUS_HT": "MT",
+  "MATCH_CARD_STATUS_STALE": "Actualizaciones en vivo retrasadas",
   "MATCH_CARD_GROUP_PREFIX": "Grupo",
 
   "MATCH_DETAIL_BACK": "← Volver a partidos",

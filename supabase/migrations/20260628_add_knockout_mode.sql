@@ -22,7 +22,12 @@ alter table public.quinielas
 
 -- Re-create the 3 membership RPCs (full bodies from 20260623_active_quiniela.sql)
 -- with knockout_mode added to their return shape, alongside the existing
--- variant column.
+-- variant column. Drop first — adding a column to the RETURNS TABLE shape
+-- changes the return type, which CREATE OR REPLACE cannot do in place.
+
+drop function if exists public.get_active_membership();
+drop function if exists public.set_active_quiniela(uuid);
+drop function if exists public.join_quiniela_by_code(character);
 
 create or replace function public.get_active_membership()
 returns table (quiniela_id uuid, avatar_color text, is_updatable boolean, variant text, knockout_mode text)

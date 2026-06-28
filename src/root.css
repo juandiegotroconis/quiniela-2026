@@ -34,3 +34,13 @@
 .predictions-banner__btn:hover {
   opacity: 0.88;
 }
+
+/* Knockout deadline banner — gold/trophy accent to set it apart from the
+   group-stage prediction banner. */
+.predictions-banner--knockout {
+  background: var(--color-gold-dark);
+}
+
+.predictions-banner--knockout .predictions-banner__btn {
+  color: var(--color-gold-dark);
+}

@@ -291,9 +291,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .select("*")
         .maybeSingle();
       if (error || !rawData) return error ? error.message : "Quiniela not found";
-      // knockout_mode isn't in the generated RPC return type yet — see
-      // MembershipRow in queries.ts.
-      const data = rawData as typeof rawData & { knockout_mode: string };
+      const data = rawData;
 
       const [sub, picks, scorer, bracket] = await Promise.all([
         checkSubmitted(user.id, data.quiniela_id),

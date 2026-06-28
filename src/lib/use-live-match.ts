@@ -1,8 +1,7 @@
 import { useEffect, useRef } from "react";
 import { getClient } from "./client";
-import { rowToMatch } from "./queries";
+import { rowToMatch, type MatchRow } from "./queries";
 import type { Match } from "./types";
-import type { Tables } from "./supabase";
 
 // How early before kickoff we start listening, so the upcoming -> live
 // transition is caught without an open channel for far-future matches.
@@ -49,7 +48,7 @@ export function useLiveMatches(
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "matches" },
         (payload) => {
-          onUpdateRef.current(rowToMatch(payload.new as Tables<"matches">));
+          onUpdateRef.current(rowToMatch(payload.new as MatchRow));
         },
       )
       .subscribe();

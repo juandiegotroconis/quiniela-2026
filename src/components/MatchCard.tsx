@@ -8,10 +8,12 @@ import {
   formatMatchTime,
   getStageLabelKey,
   getLiveMinute,
+  isLiveDataStale,
 } from "~/lib/helpers";
 import type { Match } from "~/lib/types";
 import type { UserPickEntry } from "~/lib/auth-context";
 import { TEAM_FULL } from "~/lib/mock-data";
+import { useNowTick } from "~/hooks/useNowTick";
 
 interface Props {
   match: Match;
@@ -72,6 +74,8 @@ function MatchTimeLabel({ match }: { match: Match }) {
 export default function MatchCard({ match, onTap, pick }: Props) {
   const { t } = useTranslation();
   const isLive = match.status === "live";
+  const now = useNowTick(isLive);
+  const isStale = isLiveDataStale(match, now);
   const stageLabelKey = getStageLabelKey(match.stage);
   const hasPick = pick && pick.pickA !== "" && pick.pickB !== "";
   const pickResult = hasPick
@@ -89,6 +93,12 @@ export default function MatchCard({ match, onTap, pick }: Props) {
         <MatchDateLabel match={match} />
         <MatchTimeLabel match={match} />
       </div>
+
+      {isStale && (
+        <div className='match-card__stale' title={t("MATCH_CARD_STATUS_STALE")}>
+          {t("MATCH_CARD_STATUS_STALE")}
+        </div>
+      )}
 
       <div className='match-card__group'>
         {stageLabelKey

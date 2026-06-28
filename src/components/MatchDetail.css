@@ -152,6 +152,16 @@ a.match-detail__team:hover {
   color: var(--fg-tertiary);
 }
 
+.match-detail__stale {
+  margin-top: 4px;
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-style: italic;
+  color: var(--fg-tertiary);
+  opacity: 0.8;
+}
+
 .match-detail__venue {
   display: flex;
   flex-direction: column;

@@ -10,16 +10,19 @@ import GroupNav from "./GroupNav";
 import {
   calcGroupStandings,
   formatMatchDate,
-  getAliveTeams,
   getCurrentKnockoutStage,
   getStageLabelKey,
+  isKnockoutEntryOpen,
+  isPredictionStageLocked,
   isStageFullyResolved,
   KNOCKOUT_STAGE_ORDER,
 } from "~/lib/helpers";
 import { GROUPS, TEAM_FULL } from "~/lib/mock-data";
 import type { TopScorerSuggestion } from "~/lib/mock-data";
 import type { BracketPickEntry, UserPickEntry } from "~/lib/auth-context";
+import type { Match } from "~/lib/types";
 import { useData } from "~/lib/data-context";
+import { useNowTick } from "~/hooks/useNowTick";
 
 interface Props {
   initialPicks?: Record<number, UserPickEntry>;
@@ -39,11 +42,9 @@ interface Props {
 }
 
 const EMPTY_PICK: UserPickEntry = { pickA: "", pickB: "", pickPenaltiesWinner: null };
-const EMPTY_BRACKET_PICK: BracketPickEntry = { predHome: "", predAway: "" };
 
 export default function PredictionEntryForm({
   initialPicks = {},
-  initialBracketPicks = {},
   initialTopScorer = null,
   isUpdatable = true,
   knockoutMode = "STAGE_BY_STAGE",
@@ -52,10 +53,18 @@ export default function PredictionEntryForm({
 }: Props) {
   const { matches } = useData();
   const { t, language } = useTranslation();
+  const now = useNowTick();
+  // A stage's picks lock once its deadline (first kickoff) passes — see
+  // isPredictionStageLocked / getKnockoutEntryDeadline. Group picks are
+  // always locked mid-tournament; knockout stages lock per knockout_mode.
+  const groupLocked = isPredictionStageLocked(matches, "GROUP_STAGE", knockoutMode, now);
+  const knockoutOpen = isKnockoutEntryOpen(matches, knockoutMode, now);
+  // is_updatable governs the initial group/top-scorer entry; once it's off, the
+  // form is knockout-only (group + top scorer hidden, just the open knockout
+  // stage editable). Mirrors the is_prediction_open RLS gate.
+  const groupEntryEnabled = isUpdatable;
   const [picks, setPicks] =
     useState<Record<number, UserPickEntry>>(initialPicks);
-  const [bracketPicks, setBracketPicks] =
-    useState<Record<number, BracketPickEntry>>(initialBracketPicks);
   const [topScorer, setTopScorer] = useState<TopScorerSuggestion | null>(
     initialTopScorer,
   );
@@ -86,19 +95,52 @@ export default function PredictionEntryForm({
     setIsDirty(true);
   };
 
-  const updateBracketPick = (
-    matchId: number,
-    side: "predHome" | "predAway",
-    teamCode: string,
-  ) => {
-    setBracketPicks((prev) => ({
-      ...prev,
-      [matchId]: { ...(prev[matchId] ?? EMPTY_BRACKET_PICK), [side]: teamCode },
-    }));
-    setIsDirty(true);
-  };
+  const matchById = useMemo(() => {
+    const map = new Map<number, Match>();
+    for (const m of matches) map.set(m.id, m);
+    return map;
+  }, [matches]);
 
-  const aliveTeams = useMemo(() => getAliveTeams(matches), [matches]);
+  // Cascade a user's winner picks through the bracket feeder graph (the
+  // *_source_match_id / *_source_outcome columns). For a knockout match whose
+  // teams aren't resolved yet, each slot's team is the predicted winner (or
+  // loser, for the 3rd-place game) of the feeding match — derived recursively
+  // from the user's score picks, so they never re-pick teams by hand.
+  // Returns "" while the feeding pick is still missing/undecided.
+  function slotTeam(m: Match, side: "home" | "away", depth = 0): string {
+    const resolved = side === "home" ? m.teamA : m.teamB;
+    if (resolved) return resolved;
+    const srcId = side === "home" ? m.homeSourceMatchId : m.awaySourceMatchId;
+    const outcome = side === "home" ? m.homeSourceOutcome : m.awaySourceOutcome;
+    if (!srcId || !outcome) return "";
+    return predictedOutcome(srcId, outcome, depth + 1);
+  }
+
+  function predictedOutcome(
+    matchId: number,
+    outcome: "winner" | "loser",
+    depth = 0,
+  ): string {
+    if (depth > 8) return ""; // bracket is 6 rounds deep — guard against cycles
+    const m = matchById.get(matchId);
+    if (!m) return "";
+    const home = slotTeam(m, "home", depth);
+    const away = slotTeam(m, "away", depth);
+    if (!home || !away) return "";
+    const p = picks[m.id];
+    if (!p || p.pickA === "" || p.pickB === "") return "";
+    const a = Number(p.pickA);
+    const b = Number(p.pickB);
+    let winner: string;
+    if (a > b) winner = home;
+    else if (b > a) winner = away;
+    else {
+      // Draw in regulation/ET — the advancing team is the penalty pick.
+      if (!p.pickPenaltiesWinner) return "";
+      winner = p.pickPenaltiesWinner;
+    }
+    return outcome === "loser" ? (winner === home ? away : home) : winner;
+  }
 
   // Knockout predictions only open once the entire Round of 32 is resolved
   // (every match has both teams), not one match at a time as the
@@ -141,11 +183,51 @@ export default function PredictionEntryForm({
       ? ((filledCount + (topScorer ? 1 : 0)) / (totalMatches + 1)) * 100
       : 0;
 
+  // Only send picks for stages that are still open — a locked stage's write
+  // is rejected by the is_prediction_open RLS gate, which would fail the whole
+  // upsert. Locked-stage rows are already saved, so omitting them is safe.
+  const stageOf = useMemo(() => {
+    const map: Record<number, string> = {};
+    for (const m of matches) map[m.id] = m.stage;
+    return map;
+  }, [matches]);
+
+  const filterOpen = <T,>(entries: Record<number, T>): Record<number, T> => {
+    const out: Record<number, T> = {};
+    for (const [idStr, val] of Object.entries(entries)) {
+      const stage = stageOf[Number(idStr)];
+      if (stage && !isPredictionStageLocked(matches, stage, knockoutMode, now)) {
+        out[Number(idStr)] = val;
+      }
+    }
+    return out;
+  };
+
+  // ONE_SHOT only: the matchup the user predicts for each not-yet-resolved
+  // knockout match, derived from their cascading winner picks. Saved as
+  // bracket_predictions so the matchup bonus scores unchanged. Matches whose
+  // teams are already known aren't guesses, so they're skipped.
+  const derivedBracketPicks = useMemo<Record<number, BracketPickEntry>>(() => {
+    if (knockoutMode !== "ONE_SHOT") return {};
+    const out: Record<number, BracketPickEntry> = {};
+    for (const m of matches) {
+      if (m.stage === "GROUP_STAGE" || (m.teamA && m.teamB)) continue;
+      const predHome = slotTeam(m, "home");
+      const predAway = slotTeam(m, "away");
+      if (predHome && predAway) out[m.id] = { predHome, predAway };
+    }
+    return out;
+    // slotTeam closes over picks/matchById; those drive recomputation.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [matches, picks, knockoutMode]);
+
   const handleSave = async () => {
     setSaving(true);
     setSaveMsg(null);
     try {
-      await onSave(picks, topScorer, bracketPicks);
+      // Top scorer is gated by is_updatable (top_scorer RLS), so only write it
+      // during group/initial entry.
+      await onSave(filterOpen(picks), groupEntryEnabled ? topScorer : null, filterOpen(derivedBracketPicks));
       setSaveMsg(t('PRED_FORM_SAVED'));
       setIsDirty(false);
       setTimeout(() => setSaveMsg(null), 2500);
@@ -184,10 +266,14 @@ export default function PredictionEntryForm({
           </button>
         </div>
         <p className='pred-form__subtitle'>
-          {isUpdatable ? t('PRED_FORM_SUBTITLE_OPEN') : t('PRED_FORM_SUBTITLE_LOCKED')}
+          {groupEntryEnabled || knockoutOpen
+            ? t('PRED_FORM_SUBTITLE_OPEN')
+            : t('PRED_FORM_SUBTITLE_LOCKED')}
         </p>
       </div>
 
+      {groupEntryEnabled && (
+      <>
       <div className='pred-form__progress'>
         <div className='pred-form__progress-inner'>
           <div className='pred-form__progress-labels'>
@@ -227,6 +313,9 @@ export default function PredictionEntryForm({
                 <span className='pred-form__group-count'>
                   {filledInGroup}/{g.matches.length}
                 </span>
+                {groupLocked && (
+                  <span className='pred-form__locked-badge'>{t('PRED_FORM_STAGE_LOCKED')}</span>
+                )}
               </div>
 
               <div className='pred-form__mini-standings'>
@@ -291,6 +380,7 @@ export default function PredictionEntryForm({
                             max='20'
                             className={`pred-form__match-input${hasError ? " pred-form__match-input--error" : ""}`}
                             value={p.pickA}
+                            disabled={groupLocked}
                             onChange={(e) =>
                               updatePick(m.id, e.target.value, p.pickB)
                             }
@@ -304,6 +394,7 @@ export default function PredictionEntryForm({
                             max='20'
                             className={`pred-form__match-input${hasError ? " pred-form__match-input--error" : ""}`}
                             value={p.pickB}
+                            disabled={groupLocked}
                             onChange={(e) =>
                               updatePick(m.id, p.pickA, e.target.value)
                             }
@@ -359,6 +450,8 @@ export default function PredictionEntryForm({
           );
         })}
       </div>
+      </>
+      )}
 
       {knockoutByStage.length > 0 && (
         <div className='pred-form__knockout-heading'>
@@ -370,57 +463,38 @@ export default function PredictionEntryForm({
         <div className='pred-form__groups pred-form__knockout'>
           {knockoutByStage.map(({ stage, matches: stageMatches }) => {
             const stageLabelKey = getStageLabelKey(stage);
+            const stageLocked = isPredictionStageLocked(matches, stage, knockoutMode, now);
             return (
               <div key={stage} className='pred-form__group'>
                 <div className='pred-form__group-header'>
                   {stageLabelKey ? t(stageLabelKey) : stage}
+                  {stageLocked && (
+                    <span className='pred-form__locked-badge'>{t('PRED_FORM_STAGE_LOCKED')}</span>
+                  )}
                 </div>
 
                 <div className='pred-form__matches'>
                   {stageMatches.map((m) => {
-                    const resolved = Boolean(m.teamA) && Boolean(m.teamB);
+                    // Teams come from the bracket feeder graph: actual codes if
+                    // already resolved, otherwise cascaded from the user's
+                    // upstream winner picks (ONE_SHOT). "" means an earlier
+                    // round hasn't been decided yet.
+                    const teamA = slotTeam(m, "home");
+                    const teamB = slotTeam(m, "away");
+                    const resolved = Boolean(teamA) && Boolean(teamB);
                     if (!resolved) {
-                      // STAGE_BY_STAGE never guesses future matchups — a
-                      // stage only becomes visible once its teams are known,
-                      // so this is just a transient gap right after the
-                      // sync resolves the rest of the stage.
+                      // STAGE_BY_STAGE never guesses future matchups — a stage
+                      // only becomes visible once its teams are known, so this
+                      // is just a transient gap right after the sync resolves
+                      // the rest of the stage.
                       if (knockoutMode !== "ONE_SHOT") return null;
-                      const bp = bracketPicks[m.id] ?? EMPTY_BRACKET_PICK;
+                      // ONE_SHOT: an upstream round isn't picked yet, so this
+                      // match's teams can't be derived. Prompt the user to fill
+                      // in the previous round first.
                       return (
-                        <div key={m.id} className='pred-form__bracket-match'>
+                        <div key={m.id} className='pred-form__match-row pred-form__match-row--pending'>
                           <span className='pred-form__match-date'>{formatMatchDate(m.utcDate, language)}</span>
-                          <span className='pred-form__bracket-prompt'>{t('PRED_FORM_BRACKET_PROMPT')}</span>
-                          <div className='pred-form__bracket-pickers'>
-                            <select
-                              className='pred-form__bracket-select'
-                              value={bp.predHome}
-                              onChange={(e) => updateBracketPick(m.id, 'predHome', e.target.value)}
-                            >
-                              <option value=''>{t('PRED_FORM_BRACKET_HOME_PLACEHOLDER')}</option>
-                              {aliveTeams
-                                .filter((c) => c !== bp.predAway)
-                                .map((c) => (
-                                  <option key={c} value={c}>
-                                    {TEAM_FULL[c] ?? c}
-                                  </option>
-                                ))}
-                            </select>
-                            <span className='pred-form__match-sep'>{t('PROFILE_READONLY_VS')}</span>
-                            <select
-                              className='pred-form__bracket-select'
-                              value={bp.predAway}
-                              onChange={(e) => updateBracketPick(m.id, 'predAway', e.target.value)}
-                            >
-                              <option value=''>{t('PRED_FORM_BRACKET_AWAY_PLACEHOLDER')}</option>
-                              {aliveTeams
-                                .filter((c) => c !== bp.predHome)
-                                .map((c) => (
-                                  <option key={c} value={c}>
-                                    {TEAM_FULL[c] ?? c}
-                                  </option>
-                                ))}
-                            </select>
-                          </div>
+                          <span className='pred-form__bracket-prompt'>{t('PRED_FORM_BRACKET_PENDING')}</span>
                         </div>
                       );
                     }
@@ -433,8 +507,8 @@ export default function PredictionEntryForm({
                         <span className='pred-form__match-date'>{formatMatchDate(m.utcDate, language)}</span>
                         <div className='pred-form__match-teams'>
                           <div className='pred-form__match-side'>
-                            <span className='pred-form__match-team-name'>{m.teamA}</span>
-                            <TeamFlag code={m.teamA} size={22} />
+                            <span className='pred-form__match-team-name'>{teamA}</span>
+                            <TeamFlag code={teamA} size={22} />
                           </div>
                           <input
                             type='number'
@@ -443,6 +517,7 @@ export default function PredictionEntryForm({
                             max='20'
                             className='pred-form__match-input'
                             value={p.pickA}
+                            disabled={stageLocked}
                             onChange={(e) => updatePick(m.id, e.target.value, p.pickB)}
                             placeholder='–'
                           />
@@ -454,12 +529,13 @@ export default function PredictionEntryForm({
                             max='20'
                             className='pred-form__match-input'
                             value={p.pickB}
+                            disabled={stageLocked}
                             onChange={(e) => updatePick(m.id, p.pickA, e.target.value)}
                             placeholder='–'
                           />
                           <div className='pred-form__match-side pred-form__match-side--right'>
-                            <TeamFlag code={m.teamB} size={22} />
-                            <span className='pred-form__match-team-name'>{m.teamB}</span>
+                            <TeamFlag code={teamB} size={22} />
+                            <span className='pred-form__match-team-name'>{teamB}</span>
                           </div>
                         </div>
                         {m.venue && (
@@ -479,19 +555,21 @@ export default function PredictionEntryForm({
                             <div className='pred-form__penalty-options'>
                               <button
                                 type='button'
-                                className={`pred-form__penalty-btn${p.pickPenaltiesWinner === m.teamA ? " pred-form__penalty-btn--active" : ""}`}
-                                onClick={() => updatePenaltyWinner(m.id, m.teamA)}
+                                className={`pred-form__penalty-btn${p.pickPenaltiesWinner === teamA ? " pred-form__penalty-btn--active" : ""}`}
+                                disabled={stageLocked}
+                                onClick={() => updatePenaltyWinner(m.id, teamA)}
                               >
-                                <TeamFlag code={m.teamA} size={18} />
-                                {m.teamA}
+                                <TeamFlag code={teamA} size={18} />
+                                {teamA}
                               </button>
                               <button
                                 type='button'
-                                className={`pred-form__penalty-btn${p.pickPenaltiesWinner === m.teamB ? " pred-form__penalty-btn--active" : ""}`}
-                                onClick={() => updatePenaltyWinner(m.id, m.teamB)}
+                                className={`pred-form__penalty-btn${p.pickPenaltiesWinner === teamB ? " pred-form__penalty-btn--active" : ""}`}
+                                disabled={stageLocked}
+                                onClick={() => updatePenaltyWinner(m.id, teamB)}
                               >
-                                <TeamFlag code={m.teamB} size={18} />
-                                {m.teamB}
+                                <TeamFlag code={teamB} size={18} />
+                                {teamB}
                               </button>
                             </div>
                           </div>
@@ -506,6 +584,7 @@ export default function PredictionEntryForm({
         </div>
       )}
 
+      {groupEntryEnabled && (
       <div
         className={`pred-form__scorer${showErrors && !topScorer ? " pred-form__scorer--error" : ""}`}
       >
@@ -523,13 +602,15 @@ export default function PredictionEntryForm({
         </div>
         <TopScorerPicker value={topScorer} onChange={handleScorerChange} />
       </div>
+      )}
 
-      {showErrors && !allFilled && (
+      {groupEntryEnabled && showErrors && !allFilled && (
         <div className='pred-form__error-msg'>
           {t('PRED_FORM_ERROR_INCOMPLETE')}
         </div>
       )}
 
+      {groupEntryEnabled && (
       <div className='pred-form__submit-row'>
         <button
           className={`pred-form__submit${allFilled ? " pred-form__submit--ready" : " pred-form__submit--disabled"}`}
@@ -539,8 +620,9 @@ export default function PredictionEntryForm({
           {submitting ? t('PRED_FORM_SUBMITTING') : t('PRED_FORM_SUBMIT')}
         </button>
       </div>
+      )}
 
-      {isUpdatable && (
+      {(groupEntryEnabled || knockoutOpen) && (
         <div className={`pred-form__sticky-bar${isDirty ? " pred-form__sticky-bar--dirty" : ""}`}>
           <span className='pred-form__sticky-status'>
             {saveMsg

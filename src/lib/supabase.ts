@@ -215,12 +215,16 @@ export type Database = {
       }
       matches: {
         Row: {
+          away_source_match_id: number | null
+          away_source_outcome: string | null
           away_team_code: string | null
           display_date: string | null
           display_time: string | null
           duration: string | null
           fifa_match_id: string | null
           group_name: string | null
+          home_source_match_id: number | null
+          home_source_outcome: string | null
           home_team_code: string | null
           id: number
           last_synced_at: string | null
@@ -241,12 +245,16 @@ export type Database = {
           winner: string | null
         }
         Insert: {
+          away_source_match_id?: number | null
+          away_source_outcome?: string | null
           away_team_code?: string | null
           display_date?: string | null
           display_time?: string | null
           duration?: string | null
           fifa_match_id?: string | null
           group_name?: string | null
+          home_source_match_id?: number | null
+          home_source_outcome?: string | null
           home_team_code?: string | null
           id: number
           last_synced_at?: string | null
@@ -267,12 +275,16 @@ export type Database = {
           winner?: string | null
         }
         Update: {
+          away_source_match_id?: number | null
+          away_source_outcome?: string | null
           away_team_code?: string | null
           display_date?: string | null
           display_time?: string | null
           duration?: string | null
           fifa_match_id?: string | null
           group_name?: string | null
+          home_source_match_id?: number | null
+          home_source_outcome?: string | null
           home_team_code?: string | null
           id?: number
           last_synced_at?: string | null
@@ -294,11 +306,25 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "matches_away_source_match_id_fkey"
+            columns: ["away_source_match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "matches_away_team_code_fkey"
             columns: ["away_team_code"]
             isOneToOne: false
             referencedRelation: "teams"
             referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "matches_home_source_match_id_fkey"
+            columns: ["home_source_match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "matches_home_team_code_fkey"
@@ -539,6 +565,7 @@ export type Database = {
           is_active: boolean | null
           is_updatable: boolean
           join_code: string
+          knockout_mode: string
           name: string
           slug: string
           variant: string | null
@@ -550,6 +577,7 @@ export type Database = {
           is_active?: boolean | null
           is_updatable?: boolean
           join_code: string
+          knockout_mode?: string
           name: string
           slug: string
           variant?: string | null
@@ -561,6 +589,7 @@ export type Database = {
           is_active?: boolean | null
           is_updatable?: boolean
           join_code?: string
+          knockout_mode?: string
           name?: string
           slug?: string
           variant?: string | null
@@ -725,16 +754,22 @@ export type Database = {
         Returns: {
           avatar_color: string
           is_updatable: boolean
+          knockout_mode: string
           quiniela_id: string
           variant: string
         }[]
       }
       get_my_quiniela_ids: { Args: never; Returns: string[] }
       immutable_unaccent: { Args: { "": string }; Returns: string }
+      is_prediction_open: {
+        Args: { p_match_id: number; p_quiniela_id: string }
+        Returns: boolean
+      }
       join_quiniela_by_code: {
         Args: { p_join_code: string }
         Returns: {
           is_updatable: boolean
+          knockout_mode: string
           quiniela_id: string
           variant: string
         }[]
@@ -755,6 +790,8 @@ export type Database = {
       }
       prediction_points_v2: {
         Args: {
+          p_away_team_code: string
+          p_home_team_code: string
           p_pick_away: number
           p_pick_home: number
           p_pick_penalties_winner: string
@@ -793,6 +830,7 @@ export type Database = {
         Returns: {
           avatar_color: string
           is_updatable: boolean
+          knockout_mode: string
           quiniela_id: string
           variant: string
         }[]

@@ -136,6 +136,23 @@
   text-transform: none;
 }
 
+.pred-form__locked-badge {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--fg-tertiary);
+}
+
 /* Mini standings */
 .pred-form__mini-standings {
   padding: 10px 16px 6px;
@@ -256,6 +273,13 @@
 
 .pred-form__match-row:last-child {
   border-bottom: none;
+}
+
+/* ONE_SHOT knockout slot whose teams can't be derived yet — the user hasn't
+   picked the feeding round. */
+.pred-form__match-row--pending .pred-form__bracket-prompt {
+  grid-column: 2;
+  font-style: italic;
 }
 
 .pred-form__match-venue {

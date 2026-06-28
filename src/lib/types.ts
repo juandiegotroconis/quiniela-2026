@@ -21,6 +21,17 @@ export interface Match {
   venue: string | null;
   venueCity: string | null;
   venueCountry: string | null;
+  // Last time sync-live-matches wrote this row (ISO). Used to flag stale live
+  // data when the sync stalls — see isLiveDataStale in helpers.ts.
+  lastSyncedAt: string | null;
+  // Knockout bracket feeder graph (target-side): which earlier match's outcome
+  // fills this match's home/away slot, and whether the winner or loser advances.
+  // Null for group-stage and Round-of-32 matches (fed from group standings).
+  // Lets PredictionEntryForm cascade a user's winner picks into later rounds.
+  homeSourceMatchId: number | null;
+  awaySourceMatchId: number | null;
+  homeSourceOutcome: 'winner' | 'loser' | null;
+  awaySourceOutcome: 'winner' | 'loser' | null;
 }
 
 export interface Member {

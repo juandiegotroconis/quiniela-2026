@@ -236,9 +236,86 @@ export function getCurrentKnockoutStage(matches: Match[]): string | null {
   return null;
 }
 
+// Earliest kickoff (utc_date ISO string) among a stage's matches, or null if
+// the stage has no matches / no dates yet.
+export function getStageFirstKickoff(matches: Match[], stage: string): string | null {
+  const dates = matches
+    .filter((m) => m.stage === stage && m.utcDate)
+    .map((m) => m.utcDate)
+    .sort();
+  return dates[0] ?? null;
+}
+
+// The deadline (utc_date ISO string) to enter the currently-open knockout
+// predictions, or null when there's no open window. Per-mode:
+//   ONE_SHOT       - the whole bracket is entered up front, so the single
+//                    deadline is the first Round-of-32 kickoff.
+//   STAGE_BY_STAGE - each stage is entered before its own first game, so the
+//                    deadline is the current stage's first kickoff (only once
+//                    that stage's teams are fully resolved).
+// Returns the deadline regardless of whether it has already passed — callers
+// compare against `now` to decide whether entry is still open.
+export function getKnockoutEntryDeadline(
+  matches: Match[],
+  knockoutMode: string,
+): string | null {
+  if (!isStageFullyResolved(matches, 'LAST_32')) return null;
+  if (knockoutMode === 'ONE_SHOT') {
+    return getStageFirstKickoff(matches, 'LAST_32');
+  }
+  const current = getCurrentKnockoutStage(matches);
+  if (!current || current === 'GROUP_STAGE') return null;
+  if (!isStageFullyResolved(matches, current)) return null;
+  return getStageFirstKickoff(matches, current);
+}
+
+// Whether knockout predictions are currently open for entry (the window
+// between the bracket resolving and the mode's deadline passing). Mirrors the
+// is_prediction_open SQL gate for knockout matches.
+export function isKnockoutEntryOpen(
+  matches: Match[],
+  knockoutMode: string,
+  now: number = Date.now(),
+): boolean {
+  const deadline = getKnockoutEntryDeadline(matches, knockoutMode);
+  return deadline !== null && now < Date.parse(deadline);
+}
+
+// True when a stage's prediction window has closed — its first game has
+// kicked off. Group-stage picks lock at the first group game; knockout picks
+// lock per the mode (ONE_SHOT: all knockout stages lock at the first R32 game;
+// STAGE_BY_STAGE: each stage locks at its own first game). Drives both the
+// read-only gating in PredictionEntryForm and the banner's open/closed state.
+export function isPredictionStageLocked(
+  matches: Match[],
+  stage: string,
+  knockoutMode: string,
+  now: number = Date.now(),
+): boolean {
+  const lockAt =
+    stage !== 'GROUP_STAGE' && knockoutMode === 'ONE_SHOT'
+      ? getStageFirstKickoff(matches, 'LAST_32')
+      : getStageFirstKickoff(matches, stage);
+  if (!lockAt) return false;
+  return now >= Date.parse(lockAt);
+}
+
 export function getLiveMinute(match: Match): string | null {
   if (match.status !== 'live' || !match.minute) return null;
   return `${match.minute}'`;
+}
+
+// Live data is considered stale when a match is live but sync-live-matches
+// hasn't written the row in over 5 min (matching RECHECK_WINDOW_MS in
+// sync-live-matches). A stuck sync produces no new data to re-render on, so
+// callers should re-evaluate this on a periodic tick (see MatchCard).
+export const LIVE_STALE_THRESHOLD_MS = 5 * 60 * 1000;
+
+export function isLiveDataStale(match: Match, now: number = Date.now()): boolean {
+  if (match.status !== 'live' || !match.lastSyncedAt) return false;
+  const synced = Date.parse(match.lastSyncedAt);
+  if (Number.isNaN(synced)) return false;
+  return now - synced > LIVE_STALE_THRESHOLD_MS;
 }
 
 const DATE_LOCALES: Record<string, string> = { en: 'en-US', es: 'es-VE' };

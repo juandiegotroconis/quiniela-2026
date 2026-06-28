@@ -97,7 +97,20 @@
       "Bash(echo \"EXIT CODE: $?\")",
       "Bash(taskkill //F //PID 45036)",
       "Bash(netstat -ano)",
-      "Bash(deno --version)"
+      "Bash(deno --version)",
+      "mcp__plugin_supabase_supabase__list_organizations",
+      "mcp__plugin_supabase_supabase__list_edge_functions",
+      "mcp__plugin_supabase_supabase__list_migrations",
+      "mcp__plugin_supabase_supabase__apply_migration",
+      "Bash(grep -E \"error|Done|\\\\$ tsc\")",
+      "Bash(pnpm test *)",
+      "mcp__plugin_supabase_supabase__get_advisors",
+      "Bash(curl -s 'https://api.fifa.com/api/v3/calendar/matches?idseason=285023&count=500' -H 'User-Agent: Mozilla/5.0 \\(Windows NT 10.0; Win64; x64; rv:151.0\\) Gecko/20100101 Firefox/151.0' -H 'Accept: application/json' -H 'Origin: https://www.fifa.com' -o /tmp/fifa_cal.json)",
+      "mcp__claude_ai_Supabase__apply_migration",
+      "mcp__claude_ai_Supabase__list_organizations",
+      "Bash(supabase projects *)",
+      "Bash(git rm *)",
+      "Bash(rm -f HANDOFF.md)"
     ],
     "additionalDirectories": [
       "c:\\Users\\juant\\Documents\\Projects\\quiniela-2026\\src\\routes",

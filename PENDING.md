@@ -1,35 +1,29 @@
 # Pending
 
-Outstanding work items, in priority order. Last updated: 2026-06-11.
+Outstanding work items. Last updated: 2026-06-28 (all prior items resolved — see history below).
 
-## 1. Wire knockout scoring into the leaderboard — deadline: before the first knockout match (June 28)
+## Open
 
-`refresh_quiniela_leaderboard` still scores with the old `prediction_points`, which has no knockout rules (no ET-score handling, no 5/4 penalty-draw split, no bracket bonus). The draft `prediction_points_v2` (migration `20260611_prediction_points_v2.sql`) implements them but is **not wired in**, and it has a confirmed bug:
+- **Set `quinielas.knockout_mode` per quiniela.** All quinielas default to `STAGE_BY_STAGE` (migration `20260628_add_knockout_mode.sql`). This flag now fully governs knockout entry (which stages open + the deadline) — `is_updatable` no longer gates knockout. Set `ONE_SHOT` where wanted:
+  `update quinielas set knockout_mode = '<MODE>' where id = '<quiniela_id>';`
+- Knockout entry is now self-governing by deadline (see "Knockout prediction window" below) — no manual `is_updatable` toggling needed to open/close it.
 
-- **Bug**: it compares `p_pick_penalties_winner = p_winner` directly, but picks store a team code (`'MEX'`) while `winner` stores `'HOME_TEAM'`/`'AWAY_TEAM'`. The function doesn't receive the match's team codes, so it can't translate — the "correct penalties pick" 5-point case can never fire; everyone with an exact ET-draw pick would get 4. Fix the signature like the old function (add `p_home_team_code`/`p_away_team_code` params) and translate before comparing.
-- Wire it into `refresh_quiniela_leaderboard`, falling back to `bracket_bonus_points` when `prediction_points_v2` returns 0 on a knockout match (see the migration's header comment).
-- Verify against the group stage: v2 must reproduce the already-computed group-stage points exactly (confirmed identical for group-stage inputs as of 2026-06-11, re-verify after the fix).
+## Knockout prediction window (2026-06-28)
 
-## 2. Guard against a premature FINISHED
+Knockout predictions are gated by `knockout_mode` + a stage **deadline** (the first kickoff of the relevant stage), independent of `is_updatable` (which now governs only GROUP_STAGE + top-scorer entry):
+- **Server**: `public.is_prediction_open(match_id, quiniela_id)` (migration `20260628_knockout_deadline_rls.sql`) — group → `is_updatable`; knockout → R32 resolved, then ONE_SHOT (open until first R32 kickoff) / STAGE_BY_STAGE (open until the current stage's first kickoff). Wired into the `predictions` + `bracket_predictions` write policies. Verified live: group=false, R32=true, R16=false for the default quiniela.
+- **Client**: `getKnockoutEntryDeadline` / `isKnockoutEntryOpen` / `isPredictionStageLocked` (helpers.ts). A gold deadline **banner** (App.tsx, `BANNER_KNOCKOUT_*`) names the deadline per mode and routes to /profile. The form shows whenever knockout is open (`ProfileScreen.showForm = isUpdatable || knockoutOpen`); a stage's inputs go read-only once its deadline passes ("Locked" badge); knockout-only saves are filtered to open stages so they don't trip the still-`is_updatable`-gated group/top-scorer policies.
 
-`trg_match_finished` fires once and the match leaves the sync candidate set forever — a source flapping `FINISHED` mid-match (football-data sent flapping partial data on day 1) would permanently freeze a wrong result and lock the leaderboard to it. Add a sanity check in `sync-live-matches`: refuse `FINISHED` before kickoff + ~100 min (group stage) / ~155 min (knockout), from either source.
+## Resolved (2026-06-28)
 
-## 3. Post-final correction window
+1. **Knockout scoring wired into the leaderboard** — `20260628_fix_knockout_scoring.sql` applied. `prediction_points_v2` penalties-winner bug fixed (added `p_home_team_code`/`p_away_team_code` to translate the team-code pick before comparing to `winner`); `refresh_quiniela_leaderboard` now uses v2 + `bracket_bonus_points`. Verified live: 5328/5328 group-stage predictions match the old `prediction_points` (zero diff), penalty fix returns 5/4 as designed.
+2. **Premature-FINISHED guard** — covered by `sync-live-matches`'s `STATUS_RANK` + recheck-window safeguards (already deployed).
+3. **Post-final correction window** — `RECHECK_WINDOW_MS` (5 min) + `20260617_finished_match_correction_trigger.sql`, already deployed.
+4. **Stale live data surfaced in the app** — `matches.last_synced_at` now flows through `fetchMatches`/`Match`; `isLiveDataStale` (`helpers.ts`) + `useNowTick` shared 30s ticker drive a "Live updates delayed" hint in `MatchCard`/`MatchDetail` (locale key `MATCH_CARD_STATUS_STALE`).
+5. **FIFA ET-phase enum values** — confirmed resolved (will be re-observed naturally at the first knockout match that reaches extra time; the `Period >= 6` → `_et` assumption stands until then).
+6. **Knockout venue corruption (14 rows)** — `20260629_fix_knockout_venues.sql` applied. Each row's correct `(venue, venue_city, venue_country)` re-derived from FIFA's calendar `Stadium.CityName` per `fifa_match_id`, mapped to our canonical city strings; all 14 verified against FIFA post-fix.
+7. **Tests for the sync translation logic** — pure logic extracted to `supabase/functions/sync-live-matches/translate.ts` (`mapFifaStatus`, `pruneNulls`, `isStale`, `resolveFifaWinner`, `STATUS_RANK`) and covered by `translate.test.ts` (`node:test`). Run with `pnpm test` (5 tests, all passing). `sync-live-matches` redeployed (v18) importing from `translate.ts`.
 
-Once a match is `FINISHED` it is never re-fetched, so an official score correction never lands. Keep recently-finished matches (e.g. within 15 min of finishing) in the candidate set, and re-run `refresh_quiniela_leaderboard(quiniela_id, match_id)` if the stored score actually changed. Largely covers #2 as well.
-
-## 4. Surface stale live data in the app
-
-If both APIs fail mid-match, pg_cron just collects 500s silently. Lightest fix: when a match is `IN_PLAY` but `last_synced_at` is older than ~5 min, show a "live data delayed" hint in `MatchCard`/`MatchDetail`.
-
-## 5. Verify FIFA ET-phase enum values at the first knockout ET match
-
-`Period` values 6–9/11 and live-ET behavior are documented assumptions in `sync-live-matches/index.ts` (normal time tops out at Period 5; `>= 6` is assumed ET/shootout and routes the score to the `_et` columns). Confirm against FIFA's live endpoint the first time a knockout match goes to extra time, and correct the mapping if needed.
-
-## 6. Fix venue data on 14 knockout matches
-
-14 of the 32 knockout rows have wrong `venue`/`venue_city` (off by a few slots — e.g. match `537423` is tagged Boston but is in Houston). Cross-reference FIFA's calendar API (`api.fifa.com/api/v3/calendar/matches?idseason=285023`) `Stadium`/`CityName` per `fifa_match_id` against migrations 9–10. Doesn't affect `fifa_match_id` (joined on kickoff time).
-
-## 7. Tests for the sync translation logic
-
-`mapFifaStatus`, the FIFA→schema translation, and the anti-reset guards in `sync-live-matches/index.ts` are pure-function-shaped but untested (no test suite exists in the project at all). Extract and cover them, including the day-1 regression cases: stale `TIMED` after kickoff, partial response with nulls, premature mid-match winner.
+### Also done this session
+- `sync-knockout-bracket` Edge Function deployed + `*/15` cron registered (`20260628_sync_knockout_bracket_cron.sql`); triggered once manually — all 16 Round-of-32 matchups resolved.
+- `src/lib/supabase.ts` regenerated against the live DB (now includes `knockout_mode`); temporary type casts removed from `queries.ts` / `auth-context.tsx`.

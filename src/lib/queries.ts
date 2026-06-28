@@ -21,7 +21,17 @@ function dbStatusToUi(s: string): MatchStatus {
   return "upcoming";
 }
 
-export function rowToMatch(row: Tables<"matches">): Match {
+// Bracket feeder columns added by 20260629_knockout_bracket_sources.sql. Layered
+// on the generated Row type until the next `pnpm supabase:types` regen picks
+// them up (supabase.ts is auto-generated — never hand-edited).
+export type MatchRow = Tables<"matches"> & {
+  home_source_match_id: number | null;
+  away_source_match_id: number | null;
+  home_source_outcome: "winner" | "loser" | null;
+  away_source_outcome: "winner" | "loser" | null;
+};
+
+export function rowToMatch(row: MatchRow): Match {
   return {
     id: row.id,
     group: row.group_name ?? "",
@@ -41,6 +51,11 @@ export function rowToMatch(row: Tables<"matches">): Match {
     venue: row.venue,
     venueCity: row.venue_city,
     venueCountry: row.venue_country,
+    lastSyncedAt: row.last_synced_at,
+    homeSourceMatchId: row.home_source_match_id,
+    awaySourceMatchId: row.away_source_match_id,
+    homeSourceOutcome: row.home_source_outcome,
+    awaySourceOutcome: row.away_source_outcome,
   };
 }
 
@@ -49,12 +64,12 @@ export async function fetchMatches(): Promise<Match[]> {
   const { data, error } = await client
     .from("matches")
     .select(
-      "id, group_name, matchday, home_team_code, away_team_code, utc_date, status, score_home_regular, score_away_regular, stage, score_home_et, score_away_et, winner, minute, venue, venue_city, venue_country",
+      "id, group_name, matchday, home_team_code, away_team_code, utc_date, status, score_home_regular, score_away_regular, stage, score_home_et, score_away_et, winner, minute, venue, venue_city, venue_country, last_synced_at, home_source_match_id, away_source_match_id, home_source_outcome, away_source_outcome",
     )
     .order("utc_date", { ascending: true });
   if (error) throw error;
   return (data ?? []).map((row) =>
-    rowToMatch(row as unknown as Tables<"matches">),
+    rowToMatch(row as unknown as MatchRow),
   );
 }
 
@@ -332,21 +347,10 @@ export interface MembershipInfo {
   knockoutMode: string;
 }
 
-// knockout_mode isn't in the generated RPC return types yet — regenerate via
-// `pnpm supabase:types` once 20260628_add_knockout_mode.sql is applied; this
-// type bridges the gap until then.
-type MembershipRow = {
-  quiniela_id: string;
-  avatar_color: string | null;
-  is_updatable: boolean;
-  variant: string | null;
-  knockout_mode: string;
-};
-
 export async function fetchUserMembershipInfo(): Promise<MembershipInfo | null> {
   const { data, error } = await getClient().rpc("get_active_membership");
   if (error) throw error;
-  const row = (data as unknown as MembershipRow[] | null)?.[0];
+  const row = data?.[0];
   if (!row) return null;
   return {
     quinielaId: row.quiniela_id,
@@ -378,7 +382,7 @@ export async function setActiveQuiniela(
     p_quiniela_id: quinielaId,
   });
   if (error) throw error;
-  const row = (data as unknown as MembershipRow[] | null)?.[0];
+  const row = data?.[0];
   if (!row) throw new Error("Failed to switch quiniela");
   return {
     quinielaId: row.quiniela_id,

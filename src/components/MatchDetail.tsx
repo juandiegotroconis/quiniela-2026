@@ -20,7 +20,9 @@ import {
   formatMatchDateTime,
   getStageLabelKey,
   getLiveMinute,
+  isLiveDataStale,
 } from "~/lib/helpers";
+import { useNowTick } from "~/hooks/useNowTick";
 import type { Match } from "~/lib/types";
 import { TEAM_FULL } from "~/lib/mock-data";
 import type { UserPickEntry } from "~/lib/auth-context";
@@ -150,6 +152,8 @@ export default function MatchDetail({ match: matchProp, onBack, userPick }: Prop
   const groups = groupPredictions(preds, match, user?.id ?? null);
   const stageLabelKey = getStageLabelKey(match.stage);
   const isScored = match.status === "finished" || match.status === "live";
+  const now = useNowTick(match.status === "live");
+  const isStale = isLiveDataStale(match, now);
   const hasPick = userPick && userPick.pickA !== "" && userPick.pickB !== "";
 
   let result = null;
@@ -196,6 +200,12 @@ export default function MatchDetail({ match: matchProp, onBack, userPick }: Prop
         <div className='match-detail__status'>
           <MatchStatusBadge match={match} />
         </div>
+
+        {isStale && (
+          <div className='match-detail__stale'>
+            {t("MATCH_CARD_STATUS_STALE")}
+          </div>
+        )}
 
         <div className='match-detail__score-row'>
           {match.teamA ? (

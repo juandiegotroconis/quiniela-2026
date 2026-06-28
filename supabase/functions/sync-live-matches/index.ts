@@ -57,6 +57,12 @@
 //     Period >= 6 routes Score to the _et columns. Verify at the first
 //     knockout match that reaches extra time.
 import { createClient, SupabaseClient } from 'npm:@supabase/supabase-js@2';
+import {
+  mapFifaStatus,
+  pruneNulls,
+  isStale,
+  resolveFifaWinner,
+} from './translate.ts';
 
 const FD_URL = 'https://api.football-data.org/v4/competitions/WC/matches';
 const FIFA_URL = 'https://api.fifa.com/api/v3/live/football';
@@ -74,15 +80,8 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 // a source correcting its score a tick or two behind the final whistle.
 const RECHECK_WINDOW_MS = 5 * 60 * 1000;
 
-// TIMED < live < FINISHED. A source reporting a lower rank than the row
-// already has is stale and must never downgrade it.
-const STATUS_RANK: Record<string, number> = {
-  SCHEDULED: 0,
-  TIMED: 0,
-  IN_PLAY: 1,
-  PAUSED: 1,
-  FINISHED: 2,
-};
+// STATUS_RANK, mapFifaStatus, pruneNulls, isStale and resolveFifaWinner are
+// imported from ./translate.ts (unit-tested in translate.test.ts).
 
 type FdScorePart = { home: number | null; away: number | null };
 type FdMatch = {
@@ -187,26 +186,6 @@ type EventRow = {
 };
 
 const dateOnly = (d: Date) => d.toISOString().slice(0, 10);
-
-// Safeguard 2: drop null/undefined fields so a source that omits data
-// another tick already stored can never wipe it.
-const pruneNulls = (o: Record<string, unknown>) =>
-  Object.fromEntries(
-    Object.entries(o).filter(([, v]) => v !== null && v !== undefined),
-  );
-
-function mapFifaStatus(f: FifaLive): string | null {
-  switch (f.MatchStatus) {
-    case 0:
-      return 'FINISHED';
-    case 1:
-      return 'TIMED';
-    case 3:
-      return f.Period === 4 || f.Period === 8 ? 'PAUSED' : 'IN_PLAY';
-    default:
-      return null;
-  }
-}
 
 type FifaOutcome = {
   outcome: 'updated' | 'skipped' | 'fallback';
@@ -370,7 +349,7 @@ async function syncFromFifa(
   }
   // Safeguard 1: FIFA behind what we already stored — let football-data
   // (which may be the source of the stored status) take this tick instead.
-  if ((STATUS_RANK[status] ?? 0) < (STATUS_RANK[candidate.status] ?? 0)) {
+  if (isStale(status, candidate.status)) {
     console.log(
       `match ${candidate.id}: FIFA status ${status} behind DB ${candidate.status}, using football-data`,
     );
@@ -394,15 +373,12 @@ async function syncFromFifa(
     : (f.Period ?? 0) >= 6;
   // Winner is only meaningful once the match is over — football-data was
   // observed flapping a premature winner mid-match, so never store one early.
-  const winner = status !== 'FINISHED'
-    ? null
-    : f.Winner
-      ? f.Winner === f.HomeTeam?.IdTeam
-        ? 'HOME_TEAM'
-        : f.Winner === f.AwayTeam?.IdTeam
-          ? 'AWAY_TEAM'
-          : null
-      : 'DRAW';
+  const winner = resolveFifaWinner(
+    status,
+    f.Winner,
+    f.HomeTeam?.IdTeam,
+    f.AwayTeam?.IdTeam,
+  );
   const duration = status !== 'FINISHED' || f.ResultType === 1
     ? 'REGULAR'
     : f.ResultType === 2
@@ -490,7 +466,7 @@ async function syncFromFd(
   }
   // Safeguard 1: this is exactly how the day-1 reset happened — football-data
   // reported TIMED/nulls for a row FIFA had already marked live.
-  if ((STATUS_RANK[m.status] ?? 0) < (STATUS_RANK[candidate.status] ?? 0)) {
+  if (isStale(m.status, candidate.status)) {
     console.log(
       `match ${candidate.id}: football-data status ${m.status} behind DB ${candidate.status}, skipping`,
     );

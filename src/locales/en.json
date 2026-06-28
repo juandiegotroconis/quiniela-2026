@@ -88,6 +88,10 @@
   "BANNER_UPDATABLE_TEXT": "Predictions are still open — you can update yours!",
   "BANNER_ENTER_PREDICTIONS": "Enter Predictions →",
   "BANNER_UPDATE_PREDICTIONS": "Update Predictions →",
+  "BANNER_KNOCKOUT_ONESHOT_TEXT": "Knockout predictions are open — enter your full bracket before {deadline}",
+  "BANNER_KNOCKOUT_STAGE_TEXT": "{stage} predictions are open — submit before {deadline}",
+  "BANNER_KNOCKOUT_FALLBACK_STAGE": "Knockout",
+  "BANNER_KNOCKOUT_BTN": "Enter Knockout Picks →",
 
   "PRED_FORM_TITLE": "Enter Your Predictions",
   "PRED_FORM_SUBTITLE_OPEN": "Fill in your predicted score for every match and pick the tournament top scorer. You can save your progress at any time and update picks while predictions are open.",
@@ -106,6 +110,7 @@
   "PRED_FORM_BRACKET_PROMPT": "Guess the matchup",
   "PRED_FORM_BRACKET_HOME_PLACEHOLDER": "Home team",
   "PRED_FORM_BRACKET_AWAY_PLACEHOLDER": "Away team",
+  "PRED_FORM_BRACKET_PENDING": "Pick the previous round to set this matchup",
   "PRED_FORM_ERROR_INCOMPLETE": "Please fill in all match predictions and select a top scorer before submitting.",
   "PRED_FORM_SUBMIT": "Submit All",
   "PRED_FORM_SUBMITTING": "Submitting…",
@@ -115,6 +120,7 @@
   "PRED_FORM_STATUS_UNSAVED": "You have unsaved changes",
   "PRED_FORM_STATUS_ALL_SAVED": "All changes saved",
   "PRED_FORM_STATUS_NO_PICKS": "No picks entered yet",
+  "PRED_FORM_STAGE_LOCKED": "Locked",
 
   "PROFILE_READONLY_STAT_EXACT": "Exact scores",
   "PROFILE_READONLY_STAT_WINNER": "Correct winner",
@@ -211,6 +217,7 @@
   "MATCH_CARD_STATUS_LIVE": "LIVE",
   "MATCH_CARD_STATUS_FT": "FT",
   "MATCH_CARD_STATUS_HT": "HT",
+  "MATCH_CARD_STATUS_STALE": "Live updates delayed",
   "MATCH_CARD_GROUP_PREFIX": "Group",
 
   "MATCH_DETAIL_BACK": "← Back to matches",
