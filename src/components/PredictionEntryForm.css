@@ -509,3 +509,108 @@
   color: var(--fg-tertiary);
   cursor: default;
 }
+
+/* Knockout section */
+.pred-form__knockout-heading {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin: 8px 0 16px;
+}
+
+.pred-form__knockout {
+  margin-top: 4px;
+}
+
+/* Penalty-shootout-winner picker (shown when a knockout pick is a draw) */
+.pred-form__penalty-picker {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 4px 0 2px;
+}
+
+.pred-form__penalty-label {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--fg-tertiary);
+}
+
+.pred-form__penalty-options {
+  display: flex;
+  gap: 8px;
+}
+
+.pred-form__penalty-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  background: var(--surface-3);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-full);
+  color: var(--fg-secondary);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 150ms var(--ease-default);
+}
+
+.pred-form__penalty-btn:hover {
+  border-color: var(--color-brand);
+}
+
+.pred-form__penalty-btn--active {
+  background: var(--color-brand-bg);
+  border-color: var(--color-brand);
+  color: var(--color-brand);
+}
+
+/* Bracket matchup-guess picker (TBD knockout matches) */
+.pred-form__bracket-match {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.pred-form__bracket-match:last-child {
+  border-bottom: none;
+}
+
+.pred-form__bracket-prompt {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--fg-tertiary);
+}
+
+.pred-form__bracket-pickers {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pred-form__bracket-select {
+  flex: 1;
+  min-width: 0;
+  height: 36px;
+  padding: 0 8px;
+  background: var(--surface-3);
+  border: 1px solid var(--border-default);
+  border-radius: 6px;
+  color: var(--fg-primary);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  outline: none;
+  transition: border-color 200ms var(--ease-default);
+}
+
+.pred-form__bracket-select:focus {
+  border-color: var(--color-brand);
+}

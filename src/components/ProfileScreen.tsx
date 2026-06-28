@@ -13,7 +13,7 @@ import PositionChange from "./PositionChange";
 import PredictionEntryForm from "./PredictionEntryForm";
 import ProfileReadOnly from "./ProfileReadOnly";
 import { AVATAR_COLORS } from "~/lib/mock-data";
-import type { UserPickEntry } from "~/lib/auth-context";
+import type { BracketPickEntry, UserPickEntry } from "~/lib/auth-context";
 import type { TopScorerSuggestion } from "~/lib/mock-data";
 import type { UserQuiniela } from "~/lib/queries";
 
@@ -25,7 +25,9 @@ export default function ProfileScreen() {
     user,
     quinielaId,
     isUpdatable,
+    knockoutMode,
     userPicks,
+    bracketPicks,
     topScorer,
     savePredictions,
     submitPredictions,
@@ -117,8 +119,9 @@ export default function ProfileScreen() {
   const handleSave = async (
     picks: Record<number, UserPickEntry>,
     scorer: TopScorerSuggestion | null,
+    newBracketPicks: Record<number, BracketPickEntry>,
   ) => {
-    await savePredictions(picks, scorer);
+    await savePredictions(picks, scorer, newBracketPicks);
   };
 
   const handleSubmit = async (
@@ -361,8 +364,10 @@ export default function ProfileScreen() {
       {showForm ? (
         <PredictionEntryForm
           initialPicks={userPicks}
+          initialBracketPicks={bracketPicks}
           initialTopScorer={topScorer}
           isUpdatable={isUpdatable}
+          knockoutMode={knockoutMode}
           onSave={handleSave}
           onSubmit={handleSubmit}
         />

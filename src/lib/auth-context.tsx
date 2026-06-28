@@ -11,6 +11,7 @@ import { getClient } from "./client";
 import {
   fetchUserPicks,
   fetchUserTopScorer,
+  fetchUserBracketPicks,
   checkSubmitted,
   submitAllPredictions,
   savePredictions as querySavePredictions,
@@ -19,6 +20,7 @@ import {
   setActiveQuiniela as querySetActiveQuiniela,
   updateAvatarColor as queryUpdateAvatarColor,
   type UserQuiniela,
+  type BracketPickEntry,
 } from "./queries";
 import { AVATAR_COLORS, type TopScorerSuggestion } from "./mock-data";
 
@@ -32,7 +34,10 @@ export interface AuthUser {
 export interface UserPickEntry {
   pickA: string;
   pickB: string;
+  pickPenaltiesWinner: string | null;
 }
+
+export type { BracketPickEntry };
 
 interface AuthContextValue {
   user: AuthUser | null;
@@ -42,7 +47,9 @@ interface AuthContextValue {
   submitted: boolean;
   isUpdatable: boolean;
   quinielaVariant: string | null;
+  knockoutMode: string;
   userPicks: Record<number, UserPickEntry>;
+  bracketPicks: Record<number, BracketPickEntry>;
   topScorer: TopScorerSuggestion | null;
   isPasswordRecovery: boolean;
   login: (email: string, password: string) => Promise<string | null>;
@@ -64,6 +71,7 @@ interface AuthContextValue {
   savePredictions: (
     picks: Record<number, UserPickEntry>,
     scorer: TopScorerSuggestion | null,
+    bracketPicks?: Record<number, BracketPickEntry>,
   ) => Promise<string | null>;
   submitPredictions: (
     picks: Record<number, UserPickEntry>,
@@ -82,7 +90,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [submitted, setSubmitted] = useState(false);
   const [isUpdatable, setIsUpdatable] = useState(true);
   const [quinielaVariant, setQuinielaVariant] = useState<string | null>(null);
+  const [knockoutMode, setKnockoutMode] = useState<string>("STAGE_BY_STAGE");
   const [userPicks, setUserPicks] = useState<Record<number, UserPickEntry>>({});
+  const [bracketPicks, setBracketPicks] = useState<Record<number, BracketPickEntry>>({});
   const [topScorer, setTopScorer] = useState<TopScorerSuggestion | null>(null);
   const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
   const loadedForUser = useRef<string | null>(null);
@@ -92,15 +102,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let mounted = true;
 
     const loadUserData = async (userId: string, qId: string) => {
-      const [sub, picks, scorer] = await Promise.all([
+      const [sub, picks, scorer, bracket] = await Promise.all([
         checkSubmitted(userId, qId),
         fetchUserPicks(userId, qId),
         fetchUserTopScorer(userId, qId),
+        fetchUserBracketPicks(userId, qId),
       ]);
       if (!mounted) return;
       setSubmitted(sub);
       setUserPicks(picks);
       setTopScorer(scorer);
+      setBracketPicks(bracket);
     };
 
     const loadAfterAuth = async (
@@ -125,6 +137,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setNeedsQuiniela(false);
           setIsUpdatable(membership.isUpdatable);
           setQuinielaVariant(membership.variant);
+          setKnockoutMode(membership.knockoutMode);
           setUser((prev) =>
             prev ? { ...prev, avatarColor: membership.avatarColor } : prev,
           );
@@ -190,7 +203,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSubmitted(false);
         setIsUpdatable(true);
         setQuinielaVariant(null);
+        setKnockoutMode("STAGE_BY_STAGE");
         setUserPicks({});
+        setBracketPicks({});
         setTopScorer(null);
         setLoading(false);
       }
@@ -271,24 +286,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const joinWithCode = async (code: string): Promise<string | null> => {
     if (!user) return "Not authenticated";
     try {
-      const { data, error } = await client
+      const { data: rawData, error } = await client
         .rpc("join_quiniela_by_code", { p_join_code: code })
         .select("*")
         .maybeSingle();
-      if (error || !data) return error ? error.message : "Quiniela not found";
+      if (error || !rawData) return error ? error.message : "Quiniela not found";
+      // knockout_mode isn't in the generated RPC return type yet — see
+      // MembershipRow in queries.ts.
+      const data = rawData as typeof rawData & { knockout_mode: string };
 
-      const [sub, picks, scorer] = await Promise.all([
+      const [sub, picks, scorer, bracket] = await Promise.all([
         checkSubmitted(user.id, data.quiniela_id),
         fetchUserPicks(user.id, data.quiniela_id),
         fetchUserTopScorer(user.id, data.quiniela_id),
+        fetchUserBracketPicks(user.id, data.quiniela_id),
       ]);
       setQuinielId(data.quiniela_id);
       setNeedsQuiniela(false);
       setSubmitted(sub);
       setUserPicks(picks);
       setTopScorer(scorer);
+      setBracketPicks(bracket);
       setIsUpdatable(data.is_updatable);
       setQuinielaVariant(data.variant);
+      setKnockoutMode(data.knockout_mode);
       return null;
     } catch (e: unknown) {
       return e instanceof Error ? e.message : "Failed to join quiniela";
@@ -305,17 +326,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!user) return "Not authenticated";
     try {
       const membership = await querySetActiveQuiniela(newQuinielaId);
-      const [sub, picks, scorer] = await Promise.all([
+      const [sub, picks, scorer, bracket] = await Promise.all([
         checkSubmitted(user.id, membership.quinielaId),
         fetchUserPicks(user.id, membership.quinielaId),
         fetchUserTopScorer(user.id, membership.quinielaId),
+        fetchUserBracketPicks(user.id, membership.quinielaId),
       ]);
       setQuinielId(membership.quinielaId);
       setSubmitted(sub);
       setUserPicks(picks);
       setTopScorer(scorer);
+      setBracketPicks(bracket);
       setIsUpdatable(membership.isUpdatable);
       setQuinielaVariant(membership.variant);
+      setKnockoutMode(membership.knockoutMode);
       setUser((prev) =>
         prev ? { ...prev, avatarColor: membership.avatarColor } : prev,
       );
@@ -328,12 +352,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const savePredictions = async (
     picks: Record<number, UserPickEntry>,
     scorer: TopScorerSuggestion | null,
+    newBracketPicks: Record<number, BracketPickEntry> = {},
   ): Promise<string | null> => {
     if (!user || !quinielaId) return "Not authenticated";
     try {
-      await querySavePredictions(user.id, quinielaId, picks, scorer);
+      await querySavePredictions(user.id, quinielaId, picks, scorer, newBracketPicks);
       setUserPicks(picks);
       if (scorer) setTopScorer(scorer);
+      setBracketPicks(newBracketPicks);
       return null;
     } catch (e: unknown) {
       return e instanceof Error ? e.message : "Failed to save predictions";
@@ -377,7 +403,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         submitted,
         isUpdatable,
         quinielaVariant,
+        knockoutMode,
         userPicks,
+        bracketPicks,
         topScorer,
         isPasswordRecovery,
         login,

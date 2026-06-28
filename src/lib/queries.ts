@@ -197,7 +197,7 @@ export async function fetchUserPicks(
   const client = getClient();
   const { data, error } = await client
     .from("predictions")
-    .select("match_id, pick_home, pick_away")
+    .select("match_id, pick_home, pick_away, pick_penalties_winner")
     .eq("user_id", userId)
     .eq("quiniela_id", quinielaId);
   if (error) throw error;
@@ -206,6 +206,33 @@ export async function fetchUserPicks(
     picks[row.match_id] = {
       pickA: String(row.pick_home),
       pickB: String(row.pick_away),
+      pickPenaltiesWinner: row.pick_penalties_winner,
+    };
+  }
+  return picks;
+}
+
+export interface BracketPickEntry {
+  predHome: string;
+  predAway: string;
+}
+
+export async function fetchUserBracketPicks(
+  userId: string,
+  quinielaId: string,
+): Promise<Record<number, BracketPickEntry>> {
+  const client = getClient();
+  const { data, error } = await client
+    .from("bracket_predictions")
+    .select("match_id, pred_home_team_code, pred_away_team_code")
+    .eq("user_id", userId)
+    .eq("quiniela_id", quinielaId);
+  if (error) throw error;
+  const picks: Record<number, BracketPickEntry> = {};
+  for (const row of data ?? []) {
+    picks[row.match_id] = {
+      predHome: row.pred_home_team_code ?? "",
+      predAway: row.pred_away_team_code ?? "",
     };
   }
   return picks;
@@ -302,18 +329,31 @@ export interface MembershipInfo {
   avatarColor: string | null;
   isUpdatable: boolean;
   variant: string | null;
+  knockoutMode: string;
 }
+
+// knockout_mode isn't in the generated RPC return types yet — regenerate via
+// `pnpm supabase:types` once 20260628_add_knockout_mode.sql is applied; this
+// type bridges the gap until then.
+type MembershipRow = {
+  quiniela_id: string;
+  avatar_color: string | null;
+  is_updatable: boolean;
+  variant: string | null;
+  knockout_mode: string;
+};
 
 export async function fetchUserMembershipInfo(): Promise<MembershipInfo | null> {
   const { data, error } = await getClient().rpc("get_active_membership");
   if (error) throw error;
-  const row = data?.[0];
+  const row = (data as unknown as MembershipRow[] | null)?.[0];
   if (!row) return null;
   return {
     quinielaId: row.quiniela_id,
     avatarColor: row.avatar_color,
     isUpdatable: row.is_updatable,
     variant: row.variant,
+    knockoutMode: row.knockout_mode,
   };
 }
 
@@ -338,13 +378,14 @@ export async function setActiveQuiniela(
     p_quiniela_id: quinielaId,
   });
   if (error) throw error;
-  const row = data?.[0];
+  const row = (data as unknown as MembershipRow[] | null)?.[0];
   if (!row) throw new Error("Failed to switch quiniela");
   return {
     quinielaId: row.quiniela_id,
     avatarColor: row.avatar_color,
     isUpdatable: row.is_updatable,
     variant: row.variant,
+    knockoutMode: row.knockout_mode,
   };
 }
 
@@ -353,6 +394,7 @@ export async function savePredictions(
   quinielaId: string,
   picks: Record<number, UserPickEntry>,
   topScorer: TopScorerSuggestion | null,
+  bracketPicks: Record<number, BracketPickEntry> = {},
 ): Promise<void> {
   const client = getClient();
   const filledRows = Object.entries(picks)
@@ -363,6 +405,7 @@ export async function savePredictions(
       match_id: Number(matchId),
       pick_home: Number(pick.pickA),
       pick_away: Number(pick.pickB),
+      pick_penalties_winner: pick.pickPenaltiesWinner ?? null,
     }));
 
   if (filledRows.length > 0) {
@@ -382,6 +425,23 @@ export async function savePredictions(
       },
       { onConflict: "user_id,quiniela_id" },
     );
+    if (error) throw error;
+  }
+
+  const filledBracketRows = Object.entries(bracketPicks)
+    .filter(([, pick]) => pick.predHome !== "" && pick.predAway !== "")
+    .map(([matchId, pick]) => ({
+      quiniela_id: quinielaId,
+      user_id: userId,
+      match_id: Number(matchId),
+      pred_home_team_code: pick.predHome,
+      pred_away_team_code: pick.predAway,
+    }));
+
+  if (filledBracketRows.length > 0) {
+    const { error } = await client
+      .from("bracket_predictions")
+      .upsert(filledBracketRows, { onConflict: "user_id,quiniela_id,match_id" });
     if (error) throw error;
   }
 }
@@ -438,6 +498,7 @@ export async function submitAllPredictions(
     match_id: Number(matchId),
     pick_home: Number(pick.pickA),
     pick_away: Number(pick.pickB),
+    pick_penalties_winner: pick.pickPenaltiesWinner ?? null,
   }));
 
   const [predRes, tsRes, subRes] = await Promise.all([

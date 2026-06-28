@@ -195,6 +195,47 @@ export function getStageLabelKey(stage: string): TranslationKey | null {
   return STAGE_LABEL_KEYS[stage] ?? null;
 }
 
+// Teams still alive in the tournament: the union of LAST_32 entrants (the
+// 32 qualifiers, populated once the bracket-resolution sync fills in those
+// matches' team codes) minus the loser of every FINISHED knockout match.
+// Used to populate the "guess the matchup" pickers for not-yet-determined
+// knockout slots.
+export function getAliveTeams(matches: Match[]): string[] {
+  const alive = new Set<string>();
+  for (const m of matches) {
+    if (m.stage !== 'LAST_32') continue;
+    if (m.teamA) alive.add(m.teamA);
+    if (m.teamB) alive.add(m.teamB);
+  }
+  for (const m of matches) {
+    if (m.stage === 'GROUP_STAGE' || m.status !== 'finished') continue;
+    if (m.winner === 'HOME_TEAM' && m.teamB) alive.delete(m.teamB);
+    if (m.winner === 'AWAY_TEAM' && m.teamA) alive.delete(m.teamA);
+  }
+  return Array.from(alive).sort();
+}
+
+// Whether every match in a knockout stage has both teams resolved — the gate
+// for showing that stage's predictions at all (no row-by-row trickle as the
+// bracket-resolution sync fills individual matches in).
+export function isStageFullyResolved(matches: Match[], stage: string): boolean {
+  const stageMatches = matches.filter((m) => m.stage === stage);
+  return stageMatches.length > 0 && stageMatches.every((m) => m.teamA && m.teamB);
+}
+
+// STAGE_BY_STAGE mode: the one knockout stage currently open for
+// predictions — the earliest stage (tournament order) that isn't fully
+// FINISHED yet. Returns null once the tournament (or the bracket beyond
+// what's been resolved) is complete.
+export function getCurrentKnockoutStage(matches: Match[]): string | null {
+  for (const stage of KNOCKOUT_STAGE_ORDER) {
+    const stageMatches = matches.filter((m) => m.stage === stage);
+    if (stageMatches.length === 0) continue;
+    if (stageMatches.some((m) => m.status !== 'finished')) return stage;
+  }
+  return null;
+}
+
 export function getLiveMinute(match: Match): string | null {
   if (match.status !== 'live' || !match.minute) return null;
   return `${match.minute}'`;

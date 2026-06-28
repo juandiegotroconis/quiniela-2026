@@ -89,7 +89,15 @@
       "Bash(xargs grep -l \"signInWithPasskey\")",
       "Bash(xargs grep -ln \"signInWithPasskey\\\\|PasskeyAuthCredentials\\\\|mediation\")",
       "Bash(npx pnpm *)",
-      "Bash(deno check *)"
+      "Bash(deno check *)",
+      "mcp__claude_ai_Supabase__list_projects",
+      "Bash(which supabase *)",
+      "Bash(ls -la .env*)",
+      "Bash(npx tsc *)",
+      "Bash(echo \"EXIT CODE: $?\")",
+      "Bash(taskkill //F //PID 45036)",
+      "Bash(netstat -ano)",
+      "Bash(deno --version)"
     ],
     "additionalDirectories": [
       "c:\\Users\\juant\\Documents\\Projects\\quiniela-2026\\src\\routes",

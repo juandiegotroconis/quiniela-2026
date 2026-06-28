@@ -1,5 +1,5 @@
 import "./PredictionEntryForm.css";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Icon } from "@iconify/react";
 import PageContainer from "./PageContainer";
 import RulesModal from "./RulesModal";
@@ -7,19 +7,30 @@ import { useTranslation } from "~/hooks/useTranslation";
 import TeamFlag from "./TeamFlag";
 import TopScorerPicker from "./TopScorerPicker";
 import GroupNav from "./GroupNav";
-import { calcGroupStandings, formatMatchDate } from "~/lib/helpers";
+import {
+  calcGroupStandings,
+  formatMatchDate,
+  getAliveTeams,
+  getCurrentKnockoutStage,
+  getStageLabelKey,
+  isStageFullyResolved,
+  KNOCKOUT_STAGE_ORDER,
+} from "~/lib/helpers";
 import { GROUPS, TEAM_FULL } from "~/lib/mock-data";
 import type { TopScorerSuggestion } from "~/lib/mock-data";
-import type { UserPickEntry } from "~/lib/auth-context";
+import type { BracketPickEntry, UserPickEntry } from "~/lib/auth-context";
 import { useData } from "~/lib/data-context";
 
 interface Props {
   initialPicks?: Record<number, UserPickEntry>;
+  initialBracketPicks?: Record<number, BracketPickEntry>;
   initialTopScorer?: TopScorerSuggestion | null;
   isUpdatable?: boolean;
+  knockoutMode?: string;
   onSave: (
     picks: Record<number, UserPickEntry>,
     scorer: TopScorerSuggestion | null,
+    bracketPicks: Record<number, BracketPickEntry>,
   ) => Promise<void>;
   onSubmit: (
     picks: Record<number, UserPickEntry>,
@@ -27,10 +38,15 @@ interface Props {
   ) => Promise<void>;
 }
 
+const EMPTY_PICK: UserPickEntry = { pickA: "", pickB: "", pickPenaltiesWinner: null };
+const EMPTY_BRACKET_PICK: BracketPickEntry = { predHome: "", predAway: "" };
+
 export default function PredictionEntryForm({
   initialPicks = {},
+  initialBracketPicks = {},
   initialTopScorer = null,
   isUpdatable = true,
+  knockoutMode = "STAGE_BY_STAGE",
   onSave,
   onSubmit,
 }: Props) {
@@ -38,6 +54,8 @@ export default function PredictionEntryForm({
   const { t, language } = useTranslation();
   const [picks, setPicks] =
     useState<Record<number, UserPickEntry>>(initialPicks);
+  const [bracketPicks, setBracketPicks] =
+    useState<Record<number, BracketPickEntry>>(initialBracketPicks);
   const [topScorer, setTopScorer] = useState<TopScorerSuggestion | null>(
     initialTopScorer,
   );
@@ -53,9 +71,63 @@ export default function PredictionEntryForm({
   const [isDirty, setIsDirty] = useState(false);
 
   const updatePick = (matchId: number, pickA: string, pickB: string) => {
-    setPicks((prev) => ({ ...prev, [matchId]: { pickA, pickB } }));
+    setPicks((prev) => ({
+      ...prev,
+      [matchId]: { ...(prev[matchId] ?? EMPTY_PICK), pickA, pickB },
+    }));
     setIsDirty(true);
   };
+
+  const updatePenaltyWinner = (matchId: number, teamCode: string) => {
+    setPicks((prev) => ({
+      ...prev,
+      [matchId]: { ...(prev[matchId] ?? EMPTY_PICK), pickPenaltiesWinner: teamCode },
+    }));
+    setIsDirty(true);
+  };
+
+  const updateBracketPick = (
+    matchId: number,
+    side: "predHome" | "predAway",
+    teamCode: string,
+  ) => {
+    setBracketPicks((prev) => ({
+      ...prev,
+      [matchId]: { ...(prev[matchId] ?? EMPTY_BRACKET_PICK), [side]: teamCode },
+    }));
+    setIsDirty(true);
+  };
+
+  const aliveTeams = useMemo(() => getAliveTeams(matches), [matches]);
+
+  // Knockout predictions only open once the entire Round of 32 is resolved
+  // (every match has both teams), not one match at a time as the
+  // bracket-resolution sync trickles them in.
+  const knockoutAvailable = useMemo(
+    () => isStageFullyResolved(matches, "LAST_32"),
+    [matches],
+  );
+
+  // ONE_SHOT: every knockout stage is open at once (later, undetermined
+  // rounds use the matchup-guess picker). STAGE_BY_STAGE: only the current
+  // stage is open, and only once its teams are known.
+  const visibleKnockoutStages = useMemo(() => {
+    if (!knockoutAvailable) return [];
+    if (knockoutMode === "ONE_SHOT") return KNOCKOUT_STAGE_ORDER;
+    const current = getCurrentKnockoutStage(matches);
+    return current ? [current] : [];
+  }, [knockoutAvailable, knockoutMode, matches]);
+
+  const knockoutByStage = useMemo(
+    () =>
+      KNOCKOUT_STAGE_ORDER.filter((stage) => visibleKnockoutStages.includes(stage)).map(
+        (stage) => ({
+          stage,
+          matches: matches.filter((m) => m.stage === stage),
+        }),
+      ).filter((s) => s.matches.length > 0),
+    [matches, visibleKnockoutStages],
+  );
 
   const groupStageMatches = matches.filter((m) => m.stage === "GROUP_STAGE");
   const filledCount = groupStageMatches.filter(
@@ -73,7 +145,7 @@ export default function PredictionEntryForm({
     setSaving(true);
     setSaveMsg(null);
     try {
-      await onSave(picks, topScorer);
+      await onSave(picks, topScorer, bracketPicks);
       setSaveMsg(t('PRED_FORM_SAVED'));
       setIsDirty(false);
       setTimeout(() => setSaveMsg(null), 2500);
@@ -199,7 +271,7 @@ export default function PredictionEntryForm({
 
               <div className='pred-form__matches'>
                 {g.matches.map((m) => {
-                  const p = picks[m.id] ?? { pickA: "", pickB: "" };
+                  const p = picks[m.id] ?? EMPTY_PICK;
                   const isEmpty = p.pickA === "" || p.pickB === "";
                   const hasError = showErrors && isEmpty;
                   return (
@@ -287,6 +359,152 @@ export default function PredictionEntryForm({
           );
         })}
       </div>
+
+      {knockoutByStage.length > 0 && (
+        <div className='pred-form__knockout-heading'>
+          {t('PRED_FORM_KNOCKOUT_HEADING')}
+        </div>
+      )}
+
+      {knockoutByStage.length > 0 && (
+        <div className='pred-form__groups pred-form__knockout'>
+          {knockoutByStage.map(({ stage, matches: stageMatches }) => {
+            const stageLabelKey = getStageLabelKey(stage);
+            return (
+              <div key={stage} className='pred-form__group'>
+                <div className='pred-form__group-header'>
+                  {stageLabelKey ? t(stageLabelKey) : stage}
+                </div>
+
+                <div className='pred-form__matches'>
+                  {stageMatches.map((m) => {
+                    const resolved = Boolean(m.teamA) && Boolean(m.teamB);
+                    if (!resolved) {
+                      // STAGE_BY_STAGE never guesses future matchups — a
+                      // stage only becomes visible once its teams are known,
+                      // so this is just a transient gap right after the
+                      // sync resolves the rest of the stage.
+                      if (knockoutMode !== "ONE_SHOT") return null;
+                      const bp = bracketPicks[m.id] ?? EMPTY_BRACKET_PICK;
+                      return (
+                        <div key={m.id} className='pred-form__bracket-match'>
+                          <span className='pred-form__match-date'>{formatMatchDate(m.utcDate, language)}</span>
+                          <span className='pred-form__bracket-prompt'>{t('PRED_FORM_BRACKET_PROMPT')}</span>
+                          <div className='pred-form__bracket-pickers'>
+                            <select
+                              className='pred-form__bracket-select'
+                              value={bp.predHome}
+                              onChange={(e) => updateBracketPick(m.id, 'predHome', e.target.value)}
+                            >
+                              <option value=''>{t('PRED_FORM_BRACKET_HOME_PLACEHOLDER')}</option>
+                              {aliveTeams
+                                .filter((c) => c !== bp.predAway)
+                                .map((c) => (
+                                  <option key={c} value={c}>
+                                    {TEAM_FULL[c] ?? c}
+                                  </option>
+                                ))}
+                            </select>
+                            <span className='pred-form__match-sep'>{t('PROFILE_READONLY_VS')}</span>
+                            <select
+                              className='pred-form__bracket-select'
+                              value={bp.predAway}
+                              onChange={(e) => updateBracketPick(m.id, 'predAway', e.target.value)}
+                            >
+                              <option value=''>{t('PRED_FORM_BRACKET_AWAY_PLACEHOLDER')}</option>
+                              {aliveTeams
+                                .filter((c) => c !== bp.predHome)
+                                .map((c) => (
+                                  <option key={c} value={c}>
+                                    {TEAM_FULL[c] ?? c}
+                                  </option>
+                                ))}
+                            </select>
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    const p = picks[m.id] ?? EMPTY_PICK;
+                    const isEmpty = p.pickA === "" || p.pickB === "";
+                    const isDrawPick = !isEmpty && p.pickA === p.pickB;
+                    return (
+                      <div key={m.id} className='pred-form__match-row'>
+                        <span className='pred-form__match-date'>{formatMatchDate(m.utcDate, language)}</span>
+                        <div className='pred-form__match-teams'>
+                          <div className='pred-form__match-side'>
+                            <span className='pred-form__match-team-name'>{m.teamA}</span>
+                            <TeamFlag code={m.teamA} size={22} />
+                          </div>
+                          <input
+                            type='number'
+                            inputMode='numeric'
+                            min='0'
+                            max='20'
+                            className='pred-form__match-input'
+                            value={p.pickA}
+                            onChange={(e) => updatePick(m.id, e.target.value, p.pickB)}
+                            placeholder='–'
+                          />
+                          <span className='pred-form__match-sep'>:</span>
+                          <input
+                            type='number'
+                            inputMode='numeric'
+                            min='0'
+                            max='20'
+                            className='pred-form__match-input'
+                            value={p.pickB}
+                            onChange={(e) => updatePick(m.id, p.pickA, e.target.value)}
+                            placeholder='–'
+                          />
+                          <div className='pred-form__match-side pred-form__match-side--right'>
+                            <TeamFlag code={m.teamB} size={22} />
+                            <span className='pred-form__match-team-name'>{m.teamB}</span>
+                          </div>
+                        </div>
+                        {m.venue && (
+                          <div className='pred-form__match-venue'>
+                            <span className='pred-form__match-venue-name'>{m.venue}</span>
+                            {m.venueCity && (
+                              <span className='pred-form__match-venue-city'>
+                                {m.venueCity}
+                                {m.venueCountry && `, ${TEAM_FULL[m.venueCountry]}`}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                        {isDrawPick && (
+                          <div className='pred-form__penalty-picker'>
+                            <span className='pred-form__penalty-label'>{t('PRED_FORM_PENALTY_PROMPT')}</span>
+                            <div className='pred-form__penalty-options'>
+                              <button
+                                type='button'
+                                className={`pred-form__penalty-btn${p.pickPenaltiesWinner === m.teamA ? " pred-form__penalty-btn--active" : ""}`}
+                                onClick={() => updatePenaltyWinner(m.id, m.teamA)}
+                              >
+                                <TeamFlag code={m.teamA} size={18} />
+                                {m.teamA}
+                              </button>
+                              <button
+                                type='button'
+                                className={`pred-form__penalty-btn${p.pickPenaltiesWinner === m.teamB ? " pred-form__penalty-btn--active" : ""}`}
+                                onClick={() => updatePenaltyWinner(m.id, m.teamB)}
+                              >
+                                <TeamFlag code={m.teamB} size={18} />
+                                {m.teamB}
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       <div
         className={`pred-form__scorer${showErrors && !topScorer ? " pred-form__scorer--error" : ""}`}
