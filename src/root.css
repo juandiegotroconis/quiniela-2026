@@ -44,3 +44,13 @@
 .predictions-banner--knockout .predictions-banner__btn {
   color: var(--color-gold-dark);
 }
+
+/* Late-submission grace banner — distinct accent so a personal catch-up window
+   reads apart from the league-wide group/knockout banners. */
+.predictions-banner--grace {
+  background: var(--color-error);
+}
+
+.predictions-banner--grace .predictions-banner__btn {
+  color: var(--color-error);
+}

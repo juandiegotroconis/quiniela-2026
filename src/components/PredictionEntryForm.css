@@ -153,6 +153,17 @@
   color: var(--fg-tertiary);
 }
 
+/* Per-row variant: marks a single match locked because it already kicked off
+   (shown under the date in late-submission grace mode, not aligned right). */
+.pred-form__locked-badge--row {
+  margin-left: 0;
+  margin-top: 3px;
+  padding: 1px 5px;
+  font-size: 9px;
+  color: var(--color-error);
+  border-color: var(--color-error);
+}
+
 /* Mini standings */
 .pred-form__mini-standings {
   padding: 10px 16px 6px;

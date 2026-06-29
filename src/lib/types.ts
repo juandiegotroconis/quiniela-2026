@@ -59,6 +59,13 @@ export interface MatchPrediction {
   pickA: number;
   pickB: number;
   pickPenaltiesWinner: string | null;
+  // ONE_SHOT knockout only: the matchup the user predicted for this slot (from
+  // bracket_predictions). The score pickA/pickB apply to *these* predicted
+  // teams, which can differ from the actual teams that resolved into the slot.
+  // Absent for group matches and STAGE_BY_STAGE, where the teams are always
+  // known at entry time.
+  predHome?: string | null;
+  predAway?: string | null;
 }
 
 export interface TopScorer {

@@ -15,7 +15,7 @@ import { useEffect } from "react";
 import "./root.css";
 
 function AppContent() {
-  const { user, loading, submitted, isUpdatable, knockoutMode, needsQuiniela, quinielaVariant } = useAuth();
+  const { user, loading, submitted, isUpdatable, knockoutMode, graceUntil, needsQuiniela, quinielaVariant } = useAuth();
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
@@ -45,9 +45,37 @@ function AppContent() {
     <>
       <TopNav />
       {bannerType && <PredictionsBanner type={bannerType} />}
+      {!onProfile && <GraceBanner graceUntil={graceUntil} />}
       {!onProfile && <KnockoutBanner knockoutMode={knockoutMode} />}
       <Outlet />
     </>
+  );
+}
+
+// Announces that a personal late-submission grace window is open, and by when.
+// Granted per-member (quiniela_members.predictions_grace_until); the player can
+// still enter predictions for not-yet-started matches until this deadline.
+// Auto-hides once it passes (via the shared useNowTick).
+function GraceBanner({ graceUntil }: { graceUntil: string | null }) {
+  const navigate = useNavigate();
+  const { t, language } = useTranslation();
+  const now = useNowTick();
+
+  if (!graceUntil || now >= Date.parse(graceUntil)) return null;
+
+  const when = formatMatchDateTime(graceUntil, language);
+  return (
+    <div className="predictions-banner predictions-banner--grace">
+      <span className="predictions-banner__text">
+        {t("BANNER_GRACE_TEXT").replace("{deadline}", when)}
+      </span>
+      <button
+        className="predictions-banner__btn"
+        onClick={() => navigate("/profile")}
+      >
+        {t("BANNER_GRACE_BTN")}
+      </button>
+    </div>
   );
 }
 

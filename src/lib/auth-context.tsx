@@ -12,6 +12,7 @@ import {
   fetchUserPicks,
   fetchUserTopScorer,
   fetchUserBracketPicks,
+  fetchMemberGrace,
   checkSubmitted,
   submitAllPredictions,
   savePredictions as querySavePredictions,
@@ -48,6 +49,7 @@ interface AuthContextValue {
   isUpdatable: boolean;
   quinielaVariant: string | null;
   knockoutMode: string;
+  graceUntil: string | null;
   userPicks: Record<number, UserPickEntry>;
   bracketPicks: Record<number, BracketPickEntry>;
   topScorer: TopScorerSuggestion | null;
@@ -91,6 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isUpdatable, setIsUpdatable] = useState(true);
   const [quinielaVariant, setQuinielaVariant] = useState<string | null>(null);
   const [knockoutMode, setKnockoutMode] = useState<string>("STAGE_BY_STAGE");
+  const [graceUntil, setGraceUntil] = useState<string | null>(null);
   const [userPicks, setUserPicks] = useState<Record<number, UserPickEntry>>({});
   const [bracketPicks, setBracketPicks] = useState<Record<number, BracketPickEntry>>({});
   const [topScorer, setTopScorer] = useState<TopScorerSuggestion | null>(null);
@@ -102,17 +105,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let mounted = true;
 
     const loadUserData = async (userId: string, qId: string) => {
-      const [sub, picks, scorer, bracket] = await Promise.all([
+      const [sub, picks, scorer, bracket, grace] = await Promise.all([
         checkSubmitted(userId, qId),
         fetchUserPicks(userId, qId),
         fetchUserTopScorer(userId, qId),
         fetchUserBracketPicks(userId, qId),
+        fetchMemberGrace(userId, qId),
       ]);
       if (!mounted) return;
       setSubmitted(sub);
       setUserPicks(picks);
       setTopScorer(scorer);
       setBracketPicks(bracket);
+      setGraceUntil(grace);
     };
 
     const loadAfterAuth = async (
@@ -204,6 +209,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsUpdatable(true);
         setQuinielaVariant(null);
         setKnockoutMode("STAGE_BY_STAGE");
+        setGraceUntil(null);
         setUserPicks({});
         setBracketPicks({});
         setTopScorer(null);
@@ -293,11 +299,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error || !rawData) return error ? error.message : "Quiniela not found";
       const data = rawData;
 
-      const [sub, picks, scorer, bracket] = await Promise.all([
+      const [sub, picks, scorer, bracket, grace] = await Promise.all([
         checkSubmitted(user.id, data.quiniela_id),
         fetchUserPicks(user.id, data.quiniela_id),
         fetchUserTopScorer(user.id, data.quiniela_id),
         fetchUserBracketPicks(user.id, data.quiniela_id),
+        fetchMemberGrace(user.id, data.quiniela_id),
       ]);
       setQuinielId(data.quiniela_id);
       setNeedsQuiniela(false);
@@ -305,6 +312,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUserPicks(picks);
       setTopScorer(scorer);
       setBracketPicks(bracket);
+      setGraceUntil(grace);
       setIsUpdatable(data.is_updatable);
       setQuinielaVariant(data.variant);
       setKnockoutMode(data.knockout_mode);
@@ -324,17 +332,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!user) return "Not authenticated";
     try {
       const membership = await querySetActiveQuiniela(newQuinielaId);
-      const [sub, picks, scorer, bracket] = await Promise.all([
+      const [sub, picks, scorer, bracket, grace] = await Promise.all([
         checkSubmitted(user.id, membership.quinielaId),
         fetchUserPicks(user.id, membership.quinielaId),
         fetchUserTopScorer(user.id, membership.quinielaId),
         fetchUserBracketPicks(user.id, membership.quinielaId),
+        fetchMemberGrace(user.id, membership.quinielaId),
       ]);
       setQuinielId(membership.quinielaId);
       setSubmitted(sub);
       setUserPicks(picks);
       setTopScorer(scorer);
       setBracketPicks(bracket);
+      setGraceUntil(grace);
       setIsUpdatable(membership.isUpdatable);
       setQuinielaVariant(membership.variant);
       setKnockoutMode(membership.knockoutMode);
@@ -402,6 +412,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isUpdatable,
         quinielaVariant,
         knockoutMode,
+        graceUntil,
         userPicks,
         bracketPicks,
         topScorer,

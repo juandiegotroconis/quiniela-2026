@@ -28,7 +28,11 @@ import { TEAM_FULL } from "~/lib/mock-data";
 import type { UserPickEntry } from "~/lib/auth-context";
 import { useAuth } from "~/lib/auth-context";
 import { useData } from "~/lib/data-context";
-import { fetchMatchPredictions, fetchMatchEvents } from "~/lib/queries";
+import {
+  fetchMatchPredictions,
+  fetchMatchEvents,
+  fetchMatchBracketPredictions,
+} from "~/lib/queries";
 import type { MatchPrediction, MatchEvent } from "~/lib/types";
 
 interface Props {
@@ -95,11 +99,18 @@ export default function MatchDetail({ match: matchProp, onBack, userPick }: Prop
     if (!quinielaId) return;
     setPredsLoading(true);
     let cancelled = false;
-    fetchMatchPredictions(match.id, quinielaId)
-      .then((raw) => {
+    // Knockout matches may carry per-user predicted matchups (ONE_SHOT mode);
+    // group matches never do, so skip that fetch entirely for them.
+    const bracketPromise =
+      match.stage !== "GROUP_STAGE"
+        ? fetchMatchBracketPredictions(match.id, quinielaId)
+        : Promise.resolve({} as Record<string, { predHome: string | null; predAway: string | null }>);
+    Promise.all([fetchMatchPredictions(match.id, quinielaId), bracketPromise])
+      .then(([raw, bracket]) => {
         const memberMap = new Map(membersRef.current.map((m) => [m.userId, m]));
         return raw.map((r) => {
           const m = memberMap.get(r.userId);
+          const b = bracket[r.userId];
           return {
             userId: r.userId,
             displayName: m?.displayName ?? "Unknown",
@@ -107,6 +118,8 @@ export default function MatchDetail({ match: matchProp, onBack, userPick }: Prop
             pickA: r.pickA,
             pickB: r.pickB,
             pickPenaltiesWinner: r.pickPenaltiesWinner,
+            predHome: b?.predHome ?? null,
+            predAway: b?.predAway ?? null,
           };
         });
       })
@@ -120,7 +133,7 @@ export default function MatchDetail({ match: matchProp, onBack, userPick }: Prop
     return () => {
       cancelled = true;
     };
-  }, [match.id, quinielaId]); // members intentionally excluded — membersRef stays current
+  }, [match.id, match.stage, quinielaId]); // members intentionally excluded — membersRef stays current
 
   // Fetch the event feed for live/finished matches; refetch whenever the live
   // score/minute/status changes (realtime pushes those via DataProvider), so a

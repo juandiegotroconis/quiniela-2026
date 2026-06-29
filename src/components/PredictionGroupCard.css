@@ -44,6 +44,64 @@
   color: var(--fg-tertiary);
 }
 
+.pred-group-card__matchup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding-bottom: 6px;
+  border-bottom: 1px dashed var(--border-subtle);
+}
+
+.pred-group-card__matchup-label {
+  font-family: var(--font-body);
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--fg-tertiary);
+}
+
+.pred-group-card__matchup-teams {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg-secondary);
+}
+
+.pred-group-card__matchup-team {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pred-group-card__matchup-vs {
+  font-size: 9px;
+  font-weight: 500;
+  color: var(--fg-tertiary);
+  text-transform: uppercase;
+}
+
+.pred-group-card__penalty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  margin-top: -4px;
+}
+
+.pred-group-card__penalty-text {
+  font-family: var(--font-body);
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--fg-tertiary);
+}
+
 .pred-group-card__badge {
   display: flex;
   justify-content: center;

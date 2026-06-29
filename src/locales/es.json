@@ -92,10 +92,13 @@
   "BANNER_KNOCKOUT_STAGE_TEXT": "Las predicciones de {stage} están abiertas — envíalas antes del {deadline}",
   "BANNER_KNOCKOUT_FALLBACK_STAGE": "Eliminatorias",
   "BANNER_KNOCKOUT_BTN": "Ingresar eliminatorias →",
+  "BANNER_GRACE_TEXT": "Tienes una prórroga para ingresar — envía tus pronósticos antes del {deadline}",
+  "BANNER_GRACE_BTN": "Ingresar Pronósticos →",
 
   "PRED_FORM_TITLE": "Ingresa tus predicciones",
   "PRED_FORM_SUBTITLE_OPEN": "Completa el marcador que predices para cada partido y elige al máximo goleador del torneo. Puedes guardar tu progreso en cualquier momento y actualizar tus picks mientras las predicciones estén abiertas.",
   "PRED_FORM_SUBTITLE_LOCKED": "Completa el marcador que predices para cada partido y elige al máximo goleador del torneo. Las predicciones están cerradas y ya no pueden modificarse.",
+  "PRED_FORM_SUBTITLE_GRACE": "Tienes una prórroga para ingresar: completa abajo los marcadores que predices. Los partidos que ya comenzaron están bloqueados, y el máximo goleador ya no puede modificarse.",
   "PRED_FORM_PROGRESS_LABEL": "Progreso",
   "PRED_FORM_MATCHES_COUNT": "partidos",
   "PRED_FORM_TOP_SCORER_COUNT": "+ goleador",
@@ -121,6 +124,7 @@
   "PRED_FORM_STATUS_ALL_SAVED": "Todos los cambios guardados",
   "PRED_FORM_STATUS_NO_PICKS": "Aún no has ingresado picks",
   "PRED_FORM_STAGE_LOCKED": "Bloqueado",
+  "PRED_FORM_MATCH_STARTED": "Comenzó",
 
   "PROFILE_READONLY_STAT_EXACT": "Marcadores exactos",
   "PROFILE_READONLY_STAT_WINNER": "Ganador correcto",
@@ -254,6 +258,9 @@
   "PLAYER_PROFILE_STAT_ACCURACY": "Precisión",
 
   "PRED_GROUP_CARD_YOUR_PICK": "Tu pick",
+  "PRED_GROUP_CARD_PENALTY_WINNER": "Pasa en penales",
+  "PRED_GROUP_CARD_PREDICTED_MATCHUP": "Cruce previsto",
+  "PRED_GROUP_CARD_MATCHUP_VS": "vs",
 
   "RULES_TITLE": "Reglas de la Quiniela – Mundial 2026",
   "RULES_INTRO": "La puntuación va del 0 al 5. Se toma en cuenta el resultado final del partido. En la fase eliminatoria, se incluye la prórroga y tanda de penales, en caso de existir.",

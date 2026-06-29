@@ -92,10 +92,13 @@
   "BANNER_KNOCKOUT_STAGE_TEXT": "{stage} predictions are open — submit before {deadline}",
   "BANNER_KNOCKOUT_FALLBACK_STAGE": "Knockout",
   "BANNER_KNOCKOUT_BTN": "Enter Knockout Picks →",
+  "BANNER_GRACE_TEXT": "Late entry is open for you — submit your predictions before {deadline}",
+  "BANNER_GRACE_BTN": "Enter Predictions →",
 
   "PRED_FORM_TITLE": "Enter Your Predictions",
   "PRED_FORM_SUBTITLE_OPEN": "Fill in your predicted score for every match and pick the tournament top scorer. You can save your progress at any time and update picks while predictions are open.",
   "PRED_FORM_SUBTITLE_LOCKED": "Fill in your predicted score for every match and pick the tournament top scorer. Predictions are locked and can no longer be changed.",
+  "PRED_FORM_SUBTITLE_GRACE": "You have a late-entry window: fill in your predicted scores below. Matches that have already kicked off are locked, and the top scorer pick can no longer be changed.",
   "PRED_FORM_PROGRESS_LABEL": "Progress",
   "PRED_FORM_MATCHES_COUNT": "matches",
   "PRED_FORM_TOP_SCORER_COUNT": "+ top scorer",
@@ -121,6 +124,7 @@
   "PRED_FORM_STATUS_ALL_SAVED": "All changes saved",
   "PRED_FORM_STATUS_NO_PICKS": "No picks entered yet",
   "PRED_FORM_STAGE_LOCKED": "Locked",
+  "PRED_FORM_MATCH_STARTED": "Started",
 
   "PROFILE_READONLY_STAT_EXACT": "Exact scores",
   "PROFILE_READONLY_STAT_WINNER": "Correct winner",
@@ -254,6 +258,9 @@
   "PLAYER_PROFILE_STAT_ACCURACY": "Accuracy",
 
   "PRED_GROUP_CARD_YOUR_PICK": "Your pick",
+  "PRED_GROUP_CARD_PENALTY_WINNER": "Advances on penalties",
+  "PRED_GROUP_CARD_PREDICTED_MATCHUP": "Predicted matchup",
+  "PRED_GROUP_CARD_MATCHUP_VS": "vs",
 
   "RULES_TITLE": "Quiniela Rules – World Cup 2026",
   "RULES_INTRO": "Scoring ranges from 0 to 5 points, based on the final match result. In the knockout stage, extra time and penalty shootouts are included when applicable.",

@@ -497,6 +497,7 @@ export type Database = {
           exact_count: number
           id: string
           joined_at: string | null
+          predictions_grace_until: string | null
           prev_rank: number | null
           quiniela_id: string | null
           rank: number | null
@@ -517,6 +518,7 @@ export type Database = {
           exact_count?: number
           id?: string
           joined_at?: string | null
+          predictions_grace_until?: string | null
           prev_rank?: number | null
           quiniela_id?: string | null
           rank?: number | null
@@ -537,6 +539,7 @@ export type Database = {
           exact_count?: number
           id?: string
           joined_at?: string | null
+          predictions_grace_until?: string | null
           prev_rank?: number | null
           quiniela_id?: string | null
           rank?: number | null
@@ -760,6 +763,10 @@ export type Database = {
         }[]
       }
       get_my_quiniela_ids: { Args: never; Returns: string[] }
+      grant_prediction_grace: {
+        Args: { p_hours?: number; p_member_id: string }
+        Returns: string
+      }
       immutable_unaccent: { Args: { "": string }; Returns: string }
       is_prediction_open: {
         Args: { p_match_id: number; p_quiniela_id: string }

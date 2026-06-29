@@ -28,6 +28,7 @@ export default function ProfileScreen() {
     quinielaId,
     isUpdatable,
     knockoutMode,
+    graceUntil,
     userPicks,
     bracketPicks,
     topScorer,
@@ -48,6 +49,9 @@ export default function ProfileScreen() {
   // Knockout predictions open per knockout_mode + deadline, independent of
   // is_updatable (which only governs group-stage entry now).
   const knockoutOpen = isKnockoutEntryOpen(matches, knockoutMode, now);
+  // Personal late-submission grace window (set per member by an admin) lets the
+  // player enter predictions for not-yet-started matches until its deadline.
+  const graceActive = graceUntil !== null && now < Date.parse(graceUntil);
 
   const [activeColor, setActiveColor] = useState(
     me?.avatarColor ?? AVATAR_COLORS[0],
@@ -145,7 +149,7 @@ export default function ProfileScreen() {
 
   const { t, language, setLanguage } = useTranslation();
   const { theme, setTheme } = useTheme();
-  const showForm = isUpdatable || knockoutOpen;
+  const showForm = isUpdatable || knockoutOpen || graceActive;
 
   return (
     <>
@@ -374,6 +378,7 @@ export default function ProfileScreen() {
           initialTopScorer={topScorer}
           isUpdatable={isUpdatable}
           knockoutMode={knockoutMode}
+          graceActive={graceActive}
           onSave={handleSave}
           onSubmit={handleSubmit}
         />

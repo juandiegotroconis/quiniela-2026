@@ -57,6 +57,11 @@ export interface PredictionGroup {
   pickA: number;
   pickB: number;
   pickPenaltiesWinner: string | null;
+  // ONE_SHOT knockout: the matchup this group predicted for the slot (when it
+  // differs from the actual teams, the score reads against these). Null for
+  // group/STAGE_BY_STAGE picks where the actual teams were always known.
+  predHome: string | null;
+  predAway: string | null;
   key: string;
   result: PickResult | null;
   points: number;
@@ -74,13 +79,28 @@ export function groupPredictions(
   const groups: Record<string, PredictionGroup> = {};
 
   for (const p of preds) {
-    const key = `${p.pickA}-${p.pickB}-${p.pickPenaltiesWinner ?? ''}`;
+    // The penalty winner only matters when the predicted scoreline is a tie —
+    // for any non-tie pick it's dead data (and scoring never reads it). Folding
+    // it into the key for non-ties would wrongly split identical predictions
+    // apart (e.g. a 2-1 with a leftover penalty winner from a since-changed tie
+    // pick wouldn't group with everyone else's clean 2-1).
+    const isTiePick = p.pickA === p.pickB;
+    const penaltiesKeyPart = isTiePick ? (p.pickPenaltiesWinner ?? '') : '';
+    // ONE_SHOT knockout: the score is read against the user's predicted matchup,
+    // so two "2-1" picks with different predicted teams are different
+    // predictions and must not group together.
+    const predHome = p.predHome ?? null;
+    const predAway = p.predAway ?? null;
+    const matchupKeyPart = predHome && predAway ? `${predHome}/${predAway}` : '';
+    const key = `${p.pickA}-${p.pickB}-${penaltiesKeyPart}-${matchupKeyPart}`;
     if (!groups[key]) {
       const result = getPickResult(match, p.pickA, p.pickB, p.pickPenaltiesWinner);
       groups[key] = {
         pickA: p.pickA,
         pickB: p.pickB,
-        pickPenaltiesWinner: p.pickPenaltiesWinner,
+        pickPenaltiesWinner: isTiePick ? p.pickPenaltiesWinner : null,
+        predHome,
+        predAway,
         key,
         result,
         points: getResultPoints(result),
@@ -298,6 +318,21 @@ export function isPredictionStageLocked(
       : getStageFirstKickoff(matches, stage);
   if (!lockAt) return false;
   return now >= Date.parse(lockAt);
+}
+
+// Whether the current user may write a prediction for this match. A match is
+// writable when either its stage is still open (normal entry) OR the user has
+// an active late-submission grace window and the match hasn't kicked off yet.
+// Mirrors the grace override in the is_prediction_open SQL gate.
+export function isMatchWritable(
+  match: Match,
+  matches: Match[],
+  opts: { knockoutMode: string; graceActive: boolean; now: number },
+): boolean {
+  if (opts.graceActive && match.utcDate && opts.now < Date.parse(match.utcDate)) {
+    return true;
+  }
+  return !isPredictionStageLocked(matches, match.stage, opts.knockoutMode, opts.now);
 }
 
 export function getLiveMinute(match: Match): string | null {

@@ -227,6 +227,23 @@ export async function fetchUserPicks(
   return picks;
 }
 
+// The active member's late-submission grace deadline (null = no window). See
+// quiniela_members.predictions_grace_until / grant_prediction_grace().
+export async function fetchMemberGrace(
+  userId: string,
+  quinielaId: string,
+): Promise<string | null> {
+  const client = getClient();
+  const { data, error } = await client
+    .from("quiniela_members")
+    .select("predictions_grace_until")
+    .eq("user_id", userId)
+    .eq("quiniela_id", quinielaId)
+    .maybeSingle();
+  if (error) throw error;
+  return data?.predictions_grace_until ?? null;
+}
+
 export interface BracketPickEntry {
   predHome: string;
   predAway: string;
@@ -337,6 +354,29 @@ export async function fetchMatchPredictions(
     pickB: row.pick_away,
     pickPenaltiesWinner: row.pick_penalties_winner,
   }));
+}
+
+// All members' predicted matchups for a single knockout slot (ONE_SHOT mode).
+// Keyed by user_id; absent users simply have no bracket guess for this slot.
+export async function fetchMatchBracketPredictions(
+  matchId: number,
+  quinielaId: string,
+): Promise<Record<string, { predHome: string | null; predAway: string | null }>> {
+  const client = getClient();
+  const { data, error } = await client
+    .from("bracket_predictions")
+    .select("user_id, pred_home_team_code, pred_away_team_code")
+    .eq("match_id", matchId)
+    .eq("quiniela_id", quinielaId);
+  if (error) throw error;
+  const out: Record<string, { predHome: string | null; predAway: string | null }> = {};
+  for (const row of data ?? []) {
+    out[row.user_id] = {
+      predHome: row.pred_home_team_code,
+      predAway: row.pred_away_team_code,
+    };
+  }
+  return out;
 }
 
 export interface MembershipInfo {

@@ -13,6 +13,7 @@ import {
   getCurrentKnockoutStage,
   getStageLabelKey,
   isKnockoutEntryOpen,
+  isMatchWritable,
   isPredictionStageLocked,
   isStageFullyResolved,
   KNOCKOUT_STAGE_ORDER,
@@ -30,6 +31,7 @@ interface Props {
   initialTopScorer?: TopScorerSuggestion | null;
   isUpdatable?: boolean;
   knockoutMode?: string;
+  graceActive?: boolean;
   onSave: (
     picks: Record<number, UserPickEntry>,
     scorer: TopScorerSuggestion | null,
@@ -48,6 +50,7 @@ export default function PredictionEntryForm({
   initialTopScorer = null,
   isUpdatable = true,
   knockoutMode = "STAGE_BY_STAGE",
+  graceActive = false,
   onSave,
   onSubmit,
 }: Props) {
@@ -63,6 +66,14 @@ export default function PredictionEntryForm({
   // form is knockout-only (group + top scorer hidden, just the open knockout
   // stage editable). Mirrors the is_prediction_open RLS gate.
   const groupEntryEnabled = isUpdatable;
+  // A personal grace window also shows the group grid (per-match locked by
+  // kickoff), but NOT the progress bar / Submit All / top scorer — those stay
+  // gated on is_updatable (grace can't complete all 72 and can't change scorer).
+  const groupGridVisible = isUpdatable || graceActive;
+  // Per-match write gate, mirroring is_prediction_open (grace unlocks any match
+  // that hasn't kicked off; otherwise the stage must still be open).
+  const writable = (m: Match) =>
+    isMatchWritable(m, matches, { knockoutMode, graceActive, now });
   const [picks, setPicks] =
     useState<Record<number, UserPickEntry>>(initialPicks);
   const [topScorer, setTopScorer] = useState<TopScorerSuggestion | null>(
@@ -183,20 +194,15 @@ export default function PredictionEntryForm({
       ? ((filledCount + (topScorer ? 1 : 0)) / (totalMatches + 1)) * 100
       : 0;
 
-  // Only send picks for stages that are still open — a locked stage's write
-  // is rejected by the is_prediction_open RLS gate, which would fail the whole
-  // upsert. Locked-stage rows are already saved, so omitting them is safe.
-  const stageOf = useMemo(() => {
-    const map: Record<number, string> = {};
-    for (const m of matches) map[m.id] = m.stage;
-    return map;
-  }, [matches]);
-
+  // Only send picks for matches that are still writable — a write the
+  // is_prediction_open RLS gate rejects would fail the whole upsert. Locked-row
+  // picks are already saved, so omitting them is safe. Grace unlocks any
+  // not-yet-started match (see writable / isMatchWritable).
   const filterOpen = <T,>(entries: Record<number, T>): Record<number, T> => {
     const out: Record<number, T> = {};
     for (const [idStr, val] of Object.entries(entries)) {
-      const stage = stageOf[Number(idStr)];
-      if (stage && !isPredictionStageLocked(matches, stage, knockoutMode, now)) {
+      const m = matchById.get(Number(idStr));
+      if (m && writable(m)) {
         out[Number(idStr)] = val;
       }
     }
@@ -266,14 +272,15 @@ export default function PredictionEntryForm({
           </button>
         </div>
         <p className='pred-form__subtitle'>
-          {groupEntryEnabled || knockoutOpen
-            ? t('PRED_FORM_SUBTITLE_OPEN')
-            : t('PRED_FORM_SUBTITLE_LOCKED')}
+          {graceActive && !groupEntryEnabled
+            ? t('PRED_FORM_SUBTITLE_GRACE')
+            : groupEntryEnabled || knockoutOpen
+              ? t('PRED_FORM_SUBTITLE_OPEN')
+              : t('PRED_FORM_SUBTITLE_LOCKED')}
         </p>
       </div>
 
       {groupEntryEnabled && (
-      <>
       <div className='pred-form__progress'>
         <div className='pred-form__progress-inner'>
           <div className='pred-form__progress-labels'>
@@ -293,7 +300,10 @@ export default function PredictionEntryForm({
           </div>
         </div>
       </div>
+      )}
 
+      {groupGridVisible && (
+      <>
       <GroupNav groups={groupEntries.map((g) => g.id)} />
 
       <div className='pred-form__groups'>
@@ -313,7 +323,7 @@ export default function PredictionEntryForm({
                 <span className='pred-form__group-count'>
                   {filledInGroup}/{g.matches.length}
                 </span>
-                {groupLocked && (
+                {groupLocked && !graceActive && (
                   <span className='pred-form__locked-badge'>{t('PRED_FORM_STAGE_LOCKED')}</span>
                 )}
               </div>
@@ -363,9 +373,17 @@ export default function PredictionEntryForm({
                   const p = picks[m.id] ?? EMPTY_PICK;
                   const isEmpty = p.pickA === "" || p.pickB === "";
                   const hasError = showErrors && isEmpty;
+                  const locked = !writable(m);
                   return (
                     <div key={m.id} className='pred-form__match-row'>
-                      <span className='pred-form__match-date'>{formatMatchDate(m.utcDate, language)}</span>
+                      <span className='pred-form__match-date'>
+                        {formatMatchDate(m.utcDate, language)}
+                        {graceActive && locked && (
+                          <span className='pred-form__locked-badge pred-form__locked-badge--row'>
+                            {t('PRED_FORM_MATCH_STARTED')}
+                          </span>
+                        )}
+                      </span>
                       <div className='pred-form__match-teams'>
                           <div className='pred-form__match-side'>
                             <span className='pred-form__match-team-name'>
@@ -380,7 +398,7 @@ export default function PredictionEntryForm({
                             max='20'
                             className={`pred-form__match-input${hasError ? " pred-form__match-input--error" : ""}`}
                             value={p.pickA}
-                            disabled={groupLocked}
+                            disabled={locked}
                             onChange={(e) =>
                               updatePick(m.id, e.target.value, p.pickB)
                             }
@@ -394,7 +412,7 @@ export default function PredictionEntryForm({
                             max='20'
                             className={`pred-form__match-input${hasError ? " pred-form__match-input--error" : ""}`}
                             value={p.pickB}
-                            disabled={groupLocked}
+                            disabled={locked}
                             onChange={(e) =>
                               updatePick(m.id, p.pickA, e.target.value)
                             }
@@ -517,7 +535,7 @@ export default function PredictionEntryForm({
                             max='20'
                             className='pred-form__match-input'
                             value={p.pickA}
-                            disabled={stageLocked}
+                            disabled={!writable(m)}
                             onChange={(e) => updatePick(m.id, e.target.value, p.pickB)}
                             placeholder='–'
                           />
@@ -529,7 +547,7 @@ export default function PredictionEntryForm({
                             max='20'
                             className='pred-form__match-input'
                             value={p.pickB}
-                            disabled={stageLocked}
+                            disabled={!writable(m)}
                             onChange={(e) => updatePick(m.id, p.pickA, e.target.value)}
                             placeholder='–'
                           />
@@ -556,7 +574,7 @@ export default function PredictionEntryForm({
                               <button
                                 type='button'
                                 className={`pred-form__penalty-btn${p.pickPenaltiesWinner === teamA ? " pred-form__penalty-btn--active" : ""}`}
-                                disabled={stageLocked}
+                                disabled={!writable(m)}
                                 onClick={() => updatePenaltyWinner(m.id, teamA)}
                               >
                                 <TeamFlag code={teamA} size={18} />
@@ -565,7 +583,7 @@ export default function PredictionEntryForm({
                               <button
                                 type='button'
                                 className={`pred-form__penalty-btn${p.pickPenaltiesWinner === teamB ? " pred-form__penalty-btn--active" : ""}`}
-                                disabled={stageLocked}
+                                disabled={!writable(m)}
                                 onClick={() => updatePenaltyWinner(m.id, teamB)}
                               >
                                 <TeamFlag code={teamB} size={18} />
@@ -622,7 +640,7 @@ export default function PredictionEntryForm({
       </div>
       )}
 
-      {(groupEntryEnabled || knockoutOpen) && (
+      {(groupGridVisible || knockoutOpen) && (
         <div className={`pred-form__sticky-bar${isDirty ? " pred-form__sticky-bar--dirty" : ""}`}>
           <span className='pred-form__sticky-status'>
             {saveMsg
