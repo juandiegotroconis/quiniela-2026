@@ -108,6 +108,18 @@ export default function MatchPickList({ matches, picks, bracketPicks, pickLabelK
                   // Slot not yet resolved — teams shown are the user's bracket picks.
                   const isPredicted = !m.teamA && !!bracket?.predHome;
 
+                  // Show a mismatch hint when real teams are known but differ from
+                  // what the user predicted in their bracket pick.
+                  const hasRealTeams = !!(m.teamA && m.teamB);
+                  const hasBracketPick = !!(bracket?.predHome && bracket?.predAway);
+                  const teamsMatch =
+                    hasRealTeams &&
+                    hasBracketPick &&
+                    ((bracket!.predHome === m.teamA && bracket!.predAway === m.teamB) ||
+                      (bracket!.predHome === m.teamB && bracket!.predAway === m.teamA));
+                  const showMismatch =
+                    m.stage !== 'GROUP_STAGE' && hasRealTeams && hasBracketPick && !teamsMatch;
+
                   let result = null;
                   if (isFinished && hasPick) {
                     result = getPickResult(
@@ -121,9 +133,18 @@ export default function MatchPickList({ matches, picks, bracketPicks, pickLabelK
                   return (
                     <div key={m.id} className="match-pick-list__match-row">
                       <div className={`match-pick-list__match-teams${isPredicted ? ' match-pick-list__match-teams--predicted' : ''}`}>
-                        <TeamFlag code={displayHome} size={20} />
-                        <span className="match-pick-list__match-vs">{t('PROFILE_READONLY_VS')}</span>
-                        <TeamFlag code={displayAway} size={20} />
+                        <div className="match-pick-list__match-teams-row">
+                          <TeamFlag code={displayHome} size={20} />
+                          <span className="match-pick-list__match-vs">{t('PROFILE_READONLY_VS')}</span>
+                          <TeamFlag code={displayAway} size={20} />
+                        </div>
+                        {showMismatch && (
+                          <div className="match-pick-list__match-predicted">
+                            <span className="match-pick-list__match-predicted-label">{t('MATCH_PICK_LIST_PREDICTED_LABEL')}</span>
+                            <TeamFlag code={bracket!.predHome} size={13} />
+                            <TeamFlag code={bracket!.predAway} size={13} />
+                          </div>
+                        )}
                       </div>
                       <div className="match-pick-list__match-result">
                         {isFinished || isLive ? (

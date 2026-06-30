@@ -139,6 +139,7 @@
   "PROFILE_READONLY_VS": "vs",
   "MATCH_PICK_LIST_PICK_LABEL": "Pick:",
   "MATCH_PICK_LIST_PEN_LABEL": "PEN",
+  "MATCH_PICK_LIST_PREDICTED_LABEL": "Predijiste:",
 
   "TOP_SCORER_PLACEHOLDER": "Selecciona tu predicción de máximo goleador...",
   "TOP_SCORER_SEARCH_PLACEHOLDER": "Buscar nombre del jugador...",
