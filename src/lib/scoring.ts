@@ -61,12 +61,22 @@ export function getMainResult(match: MatchResultInput, pred: PredictionInput): M
   return 'miss';
 }
 
+// Matchup bonus only applies from LAST_16 onward — LAST_32 fixtures were
+// already known/predefined, so bracket "guessing" there earns nothing. Mirrors
+// the SQL `prediction_total_points` eligibility check.
+export function isMatchupBonusEligible(stage: string, mainResultPoints: number): boolean {
+  return stage !== 'GROUP_STAGE' && stage !== 'LAST_32' && mainResultPoints === 0;
+}
+
 export function calculateBracketBonus(
+  stage: string,
+  mainResultPoints: number,
   predTeamA: string,
   predTeamB: string,
   actualHome: string,
   actualAway: string,
 ): number {
+  if (!isMatchupBonusEligible(stage, mainResultPoints)) return 0;
   const predicted = new Set([predTeamA, predTeamB]);
   const actual = new Set([actualHome, actualAway]);
   let matches = 0;

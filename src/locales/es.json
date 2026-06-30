@@ -138,6 +138,7 @@
   "PROFILE_READONLY_YOUR_PICK": "Tu pick:",
   "PROFILE_READONLY_VS": "vs",
   "MATCH_PICK_LIST_PICK_LABEL": "Pick:",
+  "MATCH_PICK_LIST_PEN_LABEL": "PEN",
 
   "TOP_SCORER_PLACEHOLDER": "Selecciona tu predicción de máximo goleador...",
   "TOP_SCORER_SEARCH_PLACEHOLDER": "Buscar nombre del jugador...",
@@ -289,11 +290,11 @@
   "RULES_KNOCKOUT_3_BODY_DRAW": "Pusiste que empataban pero no los goles exactos (ej. pusiste 1–1 y el resultado real fue 🇧🇷 2–2 🇪🇸). Da igual quién gane los penales — son 3 puntos fijos. No se premia al que pasa porque ya vas a sumar puntos por tenerlo en la siguiente fase. Premiarlo aquí sería pagarle doble premio.",
 
   "RULES_MATCHUP_TITLE": "Puntuación por Cruce",
-  "RULES_MATCHUP_SUBTITLE": "Solo si no sumaste puntos por el resultado del partido",
+  "RULES_MATCHUP_SUBTITLE": "Solo desde Dieciseisavos en adelante, si no sumaste puntos por el resultado",
   "RULES_MATCHUP_INTRO": "Si fallaste el resultado del juego, pero en tus predicciones armaste bien las llaves del Mundial y adivinaste quiénes se enfrentaban, sumas por tu conocimiento del cuadro:",
   "RULES_MATCHUP_2_TITLE": "+2 Puntos",
   "RULES_MATCHUP_2_BODY": "Juegan exactamente los dos equipos que dijiste (ej. pusiste que jugarían 🇧🇷 contra 🇪🇸 y se dio ese cruce).",
   "RULES_MATCHUP_1_TITLE": "+1 Punto",
   "RULES_MATCHUP_1_BODY": "Solo le acertaste a uno de los dos (ej. pusiste 🇧🇷 vs 🇪🇸, pero el partido real terminó siendo 🇧🇷 vs 🇰🇷).",
-  "RULES_MATCHUP_NOTE": "Estos puntos de cruce no se acumulan con los del partido. Solo aplican si sumaste 0 en el resultado."
+  "RULES_MATCHUP_NOTE": "Estos puntos de cruce no se acumulan con los del partido — solo aplican si sumaste 0 en el resultado. Tampoco aplican a los cruces de Dieciseisavos, ya que esos enfrentamientos ya se conocían de antemano."
 }

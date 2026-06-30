@@ -1,23 +1,46 @@
-.match-pick-list__matchday {
-  margin-bottom: 20px;
-}
-
-.match-pick-list__matchday-label {
-  font-family: var(--font-body);
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--fg-tertiary);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin-bottom: 8px;
-}
-
-.match-pick-list__match-list {
+.match-pick-list__section {
+  margin-bottom: 10px;
   background: var(--surface-2);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
   overflow: hidden;
+}
+
+.match-pick-list__section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 12px 14px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.match-pick-list__section-label {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.match-pick-list__section-chevron {
+  flex-shrink: 0;
+  color: var(--fg-tertiary);
+  transition: transform 0.15s ease;
+}
+
+.match-pick-list__section-chevron--open {
+  transform: rotate(180deg);
+}
+
+.match-pick-list__match-list {
+  border-top: 1px solid var(--border-subtle);
 }
 
 .match-pick-list__match-row {
@@ -89,4 +112,29 @@
   width: 70px;
   text-align: right;
   flex-shrink: 0;
+}
+
+.match-pick-list__match-teams--predicted {
+  opacity: 0.5;
+}
+
+.match-pick-list__match-pick-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.match-pick-list__match-pick-pen {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.match-pick-list__match-pick-pen-label {
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--fg-tertiary);
+  letter-spacing: 0.04em;
 }

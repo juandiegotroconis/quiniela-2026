@@ -138,6 +138,7 @@
   "PROFILE_READONLY_YOUR_PICK": "Your pick:",
   "PROFILE_READONLY_VS": "vs",
   "MATCH_PICK_LIST_PICK_LABEL": "Pick:",
+  "MATCH_PICK_LIST_PEN_LABEL": "PEN",
 
   "TOP_SCORER_PLACEHOLDER": "Select top scorer prediction...",
   "TOP_SCORER_SEARCH_PLACEHOLDER": "Search player name...",
@@ -289,11 +290,11 @@
   "RULES_KNOCKOUT_3_BODY_DRAW": "You predicted a draw but got the goals wrong (e.g. you picked 1–1 but the real result was 🇧🇷 2–2 🇪🇸). The penalty winner doesn't matter here — it's a flat 3 points. Rewarding the qualifier on top would be a double prize, since you'll already earn points for that team advancing in the next round.",
 
   "RULES_MATCHUP_TITLE": "Matchup Points",
-  "RULES_MATCHUP_SUBTITLE": "Only if you scored 0 on the match result",
+  "RULES_MATCHUP_SUBTITLE": "Only from the Round of 16 onward, when you scored 0 on the match result",
   "RULES_MATCHUP_INTRO": "If you missed the match result but correctly predicted who would face each other in this tie, you earn points for your bracket knowledge:",
   "RULES_MATCHUP_2_TITLE": "+2 Points",
   "RULES_MATCHUP_2_BODY": "Both teams you predicted are exactly right (e.g. you had 🇧🇷 vs 🇪🇸 and that's the exact matchup).",
   "RULES_MATCHUP_1_TITLE": "+1 Point",
   "RULES_MATCHUP_1_BODY": "You got one of the two teams right (e.g. you had 🇧🇷 vs 🇪🇸, but the real match ended up being 🇧🇷 vs 🇰🇷).",
-  "RULES_MATCHUP_NOTE": "These matchup points do not stack with match result points. They only apply when you scored 0 on the match."
+  "RULES_MATCHUP_NOTE": "These matchup points do not stack with match result points — they only apply when you scored 0 on the match. They also don't apply to Round of 32 matchups, since those fixtures were already known."
 }

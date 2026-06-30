@@ -383,7 +383,7 @@ export default function ProfileScreen() {
           onSubmit={handleSubmit}
         />
       ) : (
-        <ProfileReadOnly userPicks={userPicks} topScorer={topScorer} />
+        <ProfileReadOnly userPicks={userPicks} bracketPicks={bracketPicks} topScorer={topScorer} />
       )}
     </>
   );

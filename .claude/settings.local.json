@@ -110,7 +110,15 @@
       "mcp__claude_ai_Supabase__list_organizations",
       "Bash(supabase projects *)",
       "Bash(git rm *)",
-      "Bash(rm -f HANDOFF.md)"
+      "Bash(rm -f HANDOFF.md)",
+      "Bash(sed 's/=.*/=<redacted>/' .env)",
+      "Bash(sed 's/=.*/=<redacted>/' .env.local)",
+      "Bash(powershell -Command 'Get-Process -Name node -ErrorAction SilentlyContinue | Where-Object {$_.MainWindowTitle -eq '\\\\'''\\\\''} | Select-Object Id')",
+      "Bash(taskkill //PID 7360 //F)",
+      "Bash(curl -s -X POST __TRACKED_VAR__/rest/v1/rpc/prediction_points_v2 -H 'apikey: __TRACKED_VAR__' -H 'Authorization: Bearer __TRACKED_VAR__' -H 'Content-Type: application/json' -d '{ *)",
+      "mcp__supabase_mcp_pat__list_projects",
+      "mcp__supabase_mcp_pat__apply_migration",
+      "mcp__supabase_mcp_pat__execute_sql"
     ],
     "additionalDirectories": [
       "c:\\Users\\juant\\Documents\\Projects\\quiniela-2026\\src\\routes",

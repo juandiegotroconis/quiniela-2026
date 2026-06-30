@@ -7,11 +7,11 @@ import Avatar from './Avatar';
 import PositionChange from './PositionChange';
 import Sparkline from './Sparkline';
 import MatchPickList from './MatchPickList';
-import { getPickResult } from '~/lib/helpers';
-import { fetchSingleMemberHistory, fetchUserTopScorer } from '~/lib/queries';
+import { getPickResult, isExactResult } from '~/lib/helpers';
+import { fetchSingleMemberHistory, fetchUserTopScorer, fetchUserBracketPicks } from '~/lib/queries';
 import { useAuth } from '~/lib/auth-context';
 import { useData } from '~/lib/data-context';
-import type { UserPickEntry } from '~/lib/auth-context';
+import type { UserPickEntry, BracketPickEntry } from '~/lib/auth-context';
 import GroupPanel from './GroupPanel';
 import GroupNav from './GroupNav';
 import TopScorerPicker from './TopScorerPicker';
@@ -24,11 +24,12 @@ interface Props {
 }
 
 export default function PlayerProfile({ userId }: Props) {
-  const { user, quinielaId, userPicks: myPicks, topScorer: myTopScorer } = useAuth();
+  const { user, quinielaId, userPicks: myPicks, bracketPicks: myBracketPicks, topScorer: myTopScorer } = useAuth();
   const { matches, membersLoading, getMember, getPicksForUser } = useData();
   const { t } = useTranslation();
   const isMe = userId === user?.id;
   const [picks, setPicks] = useState<Record<number, UserPickEntry>>(isMe ? myPicks : {});
+  const [bracketPicks, setBracketPicks] = useState<Record<number, BracketPickEntry>>(isMe ? myBracketPicks : {});
   const [memberHistory, setMemberHistory] = useState<number[]>([]);
   const [topScorer, setTopScorer] = useState<TopScorerSuggestion | null>(isMe ? myTopScorer : null);
   const [standingsView, setStandingsView] = useState<'real' | 'predicted'>('real');
@@ -53,6 +54,24 @@ export default function PlayerProfile({ userId }: Props) {
       cancelled = true;
     };
   }, [userId, quinielaId, isMe, myPicks, getPicksForUser]);
+
+  useEffect(() => {
+    if (isMe) {
+      setBracketPicks(myBracketPicks);
+      return;
+    }
+    if (!quinielaId) return;
+    setBracketPicks({});
+    let cancelled = false;
+    fetchUserBracketPicks(userId, quinielaId)
+      .then((bp) => {
+        if (!cancelled) setBracketPicks(bp);
+      })
+      .catch(console.error);
+    return () => {
+      cancelled = true;
+    };
+  }, [userId, quinielaId, isMe, myBracketPicks]);
 
   useEffect(() => {
     if (!quinielaId) return;
@@ -96,12 +115,14 @@ export default function PlayerProfile({ userId }: Props) {
 
   const exactCount = finishedMatches.filter(m => {
     const p = picks[m.id];
-    return getPickResult(m, parseInt(String(p.pickA)), parseInt(String(p.pickB))) === 'exact';
+    return isExactResult(
+      getPickResult(m, parseInt(String(p.pickA)), parseInt(String(p.pickB)), p.pickPenaltiesWinner),
+    );
   }).length;
 
   const winnerCount = finishedMatches.filter(m => {
     const p = picks[m.id];
-    return getPickResult(m, parseInt(String(p.pickA)), parseInt(String(p.pickB))) === 'tendency';
+    return getPickResult(m, parseInt(String(p.pickA)), parseInt(String(p.pickB)), p.pickPenaltiesWinner) === 'tendency';
   }).length;
 
   const missed = finishedMatches.length - exactCount - winnerCount;
@@ -184,6 +205,7 @@ export default function PlayerProfile({ userId }: Props) {
         <MatchPickList
           matches={matches}
           picks={picks}
+          bracketPicks={bracketPicks}
           pickLabelKey={isMe ? 'PROFILE_READONLY_YOUR_PICK' : 'MATCH_PICK_LIST_PICK_LABEL'}
         />
       ) : (

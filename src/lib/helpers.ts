@@ -46,6 +46,15 @@ export function getResultVariant(r: PickResult | null): 'success' | 'warning' | 
   return 'default';
 }
 
+// "Exact" for stat-counting purposes means the score itself was predicted
+// correctly — the penalty shootout winner is a separate guess and shouldn't
+// affect whether a pick counts as exact. 'half' (4 pts: right score, wrong
+// shootout pick) and 'penalty_exact' (5 pts: right score, right shootout
+// pick) both qualify; only the per-match point value differs between them.
+export function isExactResult(r: PickResult | null): boolean {
+  return r === 'exact' || r === 'penalty_exact' || r === 'half';
+}
+
 export interface PredictionGroupPlayer {
   userId: string;
   displayName: string;

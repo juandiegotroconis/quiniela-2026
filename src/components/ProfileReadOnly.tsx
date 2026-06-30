@@ -4,17 +4,18 @@ import { useTranslation } from '~/hooks/useTranslation';
 import Badge from './Badge';
 import TopScorerPicker from './TopScorerPicker';
 import MatchPickList from './MatchPickList';
-import { getPickResult } from '~/lib/helpers';
+import { getPickResult, isExactResult } from '~/lib/helpers';
 import type { TopScorerSuggestion } from '~/lib/mock-data';
-import type { UserPickEntry } from '~/lib/auth-context';
+import type { UserPickEntry, BracketPickEntry } from '~/lib/auth-context';
 import { useData } from '~/lib/data-context';
 
 interface Props {
   userPicks: Record<number, UserPickEntry>;
+  bracketPicks?: Record<number, BracketPickEntry>;
   topScorer: TopScorerSuggestion | null;
 }
 
-export default function ProfileReadOnly({ userPicks, topScorer }: Props) {
+export default function ProfileReadOnly({ userPicks, bracketPicks, topScorer }: Props) {
   const { matches } = useData();
   const { t } = useTranslation();
 
@@ -26,12 +27,14 @@ export default function ProfileReadOnly({ userPicks, topScorer }: Props) {
 
   const exactCount = finishedWithPicks.filter(m => {
     const p = userPicks[m.id];
-    return getPickResult(m, parseInt(String(p.pickA)), parseInt(String(p.pickB))) === 'exact';
+    return isExactResult(
+      getPickResult(m, parseInt(String(p.pickA)), parseInt(String(p.pickB)), p.pickPenaltiesWinner),
+    );
   }).length;
 
   const winnerCount = finishedWithPicks.filter(m => {
     const p = userPicks[m.id];
-    return getPickResult(m, parseInt(String(p.pickA)), parseInt(String(p.pickB))) === 'tendency';
+    return getPickResult(m, parseInt(String(p.pickA)), parseInt(String(p.pickB)), p.pickPenaltiesWinner) === 'tendency';
   }).length;
 
   const missed = finishedWithPicks.length - exactCount - winnerCount;
@@ -79,7 +82,7 @@ export default function ProfileReadOnly({ userPicks, topScorer }: Props) {
         <Badge variant="default">{t('PROFILE_READONLY_LOCKED_BADGE')}</Badge>
       </div>
 
-      <MatchPickList matches={matches} picks={userPicks} />
+      <MatchPickList matches={matches} picks={userPicks} bracketPicks={bracketPicks} />
     </PageContainer>
   );
 }
