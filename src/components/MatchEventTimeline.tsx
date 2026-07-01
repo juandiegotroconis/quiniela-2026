@@ -1,4 +1,5 @@
 import "./MatchEventTimeline.css";
+import { useState } from "react";
 import { Icon } from "@iconify/react";
 import { useTranslation } from "~/hooks/useTranslation";
 import type { Match, MatchEvent } from "~/lib/types";
@@ -56,7 +57,6 @@ function EventContent({ event }: { event: MatchEvent }) {
     );
   }
 
-  // Yellow / red card — a CSS rectangle so it reads like a real card.
   return (
     <div className='met__content'>
       <span className='met__line'>
@@ -74,39 +74,56 @@ interface Props {
 
 export default function MatchEventTimeline({ match, events }: Props) {
   const { t } = useTranslation();
+  const [open, setOpen] = useState(true);
+
   if (events.length === 0) return null;
 
   return (
     <div className='met'>
-      <div className='met__heading'>{t("MATCH_EVENT_TIMELINE_HEADING")}</div>
-      <ol className='met__list'>
-        {events
-          .slice()
-          .reverse()
-          .map((event) => {
-          const isAway = event.teamCode === match.teamB;
-          return (
-            <li
-              key={event.id}
-              className={`met__row met__row--${isAway ? "away" : "home"}`}
-            >
-              <div className='met__side met__side--left'>
-                {!isAway && <EventContent event={event} />}
-              </div>
+      <button className='met__heading' onClick={() => setOpen(o => !o)}>
+        {t("MATCH_EVENT_TIMELINE_HEADING")}
+        <Icon icon={open ? 'mdi:chevron-up' : 'mdi:chevron-down'} width={16} />
+      </button>
+
+      {open && (
+        <ol className='met__list'>
+          {match.status === "finished" && (
+            <li className='met__row'>
+              <div className='met__side met__side--left' />
               <div className='met__center'>
-                {event.minute ? (
-                  <span className='met__minute'>{event.minute}</span>
-                ) : (
-                  <span className='met__dot' />
-                )}
+                <Icon icon='mdi:whistle' width={18} className='met__whistle' />
               </div>
-              <div className='met__side met__side--right'>
-                {isAway && <EventContent event={event} />}
-              </div>
+              <div className='met__side met__side--right' />
             </li>
-          );
-        })}
-      </ol>
+          )}
+          {events
+            .slice()
+            .reverse()
+            .map((event) => {
+              const isAway = event.teamCode === match.teamB;
+              return (
+                <li
+                  key={event.id}
+                  className={`met__row met__row--${isAway ? "away" : "home"}`}
+                >
+                  <div className='met__side met__side--left'>
+                    {!isAway && <EventContent event={event} />}
+                  </div>
+                  <div className='met__center'>
+                    {event.minute ? (
+                      <span className='met__minute'>{event.minute}</span>
+                    ) : (
+                      <span className='met__dot' />
+                    )}
+                  </div>
+                  <div className='met__side met__side--right'>
+                    {isAway && <EventContent event={event} />}
+                  </div>
+                </li>
+              );
+            })}
+        </ol>
+      )}
     </div>
   );
 }

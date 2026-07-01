@@ -9,9 +9,11 @@ import Badge from "./Badge";
 import PredictionGroupCard from "./PredictionGroupCard";
 import PredictionGroupCardSkeleton from "./PredictionGroupCardSkeleton";
 import WhatIfLeaderboard from "./WhatIfLeaderboard";
+import BenchSection, { type BenchPlayer } from "./BenchSection";
 import MatchEventTimeline from "./MatchEventTimeline";
 import {
   groupPredictions,
+  getAliveTeams,
   getPickResult,
   getResultVariant,
   getResultPoints,
@@ -35,6 +37,7 @@ import {
   fetchMatchLeaderboardSnapshot,
 } from "~/lib/queries";
 import type { MatchPrediction, MatchEvent } from "~/lib/types";
+import type { PredictionGroup } from "~/lib/helpers";
 
 interface Props {
   match: Match;
@@ -69,7 +72,7 @@ function MatchStatusBadge({ match }: { match: Match }) {
 
 export default function MatchDetail({ match: matchProp, onBack, userPick }: Props) {
   const { user, quinielaId } = useAuth();
-  const { members } = useData();
+  const { members, matches } = useData();
   // The match is kept live by the app-wide subscription in DataProvider; it
   // arrives here (via the match route reading global state) already updated.
   const match = matchProp;
@@ -79,7 +82,7 @@ export default function MatchDetail({ match: matchProp, onBack, userPick }: Prop
   const [predsLoading, setPredsLoading] = useState(true);
   const [events, setEvents] = useState<MatchEvent[]>([]);
   const [snapshot, setSnapshot] = useState<Map<string, { cumulativePts: number; rankAtMoment: number }>>(new Map());
-  const [tab, setTab] = useState<'predictions' | 'standings'>('predictions');
+  const [tab, setTab] = useState<'predictions' | 'bench' | 'standings'>('predictions');
   const [showRules, setShowRules] = useState(false);
   const [scoreFlash, setScoreFlash] = useState(false);
   const prevScoreRef = useRef(`${match.scoreA}:${match.scoreB}`);
@@ -171,6 +174,46 @@ export default function MatchDetail({ match: matchProp, onBack, userPick }: Prop
   }, [match.id, match.status, quinielaId]);
 
   const groups = groupPredictions(preds, match, user?.id ?? null);
+
+  const aliveSet = new Set(getAliveTeams(matches));
+
+  const isBenchGroup = (g: PredictionGroup): boolean => {
+    if (!g.predHome || !g.predAway) return false;
+    if (match.teamA && match.teamB) {
+      // Teams known: bench if predicted matchup doesn't match actual (position-sensitive)
+      return g.predHome !== match.teamA || g.predAway !== match.teamB;
+    }
+    // Future bracket slot: bench if either predicted team is already eliminated
+    if (match.stage !== 'GROUP_STAGE') {
+      return !aliveSet.has(g.predHome) || !aliveSet.has(g.predAway);
+    }
+    return false;
+  };
+
+  const regularGroups = groups.filter(g => !isBenchGroup(g));
+  const benchGroups = groups.filter(isBenchGroup);
+
+  const hasTeamInMatch = (g: PredictionGroup): boolean => {
+    if (match.teamA && match.teamB) {
+      return g.predHome === match.teamA || g.predHome === match.teamB ||
+             g.predAway === match.teamA || g.predAway === match.teamB;
+    }
+    // Future: partial = one team still alive, one eliminated
+    return (aliveSet.has(g.predHome!) && !aliveSet.has(g.predAway!)) ||
+           (!aliveSet.has(g.predHome!) && aliveSet.has(g.predAway!));
+  };
+
+  const toBenchPlayers = (g: PredictionGroup): BenchPlayer[] =>
+    g.players.map(p => ({
+      ...p,
+      predHome: g.predHome,
+      predAway: g.predAway,
+      pickA: g.pickA,
+      pickB: g.pickB,
+    }));
+
+  const partialBenchPlayers = benchGroups.filter(hasTeamInMatch).flatMap(toBenchPlayers);
+  const fullMissBenchPlayers = benchGroups.filter(g => !hasTeamInMatch(g)).flatMap(toBenchPlayers);
   const stageLabelKey = getStageLabelKey(match.stage);
   const isScored = match.status === "finished" || match.status === "live";
   const now = useNowTick(match.status === "live");
@@ -306,24 +349,40 @@ export default function MatchDetail({ match: matchProp, onBack, userPick }: Prop
         </div>
       )}
 
-      {(match.status === "live" || match.status === "finished") && (
-        <div className='leaderboard__tabs'>
-          <button
-            className={`leaderboard__tab${tab === 'predictions' ? ' leaderboard__tab--active' : ''}`}
-            onClick={() => setTab('predictions')}
-          >
-            {t('MATCH_DETAIL_TAB_PREDICTIONS')}
-          </button>
-          <button
-            className={`leaderboard__tab${tab === 'standings' ? ' leaderboard__tab--active' : ''}`}
-            onClick={() => setTab('standings')}
-          >
-            {t('MATCH_DETAIL_TAB_STANDINGS')}
-          </button>
-        </div>
-      )}
+      {(() => {
+        const isScored2 = match.status === "live" || match.status === "finished";
+        const hasBench = !predsLoading && (partialBenchPlayers.length > 0 || fullMissBenchPlayers.length > 0);
+        const showTabs = isScored2 || hasBench;
+        if (!showTabs) return null;
+        return (
+          <div className='leaderboard__tabs'>
+            <button
+              className={`leaderboard__tab${tab === 'predictions' ? ' leaderboard__tab--active' : ''}`}
+              onClick={() => setTab('predictions')}
+            >
+              {t('MATCH_DETAIL_TAB_PREDICTIONS')}
+            </button>
+            {hasBench && (
+              <button
+                className={`leaderboard__tab${tab === 'bench' ? ' leaderboard__tab--active' : ''}`}
+                onClick={() => setTab('bench')}
+              >
+                {t('MATCH_DETAIL_TAB_BENCH')}
+              </button>
+            )}
+            {isScored2 && (
+              <button
+                className={`leaderboard__tab${tab === 'standings' ? ' leaderboard__tab--active' : ''}`}
+                onClick={() => setTab('standings')}
+              >
+                {t('MATCH_DETAIL_TAB_STANDINGS')}
+              </button>
+            )}
+          </div>
+        );
+      })()}
 
-      {(match.status !== "live" && match.status !== "finished" || tab === 'predictions') && (
+      {tab === 'predictions' && (
         <>
           {predsLoading && (
             <div>
@@ -338,27 +397,31 @@ export default function MatchDetail({ match: matchProp, onBack, userPick }: Prop
             </div>
           )}
 
-          {!predsLoading && groups.length > 0 && (
+          {!predsLoading && regularGroups.length > 0 && (
             <div>
               <div className='match-detail__preds-heading'>
                 {t("MATCH_DETAIL_PREDICTIONS_HEADING")} · {preds.length}{" "}
                 {t("MATCH_DETAIL_PLAYERS_SUFFIX")}
               </div>
               <div className='match-detail__preds-grid'>
-                {groups.map((g) => (
+                {regularGroups.map((g) => (
                   <PredictionGroupCard key={g.key} group={g} match={match} />
                 ))}
               </div>
             </div>
           )}
 
-          {!predsLoading && groups.length === 0 && (
+          {!predsLoading && regularGroups.length === 0 && groups.length === 0 && (
             <div className='match-detail__empty'>{t("MATCH_DETAIL_EMPTY")}</div>
           )}
         </>
       )}
 
-      {(match.status === "live" || match.status === "finished") && tab === 'standings' && (
+      {tab === 'bench' && (
+        <BenchSection partialPlayers={partialBenchPlayers} missPlayers={fullMissBenchPlayers} stage={match.stage} />
+      )}
+
+      {tab === 'standings' && (match.status === "live" || match.status === "finished") && (
         <WhatIfLeaderboard
           match={match}
           members={members}

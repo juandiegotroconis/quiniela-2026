@@ -10,7 +10,15 @@
   text-transform: uppercase;
   color: var(--fg-secondary);
   margin-bottom: 14px;
-  text-align: center;
+  width: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0;
 }
 
 /* The vertical spine runs down the centre column behind the minute markers. */
@@ -158,4 +166,11 @@
 
 .met__card--red {
   background: var(--color-error);
+}
+
+.met__whistle {
+  color: var(--fg-tertiary);
+  background: var(--surface-1);
+  padding: 2px;
+  border-radius: var(--radius-sm);
 }
