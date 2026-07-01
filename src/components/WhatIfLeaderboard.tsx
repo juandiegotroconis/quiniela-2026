@@ -1,15 +1,24 @@
 import './WhatIfLeaderboard.css';
 import { useTranslation } from '~/hooks/useTranslation';
 import Avatar from './Avatar';
+import Badge from './Badge';
 import PositionChange from './PositionChange';
 import { getMainResult, getMainResultPoints } from '~/lib/scoring';
+import { getResultVariant } from '~/lib/helpers';
+import type { MainResult } from '~/lib/scoring';
 import type { Match, Member, MatchPrediction } from '~/lib/types';
+
+interface SnapshotEntry {
+  cumulativePts: number;
+  rankAtMoment: number;
+}
 
 interface Props {
   match: Match;
   members: Member[];
   preds: MatchPrediction[];
   myUserId: string | null;
+  snapshot?: Map<string, SnapshotEntry>;
 }
 
 interface ProjectedRow {
@@ -21,9 +30,10 @@ interface ProjectedRow {
   currentPts: number;
   projectedPts: number;
   delta: number;
+  result: MainResult | null;
 }
 
-export default function WhatIfLeaderboard({ match, members, preds, myUserId }: Props) {
+export default function WhatIfLeaderboard({ match, members, preds, myUserId, snapshot }: Props) {
   const { t } = useTranslation();
 
   if (members.length === 0 || preds.length === 0) return null;
@@ -40,34 +50,37 @@ export default function WhatIfLeaderboard({ match, members, preds, myUserId }: P
   };
 
   const predsByUser = new Map(preds.map((p) => [p.userId, p]));
+  const isFinished = match.status === 'finished';
+  const hasSnapshot = isFinished && snapshot && snapshot.size > 0;
 
   const rows: ProjectedRow[] = members.map((m) => {
     const pred = predsByUser.get(m.userId);
-    const delta = pred
-      ? getMainResultPoints(
-          getMainResult(matchResult, {
-            pickHome: pred.pickA,
-            pickAway: pred.pickB,
-            pickPenaltiesWinner: pred.pickPenaltiesWinner,
-          }),
-        )
-      : 0;
+    const result = pred
+      ? getMainResult(matchResult, {
+          pickHome: pred.pickA,
+          pickAway: pred.pickB,
+          pickPenaltiesWinner: pred.pickPenaltiesWinner,
+        })
+      : null;
+    const delta = getMainResultPoints(result);
+    const snap = hasSnapshot ? snapshot!.get(m.userId) : undefined;
+    const projectedPts = snap ? snap.cumulativePts : isFinished ? m.pts : m.pts + delta;
+    const snapshotRank = snap?.rankAtMoment ?? m.rank;
     return {
       userId: m.userId,
       displayName: m.displayName,
       avatarColor: m.avatarColor,
-      currentRank: m.rank,
+      currentRank: snapshotRank,
       projectedRank: 0,
       currentPts: m.pts,
-      projectedPts: m.pts + delta,
+      projectedPts,
       delta,
+      result,
     };
   });
 
   rows.sort((a, b) => b.projectedPts - a.projectedPts);
   rows.forEach((r, i) => { r.projectedRank = i + 1; });
-
-  const isFinished = match.status === 'finished';
 
   return (
     <div className="whatif-leaderboard">
@@ -90,10 +103,10 @@ export default function WhatIfLeaderboard({ match, members, preds, myUserId }: P
             <span className="whatif-leaderboard__name">
               {r.userId === myUserId ? t('PROFILE_YOU') : r.displayName}
             </span>
-            <span className="whatif-leaderboard__pts">
-              {r.projectedPts}
-              {r.delta > 0 && <span className="whatif-leaderboard__delta">+{r.delta}</span>}
-            </span>
+            {r.delta > 0 && (
+              <Badge variant={getResultVariant(r.result)}>+{r.delta}</Badge>
+            )}
+            <span className="whatif-leaderboard__pts">{r.projectedPts}</span>
           </div>
         ))}
       </div>

@@ -237,8 +237,11 @@
   "MATCH_EVENT_OWN_GOAL_TAG": "OG",
   "MATCH_DETAIL_WHATIF_TITLE": "What if it ended now?",
   "MATCH_DETAIL_WHATIF_SUBTITLE": "Projected leaderboard if this match's points were applied with the current score.",
+  "MATCH_DETAIL_TAB_PREDICTIONS": "Predictions",
+  "MATCH_DETAIL_TAB_STANDINGS": "Standings",
   "MATCH_DETAIL_RESULT_TITLE": "Match Results",
   "MATCH_DETAIL_RESULT_SUBTITLE": "How the standings look with this match's points applied.",
+  "MATCH_DETAIL_AWARDED": "Awarded",
 
   "MATCH_RESULT_EXACT": "Exact",
   "MATCH_RESULT_WINNER": "Winner",

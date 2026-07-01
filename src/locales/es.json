@@ -237,8 +237,11 @@
   "MATCH_EVENT_OWN_GOAL_TAG": "AG",
   "MATCH_DETAIL_WHATIF_TITLE": "¿Y si terminara ahora?",
   "MATCH_DETAIL_WHATIF_SUBTITLE": "Tabla de posiciones proyectada si los puntos de este partido se aplicaran con el marcador actual.",
+  "MATCH_DETAIL_TAB_PREDICTIONS": "Pronósticos",
+  "MATCH_DETAIL_TAB_STANDINGS": "Posiciones",
   "MATCH_DETAIL_RESULT_TITLE": "Resultado del partido",
   "MATCH_DETAIL_RESULT_SUBTITLE": "Cómo quedó la clasificación con los puntos de este partido aplicados.",
+  "MATCH_DETAIL_AWARDED": "Ganó",
 
   "MATCH_RESULT_EXACT": "Exacto",
   "MATCH_RESULT_WINNER": "Ganador",

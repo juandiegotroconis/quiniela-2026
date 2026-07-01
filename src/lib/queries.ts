@@ -205,6 +205,22 @@ export async function fetchSingleMemberHistory(
   return (data ?? []).map((r) => r.rank_at_moment);
 }
 
+export async function fetchMatchLeaderboardSnapshot(
+  matchId: number,
+  quinielaId: string,
+): Promise<Map<string, { cumulativePts: number; rankAtMoment: number }>> {
+  const { data } = await getClient()
+    .from("leaderboard_snapshots")
+    .select("user_id, cumulative_pts, rank_at_moment")
+    .eq("match_id", matchId)
+    .eq("quiniela_id", quinielaId);
+  const map = new Map<string, { cumulativePts: number; rankAtMoment: number }>();
+  for (const row of data ?? []) {
+    map.set(row.user_id, { cumulativePts: row.cumulative_pts, rankAtMoment: row.rank_at_moment });
+  }
+  return map;
+}
+
 export async function fetchUserPicks(
   userId: string,
   quinielaId: string,

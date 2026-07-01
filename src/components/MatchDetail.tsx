@@ -32,6 +32,7 @@ import {
   fetchMatchPredictions,
   fetchMatchEvents,
   fetchMatchBracketPredictions,
+  fetchMatchLeaderboardSnapshot,
 } from "~/lib/queries";
 import type { MatchPrediction, MatchEvent } from "~/lib/types";
 
@@ -77,6 +78,8 @@ export default function MatchDetail({ match: matchProp, onBack, userPick }: Prop
   const [preds, setPreds] = useState<MatchPrediction[]>([]);
   const [predsLoading, setPredsLoading] = useState(true);
   const [events, setEvents] = useState<MatchEvent[]>([]);
+  const [snapshot, setSnapshot] = useState<Map<string, { cumulativePts: number; rankAtMoment: number }>>(new Map());
+  const [tab, setTab] = useState<'predictions' | 'standings'>('predictions');
   const [showRules, setShowRules] = useState(false);
   const [scoreFlash, setScoreFlash] = useState(false);
   const prevScoreRef = useRef(`${match.scoreA}:${match.scoreB}`);
@@ -161,6 +164,11 @@ export default function MatchDetail({ match: matchProp, onBack, userPick }: Prop
     match.scoreBEt,
     match.minute,
   ]);
+
+  useEffect(() => {
+    if (match.status !== "finished" || !quinielaId) return;
+    fetchMatchLeaderboardSnapshot(match.id, quinielaId).then(setSnapshot).catch(console.error);
+  }, [match.id, match.status, quinielaId]);
 
   const groups = groupPredictions(preds, match, user?.id ?? null);
   const stageLabelKey = getStageLabelKey(match.stage);
@@ -298,43 +306,65 @@ export default function MatchDetail({ match: matchProp, onBack, userPick }: Prop
         </div>
       )}
 
-      {predsLoading && (
-        <div>
-          <div className='match-detail__preds-heading'>
-            {t("MATCH_DETAIL_PREDICTIONS_HEADING")}
-          </div>
-          <div className='match-detail__preds-grid'>
-            {Array.from({ length: 4 }, (_, i) => (
-              <PredictionGroupCardSkeleton key={i} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {!predsLoading && groups.length > 0 && (
-        <div>
-          <div className='match-detail__preds-heading'>
-            {t("MATCH_DETAIL_PREDICTIONS_HEADING")} · {preds.length}{" "}
-            {t("MATCH_DETAIL_PLAYERS_SUFFIX")}
-          </div>
-          <div className='match-detail__preds-grid'>
-            {groups.map((g) => (
-              <PredictionGroupCard key={g.key} group={g} match={match} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {!predsLoading && groups.length === 0 && (
-        <div className='match-detail__empty'>{t("MATCH_DETAIL_EMPTY")}</div>
-      )}
-
       {(match.status === "live" || match.status === "finished") && (
+        <div className='leaderboard__tabs'>
+          <button
+            className={`leaderboard__tab${tab === 'predictions' ? ' leaderboard__tab--active' : ''}`}
+            onClick={() => setTab('predictions')}
+          >
+            {t('MATCH_DETAIL_TAB_PREDICTIONS')}
+          </button>
+          <button
+            className={`leaderboard__tab${tab === 'standings' ? ' leaderboard__tab--active' : ''}`}
+            onClick={() => setTab('standings')}
+          >
+            {t('MATCH_DETAIL_TAB_STANDINGS')}
+          </button>
+        </div>
+      )}
+
+      {(match.status !== "live" && match.status !== "finished" || tab === 'predictions') && (
+        <>
+          {predsLoading && (
+            <div>
+              <div className='match-detail__preds-heading'>
+                {t("MATCH_DETAIL_PREDICTIONS_HEADING")}
+              </div>
+              <div className='match-detail__preds-grid'>
+                {Array.from({ length: 4 }, (_, i) => (
+                  <PredictionGroupCardSkeleton key={i} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {!predsLoading && groups.length > 0 && (
+            <div>
+              <div className='match-detail__preds-heading'>
+                {t("MATCH_DETAIL_PREDICTIONS_HEADING")} · {preds.length}{" "}
+                {t("MATCH_DETAIL_PLAYERS_SUFFIX")}
+              </div>
+              <div className='match-detail__preds-grid'>
+                {groups.map((g) => (
+                  <PredictionGroupCard key={g.key} group={g} match={match} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {!predsLoading && groups.length === 0 && (
+            <div className='match-detail__empty'>{t("MATCH_DETAIL_EMPTY")}</div>
+          )}
+        </>
+      )}
+
+      {(match.status === "live" || match.status === "finished") && tab === 'standings' && (
         <WhatIfLeaderboard
           match={match}
           members={members}
           preds={preds}
           myUserId={user?.id ?? null}
+          snapshot={snapshot}
         />
       )}
     </div>
