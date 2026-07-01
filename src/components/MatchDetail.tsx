@@ -352,8 +352,7 @@ export default function MatchDetail({ match: matchProp, onBack, userPick }: Prop
       {(() => {
         const isScored2 = match.status === "live" || match.status === "finished";
         const hasBench = !predsLoading && (partialBenchPlayers.length > 0 || fullMissBenchPlayers.length > 0);
-        const showTabs = isScored2 || hasBench;
-        if (!showTabs) return null;
+        if (!hasBench) return null;
         return (
           <div className='leaderboard__tabs'>
             <button
@@ -362,14 +361,12 @@ export default function MatchDetail({ match: matchProp, onBack, userPick }: Prop
             >
               {t('MATCH_DETAIL_TAB_PREDICTIONS')}
             </button>
-            {hasBench && (
-              <button
-                className={`leaderboard__tab${tab === 'bench' ? ' leaderboard__tab--active' : ''}`}
-                onClick={() => setTab('bench')}
-              >
-                {t('MATCH_DETAIL_TAB_BENCH')}
-              </button>
-            )}
+            <button
+              className={`leaderboard__tab${tab === 'bench' ? ' leaderboard__tab--active' : ''}`}
+              onClick={() => setTab('bench')}
+            >
+              {t('MATCH_DETAIL_TAB_BENCH')}
+            </button>
             {isScored2 && (
               <button
                 className={`leaderboard__tab${tab === 'standings' ? ' leaderboard__tab--active' : ''}`}
@@ -382,7 +379,7 @@ export default function MatchDetail({ match: matchProp, onBack, userPick }: Prop
         );
       })()}
 
-      {tab === 'predictions' && (
+      {(tab === 'predictions' || (partialBenchPlayers.length === 0 && fullMissBenchPlayers.length === 0)) && (
         <>
           {predsLoading && (
             <div>
@@ -414,10 +411,14 @@ export default function MatchDetail({ match: matchProp, onBack, userPick }: Prop
           {!predsLoading && regularGroups.length === 0 && groups.length === 0 && (
             <div className='match-detail__empty'>{t("MATCH_DETAIL_EMPTY")}</div>
           )}
+
+          {!predsLoading && regularGroups.length === 0 && groups.length > 0 && (
+            <div className='match-detail__empty'>{t("MATCH_DETAIL_NO_CORRECT_PREDICTIONS")}</div>
+          )}
         </>
       )}
 
-      {tab === 'bench' && (
+      {tab === 'bench' && (partialBenchPlayers.length > 0 || fullMissBenchPlayers.length > 0) && (
         <BenchSection partialPlayers={partialBenchPlayers} missPlayers={fullMissBenchPlayers} stage={match.stage} />
       )}
 

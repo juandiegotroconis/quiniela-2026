@@ -231,6 +231,7 @@
   "MATCH_DETAIL_PREDICTIONS_HEADING": "Predictions",
   "MATCH_DETAIL_PLAYERS_SUFFIX": "players",
   "MATCH_DETAIL_EMPTY": "Predictions will be revealed once the match begins.",
+  "MATCH_DETAIL_NO_CORRECT_PREDICTIONS": "Ni tu abuela adivinaba esto.",
   "MATCH_DETAIL_PICK_LABEL": "Pick:",
   "MATCH_EVENT_TIMELINE_HEADING": "Match events",
   "MATCH_EVENT_ASSIST": "Assist",

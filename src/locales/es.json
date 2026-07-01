@@ -231,6 +231,7 @@
   "MATCH_DETAIL_PREDICTIONS_HEADING": "Predicciones",
   "MATCH_DETAIL_PLAYERS_SUFFIX": "jugadores",
   "MATCH_DETAIL_EMPTY": "Las predicciones se revelarán cuando comience el partido.",
+  "MATCH_DETAIL_NO_CORRECT_PREDICTIONS": "Ni tu abuela adivinaba esto.",
   "MATCH_DETAIL_PICK_LABEL": "Pick:",
   "MATCH_EVENT_TIMELINE_HEADING": "Eventos del partido",
   "MATCH_EVENT_ASSIST": "Asistencia",
