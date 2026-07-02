@@ -123,7 +123,8 @@
       "PowerShell(Test-Path *)",
       "PowerShell($dir = Split-Path $PROFILE.CurrentUserCurrentHost; if \\(-not \\(Test-Path $dir\\)\\) { New-Item -ItemType Directory -Force -Path $dir | Out-Null; \"created dir\" } else { \"dir exists\" })",
       "PowerShell(claude mcp *)",
-      "mcp__supabase_mcp__execute_sql"
+      "mcp__supabase_mcp__execute_sql",
+      "Bash(python3 *)"
     ],
     "additionalDirectories": [
       "c:\\Users\\juant\\Documents\\Projects\\quiniela-2026\\src\\routes",
