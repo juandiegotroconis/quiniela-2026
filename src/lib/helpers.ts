@@ -32,6 +32,18 @@ export function getResultPoints(r: PickResult | null): number {
   return getMainResultPoints(r);
 }
 
+// The score to display for a match. Knockout matches that went to extra time
+// carry the final result in the ET fields; the regular fields hold only the 90'
+// score. Mirrors the ET-precedence in scoring.ts so the shown score matches the
+// score that points were awarded on. Group-stage rows have null ET fields, so
+// this collapses to the regular score there.
+export function getDisplayScore(match: Match): { home: number | null; away: number | null } {
+  return {
+    home: match.scoreAEt ?? match.scoreA,
+    away: match.scoreBEt ?? match.scoreB,
+  };
+}
+
 export function getResultLabel(r: PickResult | null): string {
   if (r === 'exact' || r === 'penalty_exact') return 'Exact';
   if (r === 'half') return 'Half';

@@ -14,6 +14,7 @@ import MatchEventTimeline from "./MatchEventTimeline";
 import {
   groupPredictions,
   getAliveTeams,
+  getDisplayScore,
   getPickResult,
   getResultVariant,
   getResultPoints,
@@ -85,7 +86,7 @@ export default function MatchDetail({ match: matchProp, onBack, userPick }: Prop
   const [tab, setTab] = useState<'predictions' | 'bench' | 'standings'>('predictions');
   const [showRules, setShowRules] = useState(false);
   const [scoreFlash, setScoreFlash] = useState(false);
-  const prevScoreRef = useRef(`${match.scoreA}:${match.scoreB}`);
+  const prevScoreRef = useRef(`${match.scoreA}:${match.scoreB}:${match.scoreAEt}:${match.scoreBEt}`);
 
   useEffect(() => {
     membersRef.current = members;
@@ -93,7 +94,7 @@ export default function MatchDetail({ match: matchProp, onBack, userPick }: Prop
 
   // Brief highlight when the live score changes.
   useEffect(() => {
-    const key = `${match.scoreA}:${match.scoreB}`;
+    const key = `${match.scoreA}:${match.scoreB}:${match.scoreAEt}:${match.scoreBEt}`;
     if (prevScoreRef.current === key) return;
     prevScoreRef.current = key;
     setScoreFlash(true);
@@ -174,6 +175,8 @@ export default function MatchDetail({ match: matchProp, onBack, userPick }: Prop
   }, [match.id, match.status, quinielaId]);
 
   const groups = groupPredictions(preds, match, user?.id ?? null);
+
+  const displayScore = getDisplayScore(match);
 
   const aliveSet = new Set(getAliveTeams(matches));
 
@@ -291,9 +294,9 @@ export default function MatchDetail({ match: matchProp, onBack, userPick }: Prop
               scoreFlash ? " match-detail__scoreline--flash" : ""
             }`}
           >
-            <span>{match.scoreA !== null ? match.scoreA : "–"}</span>
+            <span>{displayScore.home !== null ? displayScore.home : "–"}</span>
             <span className='match-detail__scoreline-sep'>:</span>
-            <span>{match.scoreB !== null ? match.scoreB : "–"}</span>
+            <span>{displayScore.away !== null ? displayScore.away : "–"}</span>
           </div>
           {match.teamB ? (
             <Link to={`/teams/${match.teamB}`} className='match-detail__team'>
@@ -352,7 +355,9 @@ export default function MatchDetail({ match: matchProp, onBack, userPick }: Prop
       {(() => {
         const isScored2 = match.status === "live" || match.status === "finished";
         const hasBench = !predsLoading && (partialBenchPlayers.length > 0 || fullMissBenchPlayers.length > 0);
-        if (!hasBench) return null;
+        // Show the tab bar when there is at least one tab beyond Predictions —
+        // Bench (only when there are benched players) or Standings (any scored match).
+        if (!hasBench && !isScored2) return null;
         return (
           <div className='leaderboard__tabs'>
             <button
@@ -361,12 +366,14 @@ export default function MatchDetail({ match: matchProp, onBack, userPick }: Prop
             >
               {t('MATCH_DETAIL_TAB_PREDICTIONS')}
             </button>
-            <button
-              className={`leaderboard__tab${tab === 'bench' ? ' leaderboard__tab--active' : ''}`}
-              onClick={() => setTab('bench')}
-            >
-              {t('MATCH_DETAIL_TAB_BENCH')}
-            </button>
+            {hasBench && (
+              <button
+                className={`leaderboard__tab${tab === 'bench' ? ' leaderboard__tab--active' : ''}`}
+                onClick={() => setTab('bench')}
+              >
+                {t('MATCH_DETAIL_TAB_BENCH')}
+              </button>
+            )}
             {isScored2 && (
               <button
                 className={`leaderboard__tab${tab === 'standings' ? ' leaderboard__tab--active' : ''}`}
@@ -379,7 +386,14 @@ export default function MatchDetail({ match: matchProp, onBack, userPick }: Prop
         );
       })()}
 
-      {(tab === 'predictions' || (partialBenchPlayers.length === 0 && fullMissBenchPlayers.length === 0)) && (
+      {(() => {
+        const benchAvail = partialBenchPlayers.length > 0 || fullMissBenchPlayers.length > 0;
+        const scored = match.status === "live" || match.status === "finished";
+        // Predictions is the default view; hide it only when a valid other tab
+        // (Bench with players, or Standings on a scored match) is selected.
+        const showPreds = !((tab === 'bench' && benchAvail) || (tab === 'standings' && scored));
+        return showPreds;
+      })() && (
         <>
           {predsLoading && (
             <div>

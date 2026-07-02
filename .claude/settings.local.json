@@ -119,7 +119,11 @@
       "mcp__supabase_mcp_pat__list_projects",
       "mcp__supabase_mcp_pat__apply_migration",
       "mcp__supabase_mcp_pat__execute_sql",
-      "Bash(npx kill-port *)"
+      "Bash(npx kill-port *)",
+      "PowerShell(Test-Path *)",
+      "PowerShell($dir = Split-Path $PROFILE.CurrentUserCurrentHost; if \\(-not \\(Test-Path $dir\\)\\) { New-Item -ItemType Directory -Force -Path $dir | Out-Null; \"created dir\" } else { \"dir exists\" })",
+      "PowerShell(claude mcp *)",
+      "mcp__supabase_mcp__execute_sql"
     ],
     "additionalDirectories": [
       "c:\\Users\\juant\\Documents\\Projects\\quiniela-2026\\src\\routes",

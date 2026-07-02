@@ -9,6 +9,7 @@ import {
   getPickResult,
   getResultVariant,
   getResultPoints,
+  getDisplayScore,
   getLiveMinute,
   formatMatchDate,
   getStageLabelKey,
@@ -149,7 +150,7 @@ export default function MatchPickList({ matches, picks, bracketPicks, pickLabelK
                       <div className="match-pick-list__match-result">
                         {isFinished || isLive ? (
                           <span className="match-pick-list__match-score-actual">
-                            {m.scoreA}:{m.scoreB}
+                            {getDisplayScore(m).home}:{getDisplayScore(m).away}
                           </span>
                         ) : (
                           <span className="match-pick-list__match-date">{formatMatchDate(m.utcDate, language)}</span>

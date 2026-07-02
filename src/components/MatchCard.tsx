@@ -4,6 +4,7 @@ import { useTranslation } from "~/hooks/useTranslation";
 import Badge from "./Badge";
 import {
   getPickResult,
+  getDisplayScore,
   formatMatchDate,
   formatMatchTime,
   getStageLabelKey,
@@ -81,6 +82,7 @@ export default function MatchCard({ match, onTap, pick }: Props) {
   const pickResult = hasPick
     ? getPickResult(match, parseInt(String(pick.pickA)), parseInt(String(pick.pickB)))
     : null;
+  const displayScore = getDisplayScore(match);
   return (
     <div
       className={`match-card${isLive ? " match-card--live" : ""}`}
@@ -114,9 +116,9 @@ export default function MatchCard({ match, onTap, pick }: Props) {
           </span>
         </div>
         <div className='match-card__score'>
-          <span>{match.scoreA !== null ? match.scoreA : "–"}</span>
+          <span>{displayScore.home !== null ? displayScore.home : "–"}</span>
           <span className='match-card__score-sep'>:</span>
-          <span>{match.scoreB !== null ? match.scoreB : "–"}</span>
+          <span>{displayScore.away !== null ? displayScore.away : "–"}</span>
         </div>
         <div className='match-card__team'>
           <TeamFlag code={match.teamB} size={30} />
